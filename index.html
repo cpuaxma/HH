@@ -137,10 +137,10 @@ svg { overflow: visible; }
 #flame { transform-origin: 120px 372px; }
 
 /* ---------- counter ---------- */
-#sc-counter .tag { position: absolute; left: 60px; right: 60px; top: 440px; display: flex; justify-content: space-between; color: var(--gray); }
-#sc-counter .tag .red { color: var(--red); }
-#count-row { top: 530px; font-variant-numeric: tabular-nums; }
-#results-rows { top: 1000px; }
+#count-stack { position: absolute; left: 60px; right: 60px; top: 470px; display: flex; flex-direction: column; gap: 34px; }
+#count-stack .fill { position: static; font-variant-numeric: tabular-nums; }
+#count-label { font-size: 40px; color: var(--cream); }
+#results-rows { top: 1080px; }
 
 /* ---------- cta ---------- */
 #logo-reversed { top: 400px; }
@@ -291,8 +291,10 @@ svg { overflow: visible; }
   <!-- COUNTER + REAL RESULTS. -->
   <section class="scene" id="sc-counter" data-bg="charcoal" hidden>
     <div class="cam">
-      <div class="label tag"><span>New followers</span><span class="red">Placeholder</span></div>
-      <div class="fill" id="count-row" data-cap="460"><span class="row"><i class="slam" id="count">48,700</i></span></div>
+      <div id="count-stack">
+        <div class="fill" data-cap="460"><span class="row"><i class="slam" id="count">48,700</i></span></div>
+        <p class="label" id="count-label">Followers</p>
+      </div>
       <div class="fill" id="results-rows" data-cap="460">
         <span class="row"><i class="slam">Real</i></span>
         <span class="row"><i class="slam red">results.</i></span>
@@ -312,7 +314,7 @@ svg { overflow: visible; }
       </div>
       <div class="cta-row">
         <div class="pill slam" id="pill">Let’s Grow <span>→</span></div>
-        <p class="label"><i class="slam" id="url">hotpeppermedia.com</i></p>
+        <p class="label"><i class="slam" id="url">hotpeppermedia@outlook.com</i></p>
       </div>
       <p class="label" id="replay">Tap to replay</p>
     </div>
@@ -333,20 +335,21 @@ svg { overflow: visible; }
    its color ('red' | 'cream' | 'charcoal' | 'peach' | null for none).
    ===================================================================== */
 const TIMELINE = [
-  { id: 'hook',     start: 0,    end: 1.5,  cues: { notif: 0, again: 0.1, echo: 0.08, punch: 0.95 } },
-  { id: 'boring',   start: 1.5,  end: 3,    cues: { your: 0, feed: 0.22, is: 0.42, boring: 0.66, punch: 1.05 } },
-  { id: 'logo',     start: 3,    end: 4.5,  cues: { whip: 0, logo: 0.04, label: 0.45, punch: 0.95 } },
-  { id: 'spicy',    start: 4.5,  end: 6,    cues: { your: 0, brand: 0.17, but: 0.5, spicier: 0.66, whip: 0.7, punch: 0.95 } },
-  { id: 'content',  start: 6,    end: 7.5,  cues: { word: 0, icon: 0.06, burst: 0.3, label: 0.32, punch: 0.85 } },
-  { id: 'strategy', start: 7.5,  end: 9,    cues: { word: 0, icon: 0.06, bars: 0.22, label: 0.32, punch: 0.85 } },
-  { id: 'ads',      start: 9,    end: 10.5, cues: { word: 0, icon: 0.06, click: 0.42, label: 0.32, punch: 0.85 } },
-  { id: 'growth',   start: 10.5, end: 12,   cues: { word: 0, icon: 0.06, launch: 0.38, label: 0.32, punch: 0.85 } },
-  { id: 'count',    start: 12,   end: 13.5, scene: 'counter', cues: { spin: 0, land: 1.0, punch: 1.0 } },
-  { id: 'results',  start: 13.5, end: 15,   scene: 'counter', cues: { real: 0, results: 0.2, punch: 0.6 } },
-  { id: 'cta',      start: 15,   end: 16,   scene: 'cta', cues: { logo: 0, punch: 0.55 } },
-  { id: 'kick',     start: 16,   end: 17.2, scene: 'cta', cues: { marketing: 0, with: 0.25, a: 0.38, kick: 0.6, whip: 0.62 } },
-  { id: 'button',   start: 17.2, end: 18,   scene: 'cta', cues: { pill: 0, url: 0.22 } },
-  { id: 'hold',     start: 18,   end: 20,   scene: 'cta', cues: { pulse: 0 } },   // final frame holds; only the pill pulses
+  // hold rule: after its last word lands (cue + 0.15s), a beat stays up ≥ 0.4s + 0.3s per word
+  { id: 'hook',     start: 0,     end: 2.0,   cues: { notif: 0, again: 0.1, echo: 0.08, punch: 1.1 } },
+  { id: 'boring',   start: 2.0,   end: 4.0,   cues: { your: 0, feed: 0.35, is: 0.7, boring: 1.05, punch: 1.45 } },  // full phrase holds 0.8s
+  { id: 'logo',     start: 4.0,   end: 6.2,   cues: { whip: 0, logo: 0.04, label: 0.45, punch: 1.2 } },
+  { id: 'spicy',    start: 6.2,   end: 8.4,   cues: { your: 0, brand: 0.3, but: 0.75, spicier: 1.0, whip: 1.05, punch: 1.4 } },
+  { id: 'content',  start: 8.4,   end: 10.3,  cues: { word: 0, icon: 0.06, burst: 0.3, label: 0.1, punch: 1.0 } },
+  { id: 'strategy', start: 10.3,  end: 12.45, cues: { word: 0, icon: 0.06, bars: 0.22, label: 0.1, punch: 1.0 } },
+  { id: 'ads',      start: 12.45, end: 14.35, cues: { word: 0, icon: 0.06, click: 0.42, label: 0.1, punch: 1.0 } },
+  { id: 'growth',   start: 14.35, end: 16.25, cues: { word: 0, icon: 0.06, launch: 0.8, label: 0.1, punch: 1.0 } },
+  { id: 'count',    start: 16.25, end: 17.85, scene: 'counter', cues: { spin: 0, land: 0.9, punch: 0.9 } },
+  { id: 'results',  start: 17.85, end: 19.45, scene: 'counter', cues: { real: 0, results: 0.35, punch: 0.8 } },
+  { id: 'cta',      start: 19.45, end: 20.25, scene: 'cta', cues: { logo: 0, punch: 0.45 } },
+  { id: 'kick',     start: 20.25, end: 21.65, scene: 'cta', cues: { marketing: 0, with: 0.35, a: 0.55, kick: 0.9, whip: 0.95 } },
+  { id: 'button',   start: 21.65, end: 22.25, scene: 'cta', cues: { pill: 0, url: 0.25 } },
+  { id: 'hold',     start: 22.25, end: 25.25, scene: 'cta', cues: { pulse: 0 } },   // end card holds 3s+ after KICK.; only the pill pulses
 ];
 
 const SLAM  = { from: 1.4, dur: 0.15 };   // words scale 140% → 100% in 150ms, hard ease-out
@@ -361,7 +364,10 @@ const LOGOS = {
   reversed: { src: 'assets/logo-reversed.png', crop: [420, 530, 760, 540], width: 600 },
 };
 
-const DATA = { followers: [1204, 48700], bars: [0.3, 0.52, 0.42, 0.88] };   // placeholder numbers
+const DATA = {
+  followers: [1204, 48700],          // counter spins from → to
+  bars: [0.3, 0.52, 0.42, 0.88],     // strategy icon bar heights (0–1)
+};
 
 /* ===================================================================== */
 
