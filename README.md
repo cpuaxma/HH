@@ -17,3 +17,12 @@ Open it with any local web server or straight from disk. Add `?t=12.5` to the UR
 
 - `assets/logo-primary.png`: the supplied primary logo, byte-for-byte.
 - `assets/logo-reversed.png`: a **stand-in**. It was derived from the primary file by keying out the cream background and turning the artwork white. Nothing was redrawn. Replace it with the official reversed logo, and update `LOGOS.reversed.crop` if that file is framed differently.
+
+## Exporting the video
+
+```
+npm install playwright        # once; also run `npx playwright install chromium` if Chromium isn't installed
+node tools/export-video.js 60 exports/hot-pepper-intro.mp4
+```
+
+The script steps the timeline frame by frame in headless Chromium at the full 1080×1920 and pipes every frame into ffmpeg, which must be on your PATH. The result is an H.264 MP4 at CRF 12 with no dropped frames or screen scaling. Pass `30` instead of `60` for 30fps. Montserrat loads from Google Fonts, so stay online while it runs.
