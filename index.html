@@ -6,9 +6,9 @@
 <title>Hot Pepper Media Intro</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800;900&display=swap">
 <style>
-/* 9:16 kinetic intro. One 1080x1920 stage, scaled to fit; one idea per beat, hard cuts. */
+/* 9:16 hook-first cut. 1080x1920 stage scaled to fit; words slam, frames shake, cuts flash. */
 :root {
   --cream: #FEF9EF;
   --red: #E23B24;
@@ -16,13 +16,12 @@
   --peach: #FFD7C9;
   --gray: #E7E4DF;
   --letterbox: #0F0F0F;
-  --feed-card: #E7E4DF;
-  --feed-shade: #CFCBC4;
+  --notif: rgba(238, 235, 230, 0.96);
+  --notif-muted: #6E6A64;
 
   --font: 'Montserrat', 'Helvetica Neue', Arial, sans-serif;
-  --track-tight: -0.04em;   /* headlines */
+  --track-tight: -0.045em;  /* headlines */
   --track-label: 0.08em;    /* small labels, +80 */
-  --stroke: 8;              /* icon line weight, matches the logo pepper at stage scale */
   color-scheme: dark;
 }
 
@@ -41,7 +40,7 @@ html, body { height: 100%; margin: 0; background: var(--letterbox); overflow: hi
   width: 1080px; height: 1920px;
   transform-origin: 50% 50%;
   overflow: hidden;
-  background: var(--cream);
+  background: var(--charcoal);
   font-family: var(--font);
   color: var(--charcoal);
   -webkit-font-smoothing: antialiased;
@@ -51,231 +50,118 @@ html, body { height: 100%; margin: 0; background: var(--letterbox); overflow: hi
 /* ---------- scenes ---------- */
 .scene { position: absolute; inset: 0; overflow: hidden; }
 .cam { position: absolute; inset: 0; transform-origin: 50% 50%; background: inherit; }
-.bg-cream { background: var(--cream); color: var(--charcoal); }
-.bg-red { background: var(--red); color: var(--cream); }
-.bg-dark { background: var(--charcoal); color: var(--cream); }
+[data-bg="cream"]    { background: var(--cream); color: var(--charcoal); }
+[data-bg="red"]      { background: var(--red); color: var(--cream); }
+[data-bg="charcoal"] { background: var(--charcoal); color: var(--cream); }
+[data-bg="peach"]    { background: var(--peach); color: var(--charcoal); }
 
 /* ---------- type ---------- */
-.hl {
+.fill {
+  position: absolute; left: 60px; right: 60px;
   margin: 0;
-  font-weight: 800;
-  font-size: 190px;
-  line-height: 0.9;
+  font-weight: 900;
+  line-height: 0.86;
   letter-spacing: var(--track-tight);
   text-transform: uppercase;
 }
+.fill.mid { top: 0; bottom: 0; display: flex; flex-direction: column; justify-content: center; align-items: flex-start; }
+.row { display: table; white-space: nowrap; }   /* shrink-wraps so each row can be sized to the frame */
+.center .row { margin-left: auto; margin-right: auto; }
+.row i { display: inline-block; font-style: normal; transform-origin: 50% 55%; }
+.row i + i { margin-left: 0.2em; }
+.slam { visibility: hidden; will-change: transform; }
 .label {
   margin: 0;
   font-weight: 600;
-  font-size: 30px;
+  font-size: 34px;
   line-height: 1.2;
   letter-spacing: var(--track-label);
   text-transform: uppercase;
 }
-/* mask: each row clips its word, words slide up through it */
-.row {
-  display: block;
-  overflow: hidden;
-  padding: 0.08em 0.12em 0.16em;
-  margin: -0.08em -0.12em -0.16em;
-}
-.row > i {
-  display: inline-block;
-  white-space: nowrap;
-  font-style: normal;
-  transform: translate3d(0, 120%, 0);
-  will-change: transform;
-}
+.label i { display: inline-block; font-style: normal; transform-origin: 50% 50%; }
 .red { color: var(--red); }
-.copy { position: absolute; left: 80px; right: 80px; }
-.center { text-align: center; }
+.ink { color: var(--charcoal); }
+.outline { color: transparent; -webkit-text-stroke: 5px var(--red); }
 
 /* ---------- strokes ---------- */
 svg { overflow: visible; }
 .stroke {
   fill: none;
   stroke: var(--red);
-  stroke-width: var(--stroke);
+  stroke-width: 8;
   stroke-linecap: round;
   stroke-linejoin: round;
 }
 .draw { stroke-dasharray: 1 1; stroke-dashoffset: 1; opacity: 0; }
 .full { position: absolute; left: 0; top: 0; width: 1080px; height: 1920px; pointer-events: none; }
+.whip { stroke-width: 9; }
 
-/* ---------- 1 · scroll ---------- */
-.feed {
-  position: absolute; left: 0; right: 0; top: 0; bottom: 0;
-  opacity: 0.22;
-  will-change: filter;
+/* ---------- hook ---------- */
+.notif {
+  position: absolute; left: 44px; right: 44px; top: 70px;
+  height: 196px;
+  border-radius: 54px;
+  background: var(--notif);
+  color: var(--charcoal);
+  display: flex; align-items: center; gap: 28px;
+  padding: 0 40px 0 34px;
+  box-shadow: 0 40px 70px -30px rgba(0, 0, 0, 0.7);
+  z-index: 2;
 }
-.strip { position: absolute; left: 130px; width: 820px; top: 0; will-change: transform; }
-.post {
-  height: 980px; margin-bottom: 56px;
-  border-radius: 44px;
-  background: var(--feed-card);
-  padding: 40px;
-  display: flex; flex-direction: column; gap: 28px;
-}
-.post .ph-row { display: flex; align-items: center; gap: 22px; }
-.post .ava { width: 84px; height: 84px; border-radius: 50%; background: var(--feed-shade); flex: none; }
-.post .bar { height: 22px; border-radius: 11px; background: var(--feed-shade); }
-.post .img { flex: 1; border-radius: 28px; background: var(--feed-shade); }
-.post .acts { display: flex; gap: 22px; }
-.post .acts span { width: 52px; height: 52px; border-radius: 50%; background: var(--feed-shade); }
-.vignette {
-  position: absolute; inset: 0;
-  background:
-    radial-gradient(120% 60% at 50% 52%, rgba(15,15,15,0.15) 0%, rgba(15,15,15,0.85) 100%);
-}
-#sc-scroll .copy { top: 690px; }
-#sc-scroll .label { color: var(--gray); margin-bottom: 44px; }
-#sc-scroll .hl { color: var(--cream); }
+.n-icon { width: 108px; height: 108px; border-radius: 26px; background: var(--red); display: grid; place-items: center; flex: none; }
+.n-icon svg { width: 70px; height: 70px; }
+.n-icon .stroke { stroke: var(--cream); stroke-width: 11; }
+.n-body { flex: 1; min-width: 0; }
+.n-top { display: flex; justify-content: space-between; font-size: 24px; font-weight: 600; color: var(--notif-muted); letter-spacing: 0.04em; text-transform: uppercase; }
+.n-body b { display: block; margin-top: 8px; font-size: 37px; font-weight: 700; letter-spacing: -0.015em; line-height: 1.15; }
+#sc-hook .fill { top: 340px; }
 
-/* ---------- 2 · logo ---------- */
-.logo {
-  position: absolute; left: 540px; top: 0;
-  overflow: hidden;
-  transform-origin: 50% 50%;
-}
+/* ---------- logo ---------- */
+.logo { position: absolute; left: 540px; overflow: hidden; transform-origin: 50% 50%; }
 .logo img { position: absolute; display: block; max-width: none; pointer-events: none; }
 #logo-primary { top: 860px; mix-blend-mode: darken; } /* the PNG's own cream ground melts into the stage */
-.sweep {
-  position: absolute; left: 540px; top: 860px;
-  width: 220px; height: 1100px;
-  margin: -550px 0 0 -110px;
-  background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.95) 50%, rgba(255,255,255,0) 100%);
-  mix-blend-mode: soft-light;
-  opacity: 0;
-  pointer-events: none;
-}
-#sc-logo .copy { top: 1240px; }
+#sc-logo .labelrow { position: absolute; left: 0; right: 0; top: 1270px; text-align: center; }
 
-/* ---------- 3 · spicy ---------- */
-#sc-spicy .copy { top: 470px; }
-#sc-spicy .gap { height: 70px; }
-#chili { position: absolute; left: 380px; top: 360px; width: 400px; height: 1000px; transform-origin: 50% 50%; }
-
-/* ---------- 4 · content ---------- */
-#bubble { position: absolute; left: 80px; top: 170px; width: 170px; height: 170px; transform-origin: 30% 80%; }
-#sc-content .copy { top: 400px; }
-.phone {
-  position: absolute; left: 270px; top: 790px;
-  width: 540px; height: 960px;
-  border-radius: 76px;
-  background: var(--charcoal);
-  padding: 16px;
-  box-shadow: 0 60px 90px -40px rgba(120, 40, 20, 0.45), 0 20px 40px -20px rgba(15,15,15,0.35);
-  transform-origin: 50% 60%;
-}
-.screen {
-  position: relative; width: 100%; height: 100%;
-  border-radius: 60px; overflow: hidden;
-  background: #FFFFFF;
-}
-.ph-top { height: 64px; display: flex; align-items: center; justify-content: space-between; padding: 0 44px; font-weight: 700; font-size: 22px; }
-.ph-notch { width: 130px; height: 34px; border-radius: 17px; background: var(--charcoal); }
-.ph-bat { width: 40px; height: 18px; border-radius: 5px; border: 3px solid var(--charcoal); }
-.post-head { display: flex; align-items: center; gap: 16px; padding: 14px 24px 18px; }
-.post-head .av { width: 60px; height: 60px; border-radius: 50%; background: var(--red); flex: none; }
-.post-head b { display: block; font-size: 23px; font-weight: 700; letter-spacing: -0.01em; }
-.post-head small { display: block; font-size: 18px; font-weight: 600; color: #8A857E; }
-.post-head .dots { margin-left: auto; font-size: 22px; letter-spacing: 2px; color: var(--charcoal); }
-.post-img {
-  position: relative; height: 508px;
-  background: var(--peach);
-  padding: 46px 44px;
-  overflow: hidden;
-}
-.post-img .label { font-size: 18px; color: var(--red); }
-.post-img strong {
-  display: block; margin-top: 18px;
-  font-size: 74px; font-weight: 800; line-height: 0.92; letter-spacing: var(--track-tight);
-  text-transform: uppercase;
-}
-.post-img svg { position: absolute; left: 0; bottom: 30px; width: 508px; height: 160px; }
-.post-img .stroke { stroke-width: 6; }
-#bigheart { position: absolute; left: 50%; top: 52%; width: 190px; height: 190px; margin: -95px 0 0 -95px; opacity: 0; }
-.post-actions { display: flex; align-items: center; gap: 24px; padding: 20px 26px 8px; }
-.post-actions svg { width: 46px; height: 46px; }
-.post-actions .ic { fill: none; stroke: var(--charcoal); stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
-.post-actions .bm { margin-left: auto; }
-#likeicon { transform-origin: 50% 50%; }
-#likeicon .ic { stroke: var(--red); }
-#likeicon .fillheart { fill: var(--red); stroke: none; opacity: 0; }
-.likes { padding: 6px 28px; font-size: 24px; font-weight: 600; }
-.likes b { font-weight: 800; font-variant-numeric: tabular-nums; }
-.cap { padding: 12px 28px; display: grid; gap: 12px; }
-.cap i { display: block; height: 16px; border-radius: 8px; background: var(--gray); }
-.cap i + i { width: 62%; }
-.hearts { position: absolute; left: 0; top: 0; width: 100%; height: 100%; pointer-events: none; }
-.hearts svg { position: absolute; width: 56px; height: 56px; left: 0; top: 0; opacity: 0; fill: var(--red); }
-
-/* ---------- 5 · data ---------- */
-#sc-data .copy { top: 250px; }
-.card {
-  position: absolute; left: 80px; width: 920px;
-  border-radius: 56px;
-  transform-origin: 50% 100%;
-}
-#datacard { top: 820px; height: 900px; background: var(--peach); padding: 64px 64px 56px; }
-.card-head { display: flex; justify-content: space-between; align-items: flex-start; }
-.metric {
-  font-size: 150px; font-weight: 800; letter-spacing: var(--track-tight); line-height: 0.9;
-  font-variant-numeric: tabular-nums; color: var(--red);
-  margin-top: 22px;
-}
-.chip {
-  border: 3px solid var(--charcoal); border-radius: 999px;
-  padding: 12px 22px 10px;
-  font-size: 22px;
-}
-#chart { position: absolute; left: 64px; bottom: 56px; width: 792px; height: 470px; }
-#chart .axis { stroke: var(--charcoal); stroke-width: 4; stroke-linecap: round; }
-#chart text { font-family: var(--font); font-weight: 600; font-size: 22px; letter-spacing: var(--track-label); fill: var(--charcoal); text-anchor: middle; }
-#chart .bar { fill: none; }
-#chart .bar.hot { fill: var(--red); }
-#trenddot { fill: var(--red); }
-
-/* ---------- 6 · growth ---------- */
-#sc-growth .copy { top: 210px; }
-#rocket { position: absolute; left: 420px; top: 760px; width: 240px; height: 460px; transform-origin: 50% 70%; }
+/* ---------- services ---------- */
+.icon { position: absolute; left: 320px; top: 330px; width: 440px; height: 440px; transform-origin: 50% 50%; visibility: hidden; }
+.icon > svg { width: 100%; height: 100%; }
+.icon .stroke { stroke-width: 4; }
+.svc .stack { position: absolute; left: 60px; right: 60px; top: 880px; display: flex; flex-direction: column; gap: 44px; }
+.svc .stack .fill { position: static; }
+.burst { position: absolute; left: 50%; top: 45%; width: 0; height: 0; }
+.burst svg { position: absolute; width: 70px; height: 70px; left: -35px; top: -35px; fill: var(--red); opacity: 0; }
+#bars-icon .bar.hot { fill: var(--red); }
+#adbtn { fill: transparent; }
+#rocket-icon { overflow: visible; }
+#rocket-icon .stroke { stroke-width: 8; }
 #flame { transform-origin: 120px 372px; }
-#trail { position: absolute; left: 0; top: 0; }
-#followers { top: 1390px; height: 360px; background: var(--gray); padding: 56px 64px; display: flex; flex-direction: column; justify-content: space-between; }
-#followers .metric { color: var(--charcoal); font-size: 190px; margin: 0; transform-origin: 0 100%; }
-#followers .card-head .label + .label { color: var(--red); }
 
-/* ---------- 7 · two hits ---------- */
-#sc-bold .copy, #sc-results .copy { top: 0; bottom: 0; display: flex; flex-direction: column; justify-content: center; }
+/* ---------- counter ---------- */
+#sc-counter .tag { position: absolute; left: 60px; right: 60px; top: 440px; display: flex; justify-content: space-between; color: var(--gray); }
+#sc-counter .tag .red { color: var(--red); }
+#count-row { top: 530px; font-variant-numeric: tabular-nums; }
+#results-rows { top: 1000px; }
 
-/* ---------- 8 · cta ---------- */
-#logo-reversed { top: 560px; }
-#sc-cta .copy { top: 870px; }
-#sc-cta .hl { color: var(--cream); }
-.cta-row { position: absolute; left: 0; right: 0; top: 1440px; display: flex; flex-direction: column; align-items: center; gap: 44px; }
+/* ---------- cta ---------- */
+#logo-reversed { top: 400px; }
+#cta-rows { top: 700px; }
+.cta-row { position: absolute; left: 0; right: 0; top: 1500px; display: flex; flex-direction: column; align-items: center; gap: 46px; }
 .pill {
   display: inline-flex; align-items: center; gap: 22px;
   background: var(--cream); color: var(--red);
   border-radius: 999px;
-  padding: 34px 74px 32px;
-  font-size: 58px; font-weight: 800; letter-spacing: -0.02em;
+  padding: 38px 84px 36px;
+  font-size: 66px; font-weight: 800; letter-spacing: -0.02em;
   transform-origin: 50% 50%;
 }
-.pill .arrow { display: inline-block; }
-#url { color: var(--cream); font-size: 32px; }
-#kickline { stroke: var(--cream); stroke-width: 7; }
-#replay {
-  position: absolute; left: 0; right: 0; bottom: 74px;
-  text-align: center; color: var(--cream); opacity: 0;
-  font-size: 24px;
-}
+#url { color: var(--cream); }
+#replay { position: absolute; left: 0; right: 0; bottom: 64px; text-align: center; color: var(--cream); font-size: 24px; opacity: 0; }
 
 /* ---------- overlays ---------- */
-#motif { z-index: 5; }
-#motif path { stroke-width: 7; }
+#flash { position: absolute; inset: 0; z-index: 7; pointer-events: none; display: none; }
 #grain {
   position: absolute; left: -128px; top: -128px; right: -128px; bottom: -128px;
-  z-index: 6; pointer-events: none;
+  z-index: 8; pointer-events: none;
   opacity: 0.16;
   mix-blend-mode: overlay;   /* mid-gray noise: texture without shifting the brand colors */
   background-size: 256px 256px;
@@ -286,212 +172,196 @@ svg { overflow: visible; }
 <div id="viewport" tabindex="0" role="button" aria-label="Hot Pepper Media brand intro. Tap or press Enter to replay.">
 <div id="stage" class="waiting">
 
-  <!-- 1 · EVERYONE'S SCROLLING / NOBODY'S STOPPING -->
-  <section class="scene bg-dark" id="sc-scroll" data-accent="red">
+  <!-- HOOK · notification + AGAIN. -->
+  <section class="scene" id="sc-hook" data-bg="charcoal">
     <div class="cam">
-      <div class="feed"><div class="strip"></div></div>
-      <div class="vignette"></div>
-      <div class="copy">
-        <p class="label"><span class="row"><i>Everyone’s scrolling.</i></span></p>
-        <h1 class="hl" data-fit="920"><span class="row"><i>Nobody’s</i></span><span class="row"><i>stopping<span class="red">.</span></i></span></h1>
+      <div class="notif" id="notif">
+        <div class="n-icon"><svg viewBox="0 0 200 200">
+          <path class="stroke" d="M44 28 H156 Q184 28 184 56 V118 Q184 146 156 146 H100 L58 180 L66 146 H44 Q16 146 16 118 V56 Q16 28 44 28 Z"/>
+          <path class="stroke" d="M100 122 C 62 98, 62 62, 84 62 C 94 62, 100 70, 100 77 C 100 70, 106 62, 116 62 C 138 62, 138 98, 100 122 Z"/></svg></div>
+        <div class="n-body">
+          <div class="n-top"><span>Feed</span><span>now</span></div>
+          <b>🔥 Your competitor just went viral.</b>
+        </div>
+      </div>
+      <div class="fill center" data-cap="400">
+        <span class="row"><i class="slam red">Again.</i></span>
+        <span class="row"><i class="slam outline">Again.</i></span>
+        <span class="row"><i class="slam outline">Again.</i></span>
+        <span class="row"><i class="slam outline">Again.</i></span>
+        <span class="row"><i class="slam outline">Again.</i></span>
       </div>
     </div>
   </section>
 
-  <!-- 2 · LOGO -->
-  <section class="scene bg-cream" id="sc-logo" data-accent="red" hidden>
+  <!-- YOUR FEED IS BORING. -->
+  <section class="scene" id="sc-boring" data-bg="red" hidden>
     <div class="cam">
-      <svg class="full" viewBox="0 0 1080 1920"><path class="stroke draw" pathLength="1" style="stroke-width:7"
-        d="M-60 1560 C 220 1610, 520 1560, 740 1450 S 1000 1310, 1150 1300"/></svg>
+      <div class="fill mid" data-cap="460">
+        <span class="row"><i class="slam">Your</i></span>
+        <span class="row"><i class="slam">feed</i></span>
+        <span class="row"><i class="slam">is</i></span>
+        <span class="row"><i class="slam ink">boring.</i></span>
+      </div>
+    </div>
+  </section>
+
+  <!-- LOGO -->
+  <section class="scene" id="sc-logo" data-bg="cream" hidden>
+    <div class="cam">
+      <svg class="full"><path class="stroke whip draw" pathLength="1" d="M-120 1240 C 160 1340, 420 1180, 600 980 S 900 640, 1200 600"/></svg>
       <div class="logo" id="logo-primary"><img alt="Hot Pepper Media"></div>
-      <div class="sweep"></div>
-      <div class="copy center"><p class="label"><span class="row"><i>Social media marketing agency</i></span></p></div>
+      <div class="labelrow"><p class="label"><i class="slam">Social media marketing agency</i></p></div>
     </div>
   </section>
 
-  <!-- 3 · YOUR BRAND, BUT SPICIER. -->
-  <section class="scene bg-cream" id="sc-spicy" data-accent="red" hidden>
+  <!-- YOUR BRAND, BUT SPICIER. -->
+  <section class="scene" id="sc-spicy" data-bg="cream" hidden>
     <div class="cam">
-      <svg id="chili" viewBox="0 0 400 1000"><path class="stroke draw" pathLength="1" style="stroke-width:7"
-        d="M286 18 C 262 40, 232 70, 222 122
-           C 186 112, 146 122, 124 152
-           C 84 232, 82 420, 122 596
-           C 152 736, 200 858, 252 960
-           C 274 898, 304 760, 314 600
-           C 328 420, 334 242, 302 162
-           C 282 128, 250 114, 222 122
-           M 124 152 C 152 182, 176 156, 200 178 C 226 156, 262 184, 302 162"/></svg>
-      <div class="copy">
-        <h2 class="hl" data-fit="920"><span class="row"><i>Your</i></span><span class="row"><i>brand,</i></span></h2>
-        <div class="gap"></div>
-        <h2 class="hl" data-fit="920"><span class="row"><i>But</i></span><span class="row"><i class="red">spicier.</i></span></h2>
+      <svg class="full"><path class="stroke whip draw" pathLength="1" d="M1200 1500 C 900 1640, 520 1380, 300 1480 S -20 1700, -120 1640"/></svg>
+      <div class="fill mid" data-cap="460">
+        <span class="row"><i class="slam">Your</i></span>
+        <span class="row"><i class="slam">brand,</i></span>
+        <span class="row"><i class="slam">but</i></span>
+        <span class="row"><i class="slam red">spicier.</i></span>
       </div>
     </div>
   </section>
 
-  <!-- 4 · CREATIVE CONTENT. -->
-  <section class="scene bg-cream" id="sc-content" data-accent="red" hidden>
+  <!-- SERVICES · CONTENT. -->
+  <section class="scene svc" id="sc-content" data-bg="cream" hidden>
     <div class="cam">
-      <svg id="bubble" viewBox="0 0 200 200">
-        <path class="stroke draw" pathLength="1" d="M44 28 H156 Q184 28 184 56 V118 Q184 146 156 146 H100 L58 180 L66 146 H44 Q16 146 16 118 V56 Q16 28 44 28 Z"/>
-        <path class="stroke draw" pathLength="1" d="M100 122 C 62 98, 62 62, 84 62 C 94 62, 100 70, 100 77 C 100 70, 106 62, 116 62 C 138 62, 138 98, 100 122 Z"/>
-      </svg>
-      <div class="copy">
-        <h2 class="hl" data-fit="920"><span class="row"><i>Creative</i></span><span class="row"><i>content.</i></span></h2>
+      <div class="icon"><svg viewBox="0 0 200 200">
+        <path class="stroke" d="M44 28 H156 Q184 28 184 56 V118 Q184 146 156 146 H100 L58 180 L66 146 H44 Q16 146 16 118 V56 Q16 28 44 28 Z"/>
+        <path class="stroke" d="M100 122 C 62 98, 62 62, 84 62 C 94 62, 100 70, 100 77 C 100 70, 106 62, 116 62 C 138 62, 138 98, 100 122 Z"/></svg>
+        <div class="burst" id="burst"></div>
       </div>
-      <div class="phone" id="phone">
-        <div class="screen">
-          <div class="ph-top"><span>9:41</span><span class="ph-notch"></span><span class="ph-bat"></span></div>
-          <div class="post-head"><span class="av"></span><div><b>hotpeppermedia</b><small>Sponsored</small></div><span class="dots">•••</span></div>
-          <div class="post-img">
-            <p class="label">New campaign</p>
-            <strong>Spice is<br>a strategy.</strong>
-            <svg viewBox="0 0 508 160"><path class="stroke" d="M-10 120 C 120 150, 260 140, 360 90 S 480 20, 530 14"/></svg>
-            <svg id="bigheart" viewBox="0 0 24 24"><path fill="#FFFFFF" d="M12 21s-7.5-4.6-9.6-9.2C.9 8.3 3 4.5 6.6 4.5c2.1 0 3.6 1.2 5.4 3.2 1.8-2 3.3-3.2 5.4-3.2 3.6 0 5.7 3.8 4.2 7.3C19.5 16.4 12 21 12 21z"/></svg>
-          </div>
-          <div class="post-actions">
-            <svg id="likeicon" viewBox="0 0 24 24"><path class="fillheart" d="M12 21s-7.5-4.6-9.6-9.2C.9 8.3 3 4.5 6.6 4.5c2.1 0 3.6 1.2 5.4 3.2 1.8-2 3.3-3.2 5.4-3.2 3.6 0 5.7 3.8 4.2 7.3C19.5 16.4 12 21 12 21z"/><path class="ic" d="M12 21s-7.5-4.6-9.6-9.2C.9 8.3 3 4.5 6.6 4.5c2.1 0 3.6 1.2 5.4 3.2 1.8-2 3.3-3.2 5.4-3.2 3.6 0 5.7 3.8 4.2 7.3C19.5 16.4 12 21 12 21z"/></svg>
-            <svg viewBox="0 0 24 24"><path class="ic" d="M20.5 11.5a8.5 8.5 0 0 1-12.4 7.6L3.5 20.5l1.4-4.4A8.5 8.5 0 1 1 20.5 11.5z"/></svg>
-            <svg viewBox="0 0 24 24"><path class="ic" d="M21 3 10 14M21 3l-6.5 18-4-8.5L2 8.5 21 3z"/></svg>
-            <svg class="bm" viewBox="0 0 24 24"><path class="ic" d="M6 3h12v18l-6-4.5L6 21V3z"/></svg>
-          </div>
-          <div class="likes"><b id="likes">2,481</b> likes</div>
-          <div class="cap"><i></i><i></i></div>
-          <div class="hearts" id="hearts"></div>
-        </div>
+      <div class="stack">
+        <div class="fill" data-cap="460"><span class="row"><i class="slam">Content.</i></span></div>
+        <p class="label sub"><i class="slam">Scroll-stopping posts &amp; reels</i></p>
       </div>
     </div>
   </section>
 
-  <!-- 5 · DATA-DRIVEN STRATEGY. -->
-  <section class="scene bg-cream" id="sc-data" data-accent="red" hidden>
+  <!-- SERVICES · STRATEGY. -->
+  <section class="scene svc" id="sc-strategy" data-bg="peach" hidden>
     <div class="cam">
-      <div class="copy">
-        <h2 class="hl" data-fit="920"><span class="row"><i>Data-driven</i></span><span class="row"><i>strategy.</i></span></h2>
-      </div>
-      <div class="card" id="datacard">
-        <div class="card-head">
-          <div>
-            <p class="label">Engagement rate</p>
-            <div class="metric" id="engage">+0%</div>
-          </div>
-          <p class="label chip">Last 5 months</p>
-        </div>
-        <svg id="chart" viewBox="0 0 792 470">
-          <g id="bars"></g>
-          <path id="trend" class="stroke draw" pathLength="1" style="stroke-width:6"/>
-          <circle id="trenddot" r="14" cx="0" cy="0" style="opacity:0"/>
-          <line class="axis" x1="0" y1="420" x2="792" y2="420"/>
-          <g id="xlabels"></g>
-        </svg>
+      <div class="icon"><svg viewBox="0 0 200 200" id="bars-icon">
+        <g id="bars"></g>
+        <path class="stroke" d="M12 182 H188"/></svg></div>
+      <div class="stack">
+        <div class="fill" data-cap="460"><span class="row"><i class="slam">Strategy.</i></span></div>
+        <p class="label sub"><i class="slam">Plans built on real data</i></p>
       </div>
     </div>
   </section>
 
-  <!-- 6 · REAL GROWTH. -->
-  <section class="scene bg-cream" id="sc-growth" data-accent="red" hidden>
+  <!-- SERVICES · ADS. -->
+  <section class="scene svc" id="sc-ads" data-bg="charcoal" hidden>
     <div class="cam">
-      <svg id="trail" class="full" viewBox="0 0 1080 1920"><path class="stroke draw" pathLength="1" style="stroke-width:7"
-        d="M540 1190 C 600 1000, 470 820, 540 620 S 600 200, 520 -260"/></svg>
-      <svg id="rocket" viewBox="0 0 240 460">
+      <div class="icon"><svg viewBox="0 0 200 200">
+        <rect id="adbtn" class="stroke" x="8" y="34" width="132" height="62" rx="31"/>
+        <g id="ripples"><circle class="stroke" cx="70" cy="64" r="10"/><circle class="stroke" cx="70" cy="64" r="10"/></g>
+        <path id="sparks" class="stroke" d="M50 40 L38 26 M70 32 L70 14 M90 40 L102 26"/>
+        <path id="cursor" class="stroke" d="M70 64 L70 168 L96 144 L114 184 L132 176 L114 137 L148 137 Z" style="fill: var(--charcoal)"/></svg></div>
+      <div class="stack">
+        <div class="fill" data-cap="460"><span class="row"><i class="slam">Ads.</i></span></div>
+        <p class="label sub"><i class="slam">Paid social that converts</i></p>
+      </div>
+    </div>
+  </section>
+
+  <!-- SERVICES · GROWTH. -->
+  <section class="scene svc" id="sc-growth" data-bg="cream" hidden>
+    <div class="cam">
+      <svg class="full"><path id="trail" class="stroke whip draw" pathLength="1" d="M540 760 C 610 600, 470 420, 540 240 S 600 -120, 520 -420"/></svg>
+      <div class="icon"><svg id="rocket-icon" viewBox="-80 -10 400 480">
         <g id="flame"><path class="stroke" d="M98 380 C 98 412, 120 428, 120 452 C 120 428, 142 412, 142 380"/></g>
-        <path class="stroke draw" pathLength="1" d="M120 18 C 174 66, 198 146, 198 246 L 198 326 L 42 326 L 42 246 C 42 146, 66 66, 120 18 Z"/>
-        <path class="stroke draw" pathLength="1" d="M120 136 A 34 34 0 1 1 119.9 136 Z"/>
-        <path class="stroke draw" pathLength="1" d="M42 256 L 6 316 L 6 368 L 42 342 M198 256 L 234 316 L 234 368 L 198 342"/>
-        <path class="stroke draw" pathLength="1" d="M86 326 L 94 360 L 146 360 L 154 326"/>
-      </svg>
-      <div class="copy">
-        <h2 class="hl" data-fit="920"><span class="row"><i>Real</i></span><span class="row"><i>growth.</i></span></h2>
-      </div>
-      <div class="card" id="followers">
-        <div class="card-head"><p class="label">Followers</p><p class="label">Placeholder data</p></div>
-        <div class="metric" id="fcount">1.2K</div>
+        <path class="stroke" d="M120 18 C 174 66, 198 146, 198 246 L 198 326 L 42 326 L 42 246 C 42 146, 66 66, 120 18 Z"/>
+        <circle class="stroke" cx="120" cy="170" r="34"/>
+        <path class="stroke" d="M42 256 L 6 316 L 6 368 L 42 342 M198 256 L 234 316 L 234 368 L 198 342"/>
+        <path class="stroke" d="M86 326 L 94 360 L 146 360 L 154 326"/></svg></div>
+      <div class="stack">
+        <div class="fill" data-cap="460"><span class="row"><i class="slam">Growth.</i></span></div>
+        <p class="label sub"><i class="slam">Followers who actually buy</i></p>
       </div>
     </div>
   </section>
 
-  <!-- 7a · BOLD STRATEGIES. -->
-  <section class="scene bg-cream" id="sc-bold" data-accent="red" hidden>
+  <!-- COUNTER + REAL RESULTS. -->
+  <section class="scene" id="sc-counter" data-bg="charcoal" hidden>
     <div class="cam">
-      <div class="copy">
-        <h2 class="hl" data-fit="920"><span class="row"><i>Bold</i></span><span class="row"><i>strategies<span class="red">.</span></i></span></h2>
+      <div class="label tag"><span>New followers</span><span class="red">Placeholder</span></div>
+      <div class="fill" id="count-row" data-cap="460"><span class="row"><i class="slam" id="count">48,700</i></span></div>
+      <div class="fill" id="results-rows" data-cap="460">
+        <span class="row"><i class="slam">Real</i></span>
+        <span class="row"><i class="slam red">results.</i></span>
       </div>
     </div>
   </section>
 
-  <!-- 7b · REAL RESULTS. -->
-  <section class="scene bg-dark" id="sc-results" data-accent="red" hidden>
+  <!-- CTA · MARKETING WITH A KICK. -->
+  <section class="scene" id="sc-cta" data-bg="red" hidden>
     <div class="cam">
-      <div class="copy">
-        <h2 class="hl" data-fit="920"><span class="row"><i>Real</i></span><span class="row"><i class="red">results.</i></span></h2>
-      </div>
-    </div>
-  </section>
-
-  <!-- 8 · MARKETING WITH A KICK. -->
-  <section class="scene bg-red" id="sc-cta" data-accent="cream" hidden>
-    <div class="cam">
-      <div class="logo" id="logo-reversed"><img alt="Hot Pepper Media"></div>
-      <div class="copy center">
-        <h2 class="hl" data-fit="920"><span class="row"><i>Marketing</i></span><span class="row"><i>with a</i></span><span class="row"><i id="kickword">kick.</i></span></h2>
+      <svg class="full"><path class="stroke whip draw" pathLength="1" style="stroke: var(--cream)" d="M-120 1440 C 200 1500, 520 1360, 720 1300 S 1020 1260, 1200 1330"/></svg>
+      <div class="logo slam" id="logo-reversed"><img alt="Hot Pepper Media"></div>
+      <div class="fill center" id="cta-rows" data-cap="300">
+        <span class="row"><i class="slam">Marketing</i></span>
+        <span class="row"><i class="slam">with</i> <i class="slam">a</i></span>
+        <span class="row"><i class="slam" id="kickword">kick.</i></span>
       </div>
       <div class="cta-row">
-        <div class="pill" id="pill">Let’s Grow <span class="arrow">→</span></div>
-        <p class="label"><span class="row"><i id="url">hotpeppermedia.com</i></span></p>
+        <div class="pill slam" id="pill">Let’s Grow <span>→</span></div>
+        <p class="label"><i class="slam" id="url">hotpeppermedia.com</i></p>
       </div>
       <p class="label" id="replay">Tap to replay</p>
     </div>
   </section>
 
-  <!-- recurring motif: one thin line that crosses each cut -->
-  <svg id="motif" class="full" viewBox="0 0 1080 1920"><path class="stroke draw" pathLength="1"/></svg>
+  <div id="flash"></div>
   <div id="grain"></div>
 </div>
 </div>
 
 <script>
 /* =====================================================================
-   TIMELINE — edit here. Times in seconds. Each beat hard-cuts in at
-   `start`. `cues` are offsets *inside* the beat (0 = the cut).
-   `motif: false` skips the red line that crosses into that beat.
+   TIMELINE — edit here. Times in seconds, 20s total.
+   Each entry is a beat. `scene` (defaults to `id`) is the frame it shows;
+   consecutive entries can share a scene. `cues` are offsets inside the
+   beat (0 = the cut). `punch` = when the 108% zoom punch hits.
+   A 1-frame flash plays whenever the scene changes; `flash` overrides
+   its color ('red' | 'cream' | 'charcoal' | 'peach' | null for none).
    ===================================================================== */
 const TIMELINE = [
-  { scene: 'scroll',  start: 0,  end: 3,  cues: { label: 0.2, line1: 0.95, line2: 1.45, freeze: 1.62 } },
-  { scene: 'logo',    start: 3,  end: 9,  motif: false, cues: { line: 0.0, logo: 0.3, sweep: 1.35, label: 1.15, drift: 1.4 } },
-  { scene: 'spicy',   start: 9,  end: 14, cues: { chili: 0.15, line1: 0.15, line2: 1.45, spicier: 1.6 } },
-  { scene: 'content', start: 14, end: 19, cues: { icon: 0.1, headline: 0.15, phone: 0.6, hearts: 1.35 } },
-  { scene: 'data',    start: 19, end: 24, cues: { headline: 0.1, card: 0.5, bars: 1.05, barGap: 0.26, trend: 2.6 } },
-  { scene: 'growth',  start: 24, end: 29, cues: { headline: 0.1, rocket: 0.25, launch: 1.8, counter: 0.7, counterDur: 3.4 } },
-  { scene: 'bold',    start: 29, end: 31, cues: { line1: 0.05, line2: 0.22 } },
-  { scene: 'results', start: 31, end: 33, cues: { line1: 0.05, line2: 0.22 } },
-  { scene: 'cta',     start: 33, end: 38, cues: { logo: 0.1, headline: 0.6, kick: 1.05, button: 1.55, url: 1.85, replay: 5.0 } },
+  { id: 'hook',     start: 0,    end: 1.5,  cues: { notif: 0, again: 0.1, echo: 0.08, punch: 0.95 } },
+  { id: 'boring',   start: 1.5,  end: 3,    cues: { your: 0, feed: 0.22, is: 0.42, boring: 0.66, punch: 1.05 } },
+  { id: 'logo',     start: 3,    end: 4.5,  cues: { whip: 0, logo: 0.04, label: 0.45, punch: 0.95 } },
+  { id: 'spicy',    start: 4.5,  end: 6,    cues: { your: 0, brand: 0.17, but: 0.5, spicier: 0.66, whip: 0.7, punch: 0.95 } },
+  { id: 'content',  start: 6,    end: 7.5,  cues: { word: 0, icon: 0.06, burst: 0.3, label: 0.32, punch: 0.85 } },
+  { id: 'strategy', start: 7.5,  end: 9,    cues: { word: 0, icon: 0.06, bars: 0.22, label: 0.32, punch: 0.85 } },
+  { id: 'ads',      start: 9,    end: 10.5, cues: { word: 0, icon: 0.06, click: 0.42, label: 0.32, punch: 0.85 } },
+  { id: 'growth',   start: 10.5, end: 12,   cues: { word: 0, icon: 0.06, launch: 0.38, label: 0.32, punch: 0.85 } },
+  { id: 'count',    start: 12,   end: 13.5, scene: 'counter', cues: { spin: 0, land: 1.0, punch: 1.0 } },
+  { id: 'results',  start: 13.5, end: 15,   scene: 'counter', cues: { real: 0, results: 0.2, punch: 0.6 } },
+  { id: 'cta',      start: 15,   end: 16,   scene: 'cta', cues: { logo: 0, punch: 0.55 } },
+  { id: 'kick',     start: 16,   end: 17.2, scene: 'cta', cues: { marketing: 0, with: 0.25, a: 0.38, kick: 0.6, whip: 0.62 } },
+  { id: 'button',   start: 17.2, end: 18,   scene: 'cta', cues: { pill: 0, url: 0.22 } },
+  { id: 'hold',     start: 18,   end: 20,   scene: 'cta', cues: { pulse: 0 } },   // final frame holds; only the pill pulses
 ];
 
-const KICK = 1.9;                         // overshoot of the "kick" ease (0 = none)
-const MOTIF = { lead: 0.32, tail: 0.5 };  // the line starts `lead` s before a cut, clears `tail` s after
-const MOTIF_PATHS = [                     // long lazy curves, like the line under the pepper
-  'M-80 1540 C 240 1610, 560 1540, 780 1300 S 1080 820, 1180 760',
-  'M1160 360 C 860 300, 520 520, 300 470 S -20 300, -100 340',
-  'M-90 980 C 220 1120, 520 1060, 700 900 S 1000 700, 1170 760',
-  'M1170 1700 C 900 1780, 560 1640, 360 1720 S 40 1880, -100 1820',
-  'M-90 260 C 200 160, 540 300, 760 230 S 1060 120, 1170 160',
-  'M1170 1180 C 880 1060, 600 1240, 380 1140 S 60 960, -100 1010',
-  'M-90 1660 C 260 1720, 620 1600, 820 1440 S 1060 1220, 1170 1250',
-];
+const SLAM  = { from: 1.4, dur: 0.15 };   // words scale 140% → 100% in 150ms, hard ease-out
+const SHAKE = { amp: 12, dur: 0.1 };      // screen shake on each impact: 3 frames at 30fps
+const PUNCH = { to: 1.08, dur: 0.12 };    // zoom punch 100% → 108%
+const WHIP  = { dur: 0.24 };              // red line crossing the frame
+const KICK  = 1.9;                        // overshoot for pop-ins (logo, icons)
 
 const LOGOS = {
   // crop = [x, y, w, h] of the artwork inside each PNG (the files are padded squares)
-  primary:  { src: 'assets/logo-primary.png',  crop: [420, 530, 760, 540], width: 900 },
-  reversed: { src: 'assets/logo-reversed.png', crop: [420, 530, 760, 540], width: 760 },
+  primary:  { src: 'assets/logo-primary.png',  crop: [420, 530, 760, 540], width: 1000 },
+  reversed: { src: 'assets/logo-reversed.png', crop: [420, 530, 760, 540], width: 600 },
 };
 
-const DATA = {                            // placeholder numbers
-  likes: [2481, 12906],
-  engagement: [0, 212],
-  followers: [1200, 48700],
-  bars: [0.34, 0.5, 0.44, 0.7, 1],
-  months: ['Jan', 'Feb', 'Mar', 'Apr', 'May'],
-};
+const DATA = { followers: [1204, 48700], bars: [0.3, 0.52, 0.42, 0.88] };   // placeholder numbers
 
 /* ===================================================================== */
 
@@ -499,40 +369,58 @@ const DURATION = TIMELINE[TIMELINE.length - 1].end;
 const REDUCED = matchMedia('(prefers-reduced-motion: reduce)').matches;
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];
-
 const clamp = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
 const lerp = (a, b, p) => a + (b - a) * p;
 const EASE = {
-  linear: p => p,
+  hard: p => 1 - Math.pow(1 - p, 4),
   out: p => 1 - Math.pow(1 - p, 3),
-  expo: p => (p >= 1 ? 1 : 1 - Math.pow(2, -10 * p)),
-  inOut: p => (p < 0.5 ? 4 * p * p * p : 1 - Math.pow(-2 * p + 2, 3) / 2),
   in: p => p * p * p,
+  inOut: p => (p < 0.5 ? 4 * p * p * p : 1 - Math.pow(-2 * p + 2, 3) / 2),
   kick: p => { const q = p - 1; return 1 + (KICK + 1) * q * q * q + KICK * q * q; },
 };
-const P = (t, at, dur, ease = 'kick') => EASE[ease](clamp((t - at) / dur));
+const P = (t, at, dur, ease = 'hard') => EASE[ease](clamp((t - at) / dur));
+const fmt = n => Math.round(n).toLocaleString('en-US');
 
-/* --- primitives ------------------------------------------------------ */
-function rise(el, t, at, dur = 0.62, extra = '') {
-  const p = P(t, at, dur);
-  el.style.transform = `translate3d(0, ${(1 - p) * 120}%, 0)${extra}`;
+// absolute cue times: C.kick.kick → 16.6
+const C = {};
+TIMELINE.forEach(b => {
+  b.scene = b.scene || b.id;
+  C[b.id] = { start: b.start, end: b.end };
+  for (const k in b.cues) C[b.id][k] = b.start + b.cues[k];
+});
+
+/* --- frame-level effects --------------------------------------------- */
+let shakeX = 0, shakeY = 0;
+const SHAKE_STEPS = [[1, -0.6], [-0.85, 0.7], [0.45, -0.35]];
+function impact(t, at, amp = SHAKE.amp) {
+  const d = t - at;
+  if (REDUCED || d < 0 || d >= SHAKE.dur) return;
+  const [x, y] = SHAKE_STEPS[Math.floor(d / SHAKE.dur * SHAKE_STEPS.length)];
+  shakeX += x * amp; shakeY += y * amp;
 }
-function riseRows(root, t, at, stagger = 0.12) {
-  $$('.row > i', root).forEach((el, i) => rise(el, t, at + i * stagger));
-}
-function draw(path, t, at, dur, ease = 'inOut') {
-  const p = P(t, at, dur, ease);
-  path.style.strokeDashoffset = 1 - p;
-  path.style.opacity = p > 0 ? 1 : 0;
-}
-function pop(el, t, at, dur = 0.6, from = 0.5, base = '') {
-  const p = P(t, at, dur);
-  el.style.transform = `${base} scale(${lerp(from, 1, p)})`;
-  el.style.opacity = clamp((t - at) / 0.1);
+// a word appears at `at`: 140% → 100% in 150ms, then the frame shakes
+function slam(el, t, at, o = {}) {
+  const on = t >= at;
+  el.style.visibility = on ? 'visible' : 'hidden';
+  if (!on) return 0;
+  const p = P(t, at, o.dur ?? SLAM.dur);
+  el.style.transform = `scale(${lerp(o.from ?? SLAM.from, 1, p)})${o.extra || ''}`;
+  impact(t, at + (o.dur ?? SLAM.dur), o.amp ?? SHAKE.amp);
   return p;
 }
-const fmt = n => Math.round(n).toLocaleString('en-US');
-const fmtK = n => (n / 1000).toFixed(1) + 'K';
+function pop(el, t, at, dur = 0.28) {
+  const on = t >= at;
+  el.style.visibility = on ? 'visible' : 'hidden';
+  el.style.transform = `scale(${on ? P(t, at, dur, 'kick') : 0})`;
+}
+function whip(path, t, at, stay = false) {
+  const head = P(t, at, WHIP.dur);
+  const tail = stay ? 0 : P(t, at + WHIP.dur * 0.55, WHIP.dur, 'inOut');
+  path.style.opacity = head > tail + 0.001 ? 1 : 0;
+  path.style.strokeDasharray = `${head - tail} 2`;
+  path.style.strokeDashoffset = -tail;
+}
+const hash = n => { const s = Math.sin(n * 12.9898) * 43758.5453; return s - Math.floor(s); };
 
 /* --- build ----------------------------------------------------------- */
 const stage = $('#stage');
@@ -550,214 +438,184 @@ function placeLogo(el, cfg) {
 placeLogo($('#logo-primary'), LOGOS.primary);
 placeLogo($('#logo-reversed'), LOGOS.reversed);
 
-// feed of generic posts (doubled so the strip wraps seamlessly)
-const POST = `<div class="post"><div class="ph-row"><span class="ava"></span><div style="flex:1;display:grid;gap:14px"><span class="bar" style="width:46%"></span><span class="bar" style="width:28%"></span></div></div><div class="img"></div><div class="acts"><span></span><span></span><span></span></div><span class="bar" style="width:88%"></span><span class="bar" style="width:60%"></span></div>`;
-const FEED_COUNT = 4, FEED_STEP = 980 + 56;
-$('#sc-scroll .strip').innerHTML = POST.repeat(FEED_COUNT * 2);
-
-// hearts
 const HEART = 'M12 21s-7.5-4.6-9.6-9.2C.9 8.3 3 4.5 6.6 4.5c2.1 0 3.6 1.2 5.4 3.2 1.8-2 3.3-3.2 5.4-3.2 3.6 0 5.7 3.8 4.2 7.3C19.5 16.4 12 21 12 21z';
-const HEARTS = Array.from({ length: 9 }, (_, i) => ({
-  dx: [0, 70, 150, 30, 210, 110, 260, 60, 180][i],
-  drift: [24, -30, 36, -22, 28, -34, 20, -26, 32][i],
-  size: [1, 0.8, 1.15, 0.7, 0.95, 1.2, 0.8, 1.05, 0.9][i],
-}));
-$('#hearts').innerHTML = HEARTS.map(() => `<svg viewBox="0 0 24 24"><path d="${HEART}"/></svg>`).join('');
+const BURST = Array.from({ length: 10 }, (_, i) => ({ a: (i / 10) * Math.PI * 2 + 0.3, d: 300 + (i % 3) * 70, s: 0.7 + (i % 4) * 0.18 }));
+$('#burst').innerHTML = BURST.map(() => `<svg viewBox="0 0 24 24"><path d="${HEART}"/></svg>`).join('');
 
-// bar chart
-const CH = { w: 792, base: 420, top: 40, barW: 104 };
-const slot = CH.w / DATA.bars.length;
+const BAR = { base: 182, top: 24, w: 30, step: 44, x0: 22 };
 $('#bars').innerHTML = DATA.bars.map((_, i) =>
-  `<rect class="bar stroke${i === DATA.bars.length - 1 ? ' hot' : ''}" rx="10" x="${slot * i + (slot - CH.barW) / 2}" width="${CH.barW}" y="${CH.base}" height="0"/>`).join('');
-$('#xlabels').innerHTML = DATA.months.map((m, i) => `<text x="${slot * i + slot / 2}" y="${CH.base + 46}">${m.toUpperCase()}</text>`).join('');
-const barTop = i => CH.base - (CH.base - CH.top) * DATA.bars[i];
-const trendPts = DATA.bars.map((_, i) => [slot * i + slot / 2, barTop(i) - 40]);
-$('#trend').setAttribute('d', 'M' + trendPts.map(p => p.join(' ')).join(' L '));
+  `<rect class="bar stroke${i === DATA.bars.length - 1 ? ' hot' : ''}" rx="5" x="${BAR.x0 + i * BAR.step}" width="${BAR.w}" y="${BAR.base}" height="0"/>`).join('');
 
-/* --- scenes ---------------------------------------------------------- */
+/* --- scenes: each gets absolute time t ------------------------------- */
 const S = {
-  scroll(t, c, el) {
-    const [label, l1, l2] = $$('.row > i', el);
-    rise(label, t, c.label);
-    rise(l1, t, c.line1);
-    rise(l2, t, c.line2);
-    const v = 3400; // px per second
-    let y = v * Math.min(t, c.freeze);
-    const q = clamp((t - c.freeze) / 0.28);
-    if (t > c.freeze) y += 46 * Math.sin(q * Math.PI) * (1 - q); // jolt, then dead stop
-    const strip = $('.strip', el);
-    strip.style.transform = `translate3d(0, ${-(y % (FEED_STEP * FEED_COUNT)) - 260}px, 0)`;
-    const blur = t < c.freeze ? 10 : 10 * (1 - P(t, c.freeze, 0.12, 'out'));
-    $('.feed', el).style.filter = `blur(${blur.toFixed(2)}px)`;
+  hook(t, el) {
+    const c = C.hook;
+    // already mid-drop on frame 0
+    const n = $('#notif');
+    const d = P(t, c.notif - 0.09, 0.34, 'kick');
+    n.style.transform = `translate3d(0, ${lerp(-300, 0, d)}px, 0)`;
+    impact(t, c.notif + 0.25, 6);
+    $$('.fill i', el).forEach((w, i) => slam(w, t, c.again + i * c.echo, { amp: i ? 6 : 16 }));
   },
 
-  logo(t, c, el) {
-    draw($('svg path', el), t, c.line, 1.0);
+  boring(t, el) {
+    const c = C.boring;
+    const [a, b, d, e] = $$('.fill i', el);
+    slam(a, t, c.your); slam(b, t, c.feed); slam(d, t, c.is);
+    // BORING. lands harder and keeps rattling
+    const r = clamp((t - c.boring - SLAM.dur) / 0.35);
+    const jit = r > 0 && r < 1 && !REDUCED ? (hash(Math.floor(t * 30)) - 0.5) * 36 * (1 - r) : 0;
+    slam(e, t, c.boring, { amp: 22, extra: ` translateX(${jit}px) rotate(${jit * 0.12}deg)` });
+  },
+
+  logo(t, el) {
+    const c = C.logo;
+    whip($('.whip', el), t, c.whip, true);
     const logo = $('#logo-primary');
-    const p = P(t, c.logo, 0.8);
-    const drift = 1 + 0.03 * P(t, c.drift, 4.6, 'out');
-    logo.style.transform = `scale(${lerp(0.55, 1, p) * drift}) rotate(${lerp(-5, 0, p)}deg)`;
-    logo.style.opacity = clamp((t - c.logo) / 0.1);
-    const sweep = $('.sweep', el);
-    const s = clamp((t - c.sweep) / 0.9);
-    sweep.style.opacity = s > 0 && s < 1 ? 1 : 0;
-    sweep.style.transform = `translateX(${lerp(-640, 640, EASE.inOut(s))}px) rotate(18deg)`;
-    rise($('.row > i', el), t, c.label);
+    logo.style.visibility = t >= c.logo ? 'visible' : 'hidden';
+    logo.style.transform = `scale(${lerp(0.35, 1, P(t, c.logo, 0.32, 'kick'))})`;
+    impact(t, c.logo + 0.12, 14);
+    slam($('.label i', el), t, c.label, { amp: 0 });
   },
 
-  spicy(t, c, el) {
-    const chili = $('#chili');
-    draw($('path', chili), t, c.chili, 1.7);
-    chili.style.transform = `rotate(${lerp(14, 22, P(t, 0, 5, 'out'))}deg) scale(1.18)`;
-    const [w1, w2, w3, w4] = $$('.row > i', el);
-    rise(w1, t, c.line1);
-    rise(w2, t, c.line1 + 0.12);
-    rise(w3, t, c.line2);
-    const j = P(t, c.spicier, 0.7);
-    rise(w4, t, c.spicier, 0.62, ` rotate(${lerp(-7, 0, j)}deg)`);
+  spicy(t, el) {
+    const c = C.spicy;
+    const [a, b, d, e] = $$('.fill i', el);
+    slam(a, t, c.your); slam(b, t, c.brand); slam(d, t, c.but);
+    slam(e, t, c.spicier, { amp: 20 });
+    whip($('.whip', el), t, c.whip);
   },
 
-  content(t, c, el) {
-    const bubble = $('#bubble');
-    $$('path', bubble).forEach((p, i) => draw(p, t, c.icon + i * 0.35, 0.7));
-    bubble.style.transform = `scale(${lerp(0.7, 1, P(t, c.icon, 0.7))}) rotate(${lerp(-12, 0, P(t, c.icon, 0.8))}deg)`;
-    riseRows(el, t, c.headline);
-    const phone = $('#phone');
-    const p = P(t, c.phone, 0.8);
-    const bob = REDUCED ? 0 : Math.sin((t - c.phone) * 2.2) * 10 * clamp(t - c.phone - 0.6);
-    phone.style.transform = `translate3d(0, ${lerp(1100, 0, p) + bob}px, 0) rotate(${lerp(10, -4, p)}deg)`;
-
-    // double-tap heart on the post
-    const bh = $('#bigheart');
-    const b = clamp((t - c.hearts) / 0.9);
-    bh.style.opacity = b > 0 && b < 1 ? 1 - clamp((b - 0.6) / 0.4) : 0;
-    bh.style.transform = `scale(${lerp(0.2, 1, P(t, c.hearts, 0.45))})`;
-
-    // hearts popping up from the like button
-    let pulse = 0;
-    $$('#hearts svg').forEach((h, i) => {
-      const at = c.hearts + 0.15 + i * 0.3;
-      const q = (t - at) / 1.25;
-      if (q <= 0 || q >= 1) { h.style.opacity = 0; return; }
-      const cfg = HEARTS[i];
-      const s = (q < 0.22 ? EASE.kick(q / 0.22) : 1) * cfg.size;
-      const x = 34 + cfg.dx + Math.sin(q * Math.PI * 1.6) * cfg.drift;
-      const y = 650 - EASE.out(q) * 420;
-      h.style.opacity = 1 - clamp((q - 0.65) / 0.35);
-      h.style.transform = `translate(${x}px, ${y}px) scale(${s})`;
-      pulse = Math.max(pulse, 1 - clamp((t - at) / 0.25));
+  content(t, el) {
+    const c = C.content;
+    service(t, el, c);
+    $$('#burst svg').forEach((h, i) => {
+      const b = BURST[i];
+      const q = clamp((t - c.burst - i * 0.02) / 0.6);
+      h.style.opacity = q > 0 && q < 1 ? 1 - clamp((q - 0.6) / 0.4) : 0;
+      const r = EASE.hard(q) * b.d;
+      h.style.transform = `translate(${Math.cos(b.a) * r}px, ${Math.sin(b.a) * r}px) scale(${b.s * P(t, c.burst, 0.18, 'kick')})`;
     });
-    const like = $('#likeicon');
-    const liked = t >= c.hearts;
-    $('.fillheart', like).style.opacity = liked ? 1 : 0;
-    like.style.transform = `scale(${1 + 0.3 * pulse})`;
-    $('#likes').textContent = fmt(lerp(DATA.likes[0], DATA.likes[1], P(t, c.hearts, 3.2, 'out')));
   },
 
-  data(t, c, el) {
-    riseRows(el, t, c.headline);
-    const card = $('#datacard');
-    const p = P(t, c.card, 0.75);
-    card.style.transform = `translate3d(0, ${lerp(900, 0, p)}px, 0) rotate(${lerp(4, 0, p)}deg)`;
+  strategy(t, el) {
+    const c = C.strategy;
+    service(t, el, c);
     $$('#bars rect').forEach((r, i) => {
-      const b = P(t, c.bars + i * c.barGap, 0.55);
-      const h = (CH.base - barTop(i)) * b;
-      r.setAttribute('y', CH.base - h);
+      const p = P(t, c.bars + i * 0.05, 0.14, 'kick');
+      const h = (BAR.base - BAR.top) * DATA.bars[i] * p;
+      r.setAttribute('y', BAR.base - h);
       r.setAttribute('height', Math.max(0, h));
-      r.style.opacity = b > 0 ? 1 : 0;
+      r.style.opacity = p > 0 ? 1 : 0;
     });
-    const last = c.bars + (DATA.bars.length - 1) * c.barGap + 0.4;
-    $('#engage').textContent = '+' + fmt(lerp(DATA.engagement[0], DATA.engagement[1], P(t, c.bars, last - c.bars, 'out'))) + '%';
-    draw($('#trend'), t, c.trend, 0.8);
-    const dot = $('#trenddot');
-    const [dx, dy] = trendPts[trendPts.length - 1];
-    dot.setAttribute('cx', dx); dot.setAttribute('cy', dy);
-    dot.style.opacity = t > c.trend + 0.7 ? 1 : 0;
-    dot.style.transformOrigin = `${dx}px ${dy}px`;
-    dot.style.transform = `scale(${P(t, c.trend + 0.7, 0.5)})`;
   },
 
-  growth(t, c, el) {
-    riseRows(el, t, c.headline);
-    const rocket = $('#rocket');
-    $$('#rocket > path').forEach((p, i) => draw(p, t, c.rocket + i * 0.16, 0.6));
-    const ignite = c.launch - 0.5;
+  ads(t, el) {
+    const c = C.ads;
+    service(t, el, c);
+    const m = P(t, c.icon, 0.3);
+    const press = t >= c.click && t < c.click + 0.09 ? 0.84 : 1;
+    const cur = $('#cursor');
+    cur.style.transformOrigin = '70px 64px';
+    cur.style.transform = `translate(${lerp(90, 0, m)}px, ${lerp(110, 0, m)}px) scale(${press})`;
+    $('#adbtn').style.fill = t >= c.click && t < c.click + 0.12 ? 'var(--red)' : 'transparent';
+    $$('#ripples circle').forEach((r, i) => {
+      const q = clamp((t - c.click - i * 0.1) / 0.45);
+      r.setAttribute('r', 10 + EASE.out(q) * 80);
+      r.style.opacity = q > 0 && q < 1 ? 1 - q : 0;
+    });
+    const s = $('#sparks');
+    const sq = clamp((t - c.click) / 0.3);
+    s.style.opacity = sq > 0 && sq < 1 ? 1 : 0;
+    s.style.transformOrigin = '70px 64px';
+    s.style.transform = `scale(${lerp(0.6, 1.3, EASE.out(sq))})`;
+  },
+
+  growth(t, el) {
+    const c = C.growth;
+    service(t, el, c);
+    const rocket = $('#rocket-icon');
     const flame = $('#flame');
-    flame.style.opacity = t > ignite ? 1 : 0;
-    flame.style.transform = `scaleY(${0.75 + 0.45 * Math.abs(Math.sin(t * 38))}) scaleX(${0.9 + 0.15 * Math.abs(Math.cos(t * 29))})`;
-    const shake = t > ignite && t < c.launch && !REDUCED ? Math.sin(t * 95) * 4 : 0;
-    const q = clamp((t - c.launch) / 1.3);
-    const lift = 1700 * Math.pow(q, 2.3);
-    rocket.style.transform = `translate3d(${shake + Math.sin(q * 5) * 18 * q}px, ${-lift}px, 0) rotate(${Math.sin(q * 5) * 4 * q}deg)`;
-    // trail follows the nozzle up the frame
-    const trail = $('#trail path');
-    const head = clamp(lift / 1650);
-    trail.style.opacity = head > 0 ? 1 : 0;
-    trail.style.strokeDasharray = `${head} 2`;
-    trail.style.strokeDashoffset = 0;
-
-    const card = $('#followers');
-    const cp = P(t, c.counter - 0.25, 0.7);
-    card.style.transform = `translate3d(0, ${lerp(700, 0, cp)}px, 0)`;
-    const n = $('#fcount');
-    const k = P(t, c.counter, c.counterDur, 'expo');
-    n.textContent = fmtK(lerp(DATA.followers[0], DATA.followers[1], k));
-    n.style.transform = `scale(${lerp(1.12, 1, P(t, c.counter + c.counterDur * 0.75, 0.5))})`;
+    flame.style.opacity = t > c.launch - 0.2 ? 1 : 0;
+    flame.style.transform = `scale(${0.9 + 0.2 * Math.abs(Math.sin(t * 40))}, ${0.8 + 0.6 * Math.abs(Math.sin(t * 33))})`;
+    const shake = t > c.launch - 0.2 && t < c.launch && !REDUCED ? Math.sin(t * 120) * 5 : 0;
+    const q = clamp((t - c.launch) / 0.42);
+    const lift = 1500 * Math.pow(q, 2.2);
+    rocket.style.transform = `translate(${shake}px, ${-lift}px)`;
+    impact(t, c.launch, 10);
+    // trail chases the nozzle up and out of frame, then snaps away
+    const trail = $('#trail');
+    const head = clamp(lift / 1150);
+    const tail = P(t, c.launch + 0.38, 0.25, 'in');
+    trail.style.opacity = head > tail + 0.001 ? 1 : 0;
+    trail.style.strokeDasharray = `${head - tail} 2`;
+    trail.style.strokeDashoffset = -tail;
   },
 
-  bold(t, c, el) {
-    const [a, b] = $$('.row > i', el);
-    rise(a, t, c.line1, 0.5);
-    rise(b, t, c.line2, 0.5);
+  counter(t, el) {
+    const c = C.count, r = C.results;
+    const n = $('#count');
+    const p = clamp((t - c.spin) / (c.land - c.spin));
+    let v = lerp(DATA.followers[0], DATA.followers[1], EASE.out(p));
+    if (p < 1) v = Math.floor(v / 100) * 100 + Math.floor(hash(Math.floor(t * 60)) * 100); // digits spin
+    n.textContent = fmt(Math.min(v, DATA.followers[1]));
+    n.style.visibility = 'visible';
+    const blur = p < 1 && !REDUCED ? (hash(Math.floor(t * 60) + 7) - 0.5) * 18 : 0;
+    const land = t >= c.land ? lerp(SLAM.from, 1, P(t, c.land, SLAM.dur)) : 1;
+    n.style.transform = `translateY(${blur}px) scale(${land})`;
+    impact(t, c.land + SLAM.dur, 20);
+    const [a, b] = $$('#results-rows i', el);
+    slam(a, t, r.real);
+    slam(b, t, r.results, { amp: 18 });
   },
 
-  results(t, c, el) {
-    const [a, b] = $$('.row > i', el);
-    rise(a, t, c.line1, 0.5);
-    rise(b, t, c.line2, 0.5, ` rotate(${lerp(-6, 0, P(t, c.line2, 0.7))}deg)`);
-  },
-
-  cta(t, c, el) {
-    pop($('#logo-reversed'), t, c.logo, 0.75, 0.5);
-    const [m1, m2, m3] = $$('.hl .row > i', el);
-    rise(m1, t, c.headline);
-    rise(m2, t, c.headline + 0.13);
-    const kp = P(t, c.kick, 0.8);
-    rise(m3, t, c.kick, 0.55, ` rotate(${lerp(-10, 0, kp)}deg)`);
+  cta(t, el) {
+    const c = C.cta, k = C.kick, b = C.button, h = C.hold;
+    slam($('#logo-reversed'), t, c.logo, { from: 1.6, dur: 0.18, amp: 18 });
+    const [m, w, a, kick] = $$('#cta-rows i', el);
+    slam(m, t, k.marketing);
+    slam(w, t, k.with);
+    slam(a, t, k.a);
+    slam(kick, t, k.kick, { amp: 26, from: 1.7 });
+    whip($('.whip', el), t, k.whip, true);
     const pill = $('#pill');
-    pop(pill, t, c.button, 0.7, 0.3);
-    const nudge = REDUCED ? 0 : Math.max(0, Math.sin((t - c.button) * 5)) * 10 * clamp(t - c.button - 0.7);
-    $('.arrow', pill).style.transform = `translateX(${nudge}px)`;
-    rise($('#url'), t, c.url);
-    $('#replay').style.opacity = 0.7 * clamp((t - c.replay) / 0.3);
+    const pulse = t >= h.pulse && !REDUCED ? 1 + 0.045 * Math.max(0, Math.sin((t - h.pulse) * Math.PI * 2 * 1.4)) : 1;
+    slam(pill, t, b.pill, { extra: ` scale(${pulse})`, amp: 10 });
+    slam($('#url'), t, b.url, { amp: 0 });
+    $('#replay').style.opacity = t >= DURATION ? 0.7 : 0;
   },
 };
 
-/* --- motif: one line crossing every cut ------------------------------ */
-const motifPath = $('#motif path');
-const CUTS = TIMELINE.slice(1).map((b, i) => ({ at: b.start, i })).filter(({ i }) => TIMELINE[i + 1].motif !== false);
-CUTS.forEach((cut, n) => { cut.d = MOTIF_PATHS[n % MOTIF_PATHS.length]; });
+function service(t, el, c) {
+  slam($('.fill i', el), t, c.word, { amp: 16 });
+  pop($('.icon', el), t, c.icon);
+  slam($('.sub i', el), t, c.label, { amp: 0, from: 1.25 });
+}
 
-function motif(t, beat) {
-  const cut = CUTS.find(k => t >= k.at - MOTIF.lead && t <= k.at + MOTIF.tail);
-  if (!cut) { motifPath.style.opacity = 0; return; }
-  if (motifPath.getAttribute('d') !== cut.d) motifPath.setAttribute('d', cut.d);
-  const p = (t - (cut.at - MOTIF.lead)) / (MOTIF.lead + MOTIF.tail);
-  const head = EASE.inOut(clamp(p * 1.35));
-  const tail = EASE.inOut(clamp(p * 1.35 - 0.35));
-  motifPath.style.opacity = head > tail + 0.001 ? 1 : 0;
-  motifPath.style.strokeDasharray = `${head - tail} 2`;
-  motifPath.style.strokeDashoffset = -tail;
-  const accent = scenes[beat.scene].dataset.accent;
-  motifPath.style.stroke = `var(--${accent})`;
+/* --- flash cuts ------------------------------------------------------ */
+const ORDER = ['red', 'cream', 'charcoal'];
+const CUTS = [];
+TIMELINE.forEach((b, i) => {
+  if (!i || TIMELINE[i - 1].scene === b.scene) return;
+  const from = scenes[TIMELINE[i - 1].scene].dataset.bg, to = scenes[b.scene].dataset.bg;
+  const color = 'flash' in b ? b.flash : ORDER.find(x => x !== from && x !== to);
+  if (color) CUTS.push({ at: b.start, color });
+});
+const flashEl = $('#flash');
+let lastT = -1;
+function flash(t, still) {
+  // exactly one rendered frame of solid color right after each cut
+  const cut = CUTS.find(k => (still ? t >= k.at && t < k.at + 1 / 60 : lastT < k.at && t >= k.at));
+  flashEl.style.display = cut ? 'block' : 'none';
+  if (cut) flashEl.style.background = `var(--${cut.color})`;
 }
 
 /* --- grain ----------------------------------------------------------- */
 const grain = $('#grain');
 (function makeGrain() {
-  const c = document.createElement('canvas');
-  c.width = c.height = 256;
-  const x = c.getContext('2d');
+  const cv = document.createElement('canvas');
+  cv.width = cv.height = 256;
+  const x = cv.getContext('2d');
   const img = x.createImageData(256, 256);
   for (let i = 0; i < img.data.length; i += 4) {
     const v = Math.random() * 255;
@@ -765,20 +623,17 @@ const grain = $('#grain');
     img.data[i + 3] = 255;
   }
   x.putImageData(img, 0, 0);
-  grain.style.backgroundImage = `url(${c.toDataURL()})`;
+  grain.style.backgroundImage = `url(${cv.toDataURL()})`;
 })();
-let grainTick = -1;
 function jitterGrain(t) {
-  const tick = Math.floor(t * 18);
-  if (tick === grainTick || REDUCED) return;
-  grainTick = tick;
-  const r = n => (Math.sin(tick * n) * 43758.5453) % 1;
-  grain.style.transform = `translate(${Math.round(r(12.9898) * 128)}px, ${Math.round(r(78.233) * 128)}px)`;
+  if (REDUCED) return;
+  const n = Math.floor(t * 24);
+  grain.style.transform = `translate(${Math.round(hash(n) * 128)}px, ${Math.round(hash(n + 99) * 128)}px)`;
 }
 
 /* --- engine ---------------------------------------------------------- */
 let current = null;
-function render(t) {
+function render(t, still = false) {
   t = clamp(t, 0, DURATION);
   let beat = TIMELINE[0];
   for (const b of TIMELINE) if (t >= b.start) beat = b;
@@ -786,25 +641,27 @@ function render(t) {
     for (const k in scenes) scenes[k].hidden = k !== beat.scene;
     current = beat.scene;
   }
-  const lt = t - beat.start;
   const el = scenes[beat.scene];
-  // every cut lands with a small camera kick
-  $('.cam', el).style.transform = `scale(${lerp(1.07, 1, P(lt, 0, 0.45))})`;
-  S[beat.scene](lt, beat.cues, el);
-  motif(t, beat);
+  shakeX = shakeY = 0;
+  S[beat.scene](t, el);
+  const c = C[beat.id];
+  const zoom = c.punch !== undefined ? lerp(1, PUNCH.to, P(t, c.punch, PUNCH.dur)) : 1;
+  $('.cam', el).style.transform = `translate3d(${shakeX}px, ${shakeY}px, 0) scale(${zoom})`;
+  flash(t, still);
   jitterGrain(t);
+  lastT = t;
 }
 
-// fit each headline so its widest row fills (but never exceeds) data-fit px
-function fitHeadlines() {
+// every row is sized so its words span the frame width (capped by data-cap)
+function fitRows() {
   const was = Object.values(scenes).map(el => el.hidden);
   Object.values(scenes).forEach(el => { el.hidden = false; });
-  $$('.hl[data-fit]').forEach(h => {
-    h.style.fontSize = '';
-    const max = +h.dataset.fit;
-    const widest = Math.max(...$$('.row > i', h).map(i => i.offsetWidth));
-    const base = parseFloat(getComputedStyle(h).fontSize);
-    if (widest > max) h.style.fontSize = Math.floor(base * max / widest) + 'px';
+  $$('.fill').forEach(f => {
+    const width = f.clientWidth, cap = +(f.dataset.cap || 460);
+    $$('.row', f).forEach(r => {
+      r.style.fontSize = '100px';
+      r.style.fontSize = Math.min(cap, Math.floor(100 * width / r.offsetWidth)) + 'px';
+    });
   });
   Object.values(scenes).forEach((el, i) => { el.hidden = was[i]; });
 }
@@ -826,7 +683,9 @@ function tick(now) {
 }
 function play() {
   cancelAnimationFrame(raf);
+  lastT = -1;
   t0 = performance.now();
+  render(0);                       // frame 0 is drawn immediately, text already moving
   raf = requestAnimationFrame(tick);
 }
 
@@ -837,16 +696,13 @@ viewport.addEventListener('keydown', e => {
 });
 
 Promise.race([
-  Promise.all([
-    document.fonts.load('800 100px Montserrat'),
-    document.fonts.load('700 100px Montserrat'),
-    document.fonts.load('600 30px Montserrat'),
-  ]).then(() => document.fonts.ready),
+  Promise.all(['900 100px Montserrat', '700 100px Montserrat', '600 30px Montserrat'].map(f => document.fonts.load(f)))
+    .then(() => document.fonts.ready),
   new Promise(r => setTimeout(r, 2500)),
 ]).then(() => {
-  fitHeadlines();
+  fitRows();
   stage.classList.remove('waiting');
-  if (STILL !== null) render(STILL); else play();
+  if (STILL !== null) render(STILL, true); else play();
 });
 </script>
 </body>
