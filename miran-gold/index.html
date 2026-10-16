@@ -87,12 +87,13 @@ html, body { height: 100%; margin: 0; background: var(--letterbox); overflow: hi
   position: absolute; left: 0; right: 0; bottom: 0;
   margin: 0;
   text-align: center;
-  font-size: 60px; font-weight: 700; line-height: 1.2; letter-spacing: -0.005em;
+  transform-origin: 50% 100%;
+  will-change: transform;
+  font-size: 66px; font-weight: 700; line-height: 1.2; letter-spacing: -0.005em;
   text-wrap: balance;
   color: var(--ink);
   text-shadow: 0 4px 22px var(--halo), 0 2px 4px var(--halo);
 }
-.phr { display: inline-block; visibility: hidden; will-change: transform; }
 .hl-gold { color: var(--gold); font-weight: 800; }
 .hl-loss { color: var(--loss); font-weight: 800; }
 
@@ -247,6 +248,18 @@ svg text { font-family: var(--font); }
   color: var(--muted); opacity: 0; transition: opacity 0.4s;
 }
 #replay.on { opacity: 0.8; }
+#debug {
+  position: absolute; left: 24px; top: 24px; z-index: 9; margin: 0;
+  padding: 14px 20px;
+  border-radius: 12px;
+  border: 2px solid color-mix(in srgb, var(--gold) 45%, transparent);
+  background: color-mix(in srgb, var(--bg) 85%, transparent);
+  color: var(--ink);
+  font: 600 28px/1.4 ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  font-variant-numeric: tabular-nums;
+  white-space: pre;
+}
+#debug b { color: var(--gold); font-weight: 700; }
 </style>
 </head>
 <body>
@@ -406,67 +419,70 @@ svg text { font-family: var(--font); }
   <div id="flash"></div>
   <div id="grain"></div>
   <p id="replay">Tap to replay</p>
+  <p id="debug" hidden></p>
 </div>
 </div>
 
 <script>
 /* =====================================================================
-   TIMELINE — edit here. Times in seconds, 30s total.
-   start/end   absolute beat times (the scene cuts at `start`)
-   cues        offsets inside the beat (0 = the cut). Arrays = one per word.
-   punch       offsets of 100% → 108% zoom punches
-   cuts        offsets of extra hard cuts inside the beat (one-frame flash)
-   caption     the voiceover line as [offset, phrase] pairs. Each phrase appears
-               at its offset; the line stays up until the next beat's first phrase.
-               *word* = gold highlight, !word! = red highlight. null = no caption.
-   Hold rule: every block stays fully visible ≥ 0.4s + 0.3s per word after it
-   lands. Open the page with ?check to print a report after retiming.
+   TIMELINE — edit here. Times in seconds; beats play back to back.
+   dur       beat length (start/end are derived from the durations)
+   cues      offsets inside the beat (0 = the cut). Arrays = one per word.
+   punch     offsets of 100% → 108% zoom punches
+   cuts      offsets of extra hard cuts inside the beat (one-frame flash)
+   caption   the voiceover line as [offset, phrase] pairs, shown ONE phrase at a
+             time: each phrase replaces the one before. *word* = gold,
+             !word! = red. null = no caption.
+   tail      seconds at the end of the beat with no caption (default CAP.gap).
+             Mistake beats use 1s so the visual is seen on its own.
+   Captions belong to their beat and are always gone before the next cut.
+   Each phrase stays up ≥ 0.4s + 0.3s per word after it lands: a phrase that
+   would start too soon is pushed later, and a beat whose captions would run
+   into its tail is lengthened (both are logged to the console).
+   ?check prints a full report · press D for a beat/time overlay.
    ===================================================================== */
 const TIMELINE = [
-  { id: 'hook', start: 0, end: 3,
+  { id: 'hook', dur: 4.8,
     cues: { title: -0.05, zoom: 0, crash: 0.72, killing: 1.0, your: 1.2, account: 1.38 },
-    punch: [0.95, 2.2],
+    punch: [0.95, 2.35, 3.6],
     caption: [
-      [0.00, '*Three mistakes*'],
-      [0.60, 'are quietly !wiping out!'],
-      [1.25, 'beginner accounts.'],
-      [1.90, 'Are you making them?'],
+      [0.00, '*Three mistakes* are quietly !wiping out!'],
+      [2.35, 'beginner accounts. Are you making them?'],
     ] },
 
-  { id: 'm1', start: 3, end: 10,
-    cues: { num: 0, cut: 0.9, head: [0.9, 1.1, 1.3], chart: 0.9, line: 3.0, exit: 3.45, entry: 3.75, drop: 4.3, hit: 5.0 },
-    punch: [3.0, 5.0], cuts: [0.9],
+  // headline → chart draws → captions → stop line, entry, drop → 1s of chart alone (stopped out)
+  { id: 'm1', dur: 8.7, tail: 1.0,
+    cues: { num: 0, cut: 0.9, head: [0.9, 1.1, 1.3], chart: 0.9, line: 5.3, exit: 6.0, entry: 6.4, drop: 6.8, hit: 7.7 },
+    punch: [3.25, 5.3, 7.7], cuts: [0.9],
     caption: [
-      [0.70, 'A single !bad trade!'],
-      [1.35, 'can !erase!'],
-      [1.80, 'weeks of progress.'],
-      [3.00, 'Know your *exit*'],
-      [3.70, 'before you *enter.*'],
+      [1.50, 'A single !bad trade!'],
+      [3.25, 'can !erase! weeks of progress.'],
+      [5.30, 'Know your *exit* before you *enter.*'],
     ] },
 
-  { id: 'm2', start: 10, end: 17,
-    cues: { num: 0, cut: 0.9, head: [0.9, 1.1, 1.3], ring: 0.9, risk: 0.95, snap: 3.0 },
-    punch: [3.0, 5.0], cuts: [0.9],
+  // headline → red slice fills → captions (snap to gold on "small slice") → 1s of donut alone
+  { id: 'm2', dur: 10.1, tail: 1.0,
+    cues: { num: 0, cut: 0.9, head: [0.9, 1.1, 1.3], ring: 0.9, risk: 1.0, snap: 3.3 },
+    punch: [3.3, 5.6, 7.35, 9.1], cuts: [0.9],
     caption: [
       [1.50, 'Keep each trade'],
-      [2.55, 'to a *small slice*'],
-      [3.55, 'of your account,'],
-      [4.30, 'so no one loss'],
-      [5.00, 'can !end the game.!'],
+      [2.95, 'to a *small slice* of your account,'],
+      [5.60, 'so no one loss'],
+      [7.35, 'can !end the game.!'],
     ] },
 
-  { id: 'm3', start: 17, end: 24,
-    cues: { num: 0, cut: 0.9, head: [0.9, 1.1, 1.3], chaos: 1.0, revenge: 1.6, chasing: 2.5, calm: 3.9, ticks: [4.3, 4.75, 5.2] },
-    punch: [2.5, 5.2], cuts: [0.9, 3.9],
+  // headline → chaotic trades → captions → hard cut to the plan on "Stick to your plan" → 1s of checklist alone
+  { id: 'm3', dur: 9.0, tail: 1.0,
+    cues: { num: 0, cut: 0.9, head: [0.9, 1.1, 1.3], chaos: 1.0, revenge: 1.8, chasing: 2.7, calm: 6.2, ticks: [6.65, 7.2, 7.75] },
+    punch: [2.7, 4.4, 7.75], cuts: [0.9, 6.2],
     caption: [
-      [1.30, '!Revenge trades!'],
-      [1.90, 'and !chasing! the market'],
-      [2.70, 'turn small losses'],
-      [3.30, 'into !big ones.!'],
-      [4.30, '*Stick to your plan.*'],
+      [1.50, '!Revenge trades! and !chasing! the market'],
+      [3.85, 'turn small losses into !big ones.!'],
+      [6.20, '*Stick to your plan.*'],
     ] },
 
-  { id: 'cta', start: 24, end: 30,          // final frame is still from ~26.7s: 3s+ hold
+  // end card is complete at 2.7s and holds, caption-free, to the end
+  { id: 'cta', dur: 6.0,
     cues: { logo: 0, sheen: 0.55, head: [0.55, 0.72, 0.9, 1.08, 1.6, 1.82], pill: 2.4, disc: 2.55 },
     punch: [1.6],
     caption: null },
@@ -475,11 +491,41 @@ const TIMELINE = [
 const SLAM  = { from: 1.4, dur: 0.15 };            // words: 140% → 100% in 150ms, hard ease-out
 const SHAKE = { amp: 12, dur: 0.09 };              // screen shake on impact: ~3 frames at 30fps
 const PUNCH = { to: 1.08, rise: 0.1, fall: 0.7 };  // zoom punch in, then settle back
-const CAP   = { dur: 0.15, rise: 22 };             // caption phrase pop-in
-const DRAW  = { m1: 1.5, line: 0.45, drop: 0.7, chaos: 2.6, sweep: 0.6, cta: 1.6 };   // line draw durations
+const CAP   = { dur: 0.12, rise: 22, gap: 0.1 };   // caption pop-in; gap = default caption-free time before a cut
+const HOLD  = { base: 0.4, perWord: 0.3 };         // a block stays up ≥ base + perWord × words after it lands
+const DRAW  = { m1: 2.1, line: 0.7, drop: 0.9, chaos: 3.4, sweep: 0.9, snap: 0.2, tick: 0.28, cta: 1.6 };   // animation durations
 
 /* ===================================================================== */
 
+// Lay the beats end to end and fit each beat's captions inside it.
+const wordCount = s => s.split(/\s+/).filter(w => /[\p{L}\p{N}]/u.test(w)).length;
+const PHRASES = [];   // every caption phrase, each owned by exactly one beat
+(function layout() {
+  let clock = 0;
+  TIMELINE.forEach(b => {
+    b.start = clock;
+    b.tail = b.tail ?? CAP.gap;
+    if (b.caption) {
+      let free = 0;   // earliest offset the next phrase may replace the current one
+      const own = b.caption.map(([at, text]) => {
+        const ph = { beat: b.id, text, words: wordCount(text.replace(/[*!]/g, '')), at: Math.max(at, free) };
+        if (ph.at > at + 1e-6) console.warn(`${b.id}: "${text}" pushed from ${at}s to ${ph.at.toFixed(2)}s to meet the hold rule`);
+        free = ph.at + CAP.dur + HOLD.base + HOLD.perWord * ph.words;
+        return ph;
+      });
+      const fit = Math.ceil((free + b.tail) * 20 - 1e-6) / 20;
+      if (fit > b.dur + 1e-6) { console.warn(`${b.id}: captions need ${fit}s, beat lengthened from ${b.dur}s`); b.dur = fit; }
+      own.forEach((ph, i) => {
+        ph.index = i + 1; ph.of = own.length;
+        ph.from = b.start + ph.at;
+        ph.until = b.start + (i + 1 < own.length ? own[i + 1].at : b.dur - b.tail);
+      });
+      PHRASES.push(...own);
+    }
+    b.end = b.start + b.dur;
+    clock = b.end;
+  });
+})();
 const DURATION = TIMELINE[TIMELINE.length - 1].end;
 const REDUCED = matchMedia('(prefers-reduced-motion: reduce)').matches;
 const $ = (s, r = document) => r.querySelector(s);
@@ -497,7 +543,7 @@ const P = (t, at, dur, ease = 'hard') => EASE[ease](clamp((t - at) / dur));
 const hash = n => { const s = Math.sin(n * 12.9898) * 43758.5453; return s - Math.floor(s); };
 const rng = seed => () => (seed = (seed * 16807) % 2147483647) / 2147483647;
 
-// absolute cue times: C.m1.hit → 8.0
+// absolute cue times: C.m1.hit → 12.5
 const C = {};
 TIMELINE.forEach(b => {
   const c = C[b.id] = { start: b.start, end: b.end };
@@ -632,24 +678,17 @@ $('#m2-ticks').innerHTML = Array.from({ length: 50 }, (_, i) => {
 $('#m3-marks').innerHTML = M3.zig.pts.slice(1).map(([x, y], i) =>
   `<circle cx="${x}" cy="${y}" r="10" style="fill: ${i % 2 ? 'var(--bg)' : 'var(--loss)'}"/>`).join('');
 
-// captions: one block per beat, every phrase laid out from the start so lines never reflow
+// captions: one element per phrase; only the current beat's current phrase is ever shown
 const esc = s => s.replace(/&/g, '&amp;').replace(/</g, '&lt;');
 const marks = s => esc(s).replace(/\*(.+?)\*/g, '<span class="hl-gold">$1</span>').replace(/!(.+?)!/g, '<span class="hl-loss">$1</span>');
-const CAPS = [];
-TIMELINE.forEach((b, i) => {
-  if (!b.caption) return;
+PHRASES.forEach(ph => {
   const el = document.createElement('p');
   el.className = 'cap';
   el.hidden = true;
-  el.innerHTML = b.caption.map(([, s]) => `<span class="phr" data-hold>${marks(s)}</span>`).join(' ');
+  el.setAttribute('data-hold', '');
+  el.innerHTML = marks(ph.text);
   $('#captions').appendChild(el);
-  const next = TIMELINE[i + 1];
-  CAPS.push({
-    el,
-    from: b.start + b.caption[0][0],
-    until: next ? next.start + (next.caption ? next.caption[0][0] : 0) : DURATION + 1,
-    phrases: $$('.phr', el).map((p, j) => ({ el: p, at: b.start + b.caption[j][0] })),
-  });
+  ph.el = el;
 });
 
 /* --- scenes: each gets absolute time t and its beat's cues ----------- */
@@ -666,7 +705,7 @@ function header(t, el, c) {
 const S = {
   hook(t, el, c) {
     // fast zoom into the chart: already moving on frame 0
-    const z = P(t, c.zoom - 0.1, 0.95, 'out'), drift = clamp((t - c.zoom - 0.85) / 2.2);
+    const z = P(t, c.zoom - 0.1, 0.95, 'out'), drift = clamp((t - c.zoom - 0.85) / 3.8);
     const s = lerp(1, HK.zoom, z) + 0.08 * drift;
     const cx = lerp(540, HK.focus[0], z), cy = lerp(480, HK.focus[1], z);
     $('#hk-cam').setAttribute('transform', `translate(540 480) scale(${s}) translate(${-cx} ${-cy})`);
@@ -702,11 +741,11 @@ const S = {
     const stop = $('#m1-stop');
     stop.setAttribute('x2', stopX);
     stop.style.visibility = t >= c.line ? 'visible' : 'hidden';
-    pop($('#m1-exit'), t, c.exit, 0.28);
+    pop($('#m1-exit'), t, c.exit, 0.36);
 
     const [ex, ey] = M1.pre.pts[M1.pre.pts.length - 1];
     $('#m1-entry-at').setAttribute('transform', `translate(${ex} ${ey})`);
-    pop($('#m1-entry'), t, c.entry, 0.28);
+    pop($('#m1-entry'), t, c.entry, 0.36);
 
     // price falls into the line and stops there
     const drop = partial(M1.drop, P(t, c.drop, DRAW.drop, 'in'));
@@ -721,7 +760,7 @@ const S = {
     ring.setAttribute('cx', hx); ring.setAttribute('cy', hy);
     ring.setAttribute('r', 12 + EASE.out(q) * 70);
     ring.style.opacity = q > 0 && q < 1 ? 1 - q : 0;
-    $('#m1-ghost').setAttribute('d', partial(M1.ghost, P(t, c.hit + 0.15, 0.7, 'out')).d);
+    $('#m1-ghost').setAttribute('d', partial(M1.ghost, P(t, c.hit + 0.15, 0.8, 'out')).d);
     impact(t, c.hit, 16);
     redFlash(t, c.hit, 0.16, 0.25);
   },
@@ -729,15 +768,15 @@ const S = {
   m2(t, el, c) {
     header(t, el, c);
     const arc = $('#m2-arc'), bad = $('#m2-bad'), good = $('#m2-good');
-    pop($('#m2-vis svg'), t, c.ring, 0.32, 0.85);
+    pop($('#m2-vis svg'), t, c.ring, 0.4, 0.85);
     vis($('.ring-k', el), t >= c.ring);
     // a huge red slice fills most of the ring…
     const fill = P(t, c.risk, DRAW.sweep, 'inOut');
     let f = M2.bad * fill;
     // …then snaps back to a small gold slice
-    const snap = P(t, c.snap, 0.14);
+    const snap = P(t, c.snap, DRAW.snap);
     if (t >= c.snap) f = lerp(M2.bad, M2.good, snap);
-    const gold = t >= c.snap + 0.14;
+    const gold = t >= c.snap + DRAW.snap;
     arc.style.strokeDasharray = `${f} 100`;
     arc.style.stroke = gold ? 'var(--gold)' : 'var(--loss)';
     arc.style.filter = gold ? 'drop-shadow(0 0 18px var(--gold))' : 'drop-shadow(0 0 22px color-mix(in srgb, var(--loss) 45%, transparent))';
@@ -749,7 +788,7 @@ const S = {
     bad._p = fill;
     $('#m2-pct').textContent = Math.round(M2.bad * fill) + '%';
     bad.style.transform = `scale(${t >= c.risk + DRAW.sweep ? lerp(1.25, 1, P(t, c.risk + DRAW.sweep, SLAM.dur)) : 1})`;
-    slam(good, t, c.snap + 0.1, { amp: 18 });
+    slam(good, t, c.snap + DRAW.snap, { amp: 18 });
   },
 
   m3(t, el, c) {
@@ -784,7 +823,7 @@ const S = {
       const at = c.ticks[i], on = t >= at;
       const box = $('.box', row), tick = $('.tick', row), sv = $('svg', row);
       box.style.fill = on ? 'var(--gold)' : 'transparent';
-      tick.style.strokeDashoffset = 1 - P(t, at + 0.03, 0.2, 'out');
+      tick.style.strokeDashoffset = 1 - P(t, at + 0.03, DRAW.tick, 'out');
       sv.style.transform = `scale(${on ? lerp(1.35, 1, P(t, at, 0.18)) : 1})`;
       sv.style.filter = on ? 'drop-shadow(0 0 16px color-mix(in srgb, var(--gold) 55%, transparent))' : 'none';
       impact(t, at + 0.12, 6);
@@ -818,18 +857,27 @@ const S = {
 };
 
 /* --- captions -------------------------------------------------------- */
-function captions(t) {
-  CAPS.forEach(k => {
-    k.el.hidden = !(t >= k.from && t < k.until);
-    if (k.el.hidden) return;
-    k.phrases.forEach(({ el, at }) => {
-      const on = t >= at, p = P(t, at, CAP.dur);
-      vis(el, on);
-      el._p = on ? p : 0;
-      el.style.opacity = on ? clamp((t - at) / 0.05) : 0;
-      el.style.transform = `translateY(${lerp(CAP.rise, 0, p)}px) scale(${lerp(1.1, 1, p)})`;
-    });
+// wipes every caption back to its unrevealed state (beat change, replay)
+function clearCaptions() {
+  PHRASES.forEach(({ el }) => {
+    el.hidden = true;
+    el._p = 0;
+    el.style.opacity = el.style.transform = '';
   });
+}
+function captions(t, beat) {
+  let showing = null;
+  PHRASES.forEach(ph => {
+    const on = ph.beat === beat.id && t >= ph.from && t < ph.until;
+    ph.el.hidden = !on;
+    if (!on) { ph.el._p = 0; return; }
+    showing = ph;
+    const p = P(t, ph.from, CAP.dur);
+    ph.el._p = p;
+    ph.el.style.opacity = clamp((t - ph.from) / 0.05);
+    ph.el.style.transform = `translateY(${lerp(CAP.rise, 0, p)}px) scale(${lerp(1.1, 1, p)})`;
+  });
+  return showing;
 }
 
 /* --- cuts, punches, flashes ------------------------------------------ */
@@ -879,15 +927,17 @@ function jitterGrain(t) {
 }
 
 /* --- engine ---------------------------------------------------------- */
-let current = null;
-const world = $('#world'), redEl = $('#redflash');
+let current = null, nowT = 0, debugOn = false;
+const world = $('#world'), redEl = $('#redflash'), debugEl = $('#debug');
 function render(t, still = false) {
   t = clamp(t, 0, DURATION);
+  nowT = t;
   let beat = TIMELINE[0];
   for (const b of TIMELINE) if (t >= b.start) beat = b;
   if (current !== beat.id) {
     for (const k in scenes) scenes[k].hidden = k !== beat.id;
     current = beat.id;
+    clearCaptions();
   }
   const el = scenes[beat.id], c = C[beat.id];
   shakeX = shakeY = red = 0;
@@ -895,10 +945,17 @@ function render(t, still = false) {
   $('.cam', el).style.transform = `scale(${zoom(t, c)})`;
   world.style.transform = `translate3d(${shakeX}px, ${shakeY}px, 0)`;
   redEl.style.opacity = red;
-  captions(t);
+  const ph = captions(t, beat);
   flash(t, still);
   jitterGrain(t);
+  if (debugOn) showDebug(t, beat, ph);
   lastT = t;
+}
+function showDebug(t, beat, ph) {
+  const cap = ph ? `caption ${ph.index}/${ph.of} · ${ph.words} words`
+    : beat.caption && t >= beat.end - beat.tail ? 'visual only (no caption)' : 'no caption';
+  debugEl.innerHTML = `<b>${beat.id.toUpperCase()}</b>  ${(t - beat.start).toFixed(2)} / ${beat.dur.toFixed(2)}s\n` +
+    `total  ${t.toFixed(2)} / ${DURATION.toFixed(2)}s\n${cap}`;
 }
 
 // every headline row is sized so it spans its column (capped by data-cap)
@@ -936,9 +993,12 @@ function checkHolds() {
     words: el.textContent.split(/\s+/).filter(w => /[\p{L}\p{N}]/u.test(w)).length,
     landed: null, gone: null,
   }));
+  const leaks = [];   // frames where a caption is up outside its slot, or two are up at once
   for (let k = 0; k <= DURATION * 60; k++) {
     const t = k / 60;
     render(t, true);
+    const beat = TIMELINE.find(b => b.id === current), up = PHRASES.filter(ph => !ph.el.hidden);
+    if (up.length > 1 || up.some(ph => ph.beat !== beat.id || t >= beat.end - beat.tail)) leaks.push(t.toFixed(2));
     blocks.forEach(b => {
       const parts = [b.el, ...b.el.querySelectorAll('*')].filter(n => n._p !== undefined);
       const up = shown(b.el) && parts.every(n => shown(n) && n._p >= 1);
@@ -954,9 +1014,12 @@ function checkHolds() {
   const lastLand = Math.max(...blocks.map(b => b.landed ?? 0));
   let gap = 0;
   [...events, lastLand].forEach((x, i, a) => { if (i) gap = Math.max(gap, x - a[i - 1]); });
-  window.CHECK = { rows, maxGap: +gap.toFixed(2), finalHold: +(DURATION - lastLand).toFixed(2) };
+  const beats = TIMELINE.map(b => ({ beat: b.id, start: +b.start.toFixed(2), end: +b.end.toFixed(2), dur: b.dur, tail: b.tail }));
+  const phrases = PHRASES.map(ph => ({ beat: ph.beat, at: +ph.from.toFixed(2), until: +ph.until.toFixed(2), words: ph.words, text: ph.text.replace(/[*!]/g, '') }));
+  window.CHECK = { rows, beats, phrases, leaks, duration: DURATION, maxGap: +gap.toFixed(2), finalHold: +(DURATION - lastLand).toFixed(2) };
+  console.table(beats);
   console.table(rows);
-  console.log('longest stretch without a cut or punch:', window.CHECK.maxGap, 's · final frame hold:', window.CHECK.finalHold, 's');
+  console.log('caption leaks:', leaks.length, '· longest stretch without a cut or punch:', window.CHECK.maxGap, 's · final frame hold:', window.CHECK.finalHold, 's');
 }
 
 const params = new URLSearchParams(location.search);
@@ -972,6 +1035,8 @@ function tick(now) {
 function play() {
   cancelAnimationFrame(raf);
   replayHint.classList.remove('on');
+  current = null;                  // forces a full scene reset on the first frame
+  clearCaptions();
   lastT = -1;
   t0 = performance.now();
   render(0);                       // frame 0 is drawn immediately, text already moving
@@ -983,12 +1048,22 @@ viewport.addEventListener('click', () => { if (STILL === null) play(); });
 viewport.addEventListener('keydown', e => {
   if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); if (STILL === null) play(); }
 });
+// D toggles the timing overlay (also ?debug). It is never on in exports.
+function setDebug(on) {
+  debugOn = on;
+  debugEl.hidden = !on;
+  if (on && !raf) render(nowT, true);
+}
+addEventListener('keydown', e => {
+  if ((e.key === 'd' || e.key === 'D') && !e.metaKey && !e.ctrlKey && !e.altKey) setDebug(!debugOn);
+});
 
 function start() {
   $$('.logo-src').forEach(img => img.setAttribute('href', LOGO_SRC));
   fitRows();
   stage.classList.remove('waiting');
   if (params.has('check')) checkHolds();
+  if (params.has('debug')) setDebug(true);
   if (STILL !== null) render(STILL, true); else play();
 }
 Promise.race([
