@@ -24,6 +24,7 @@
   --grid: color-mix(in srgb, var(--ink) 8%, transparent);
   --halo: color-mix(in srgb, var(--bg) 92%, transparent);
 
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);   /* the one easing curve; the script uses the same numbers */
   --font: 'Outfit', 'Futura', 'Century Gothic', 'Avenir Next', sans-serif;
   color-scheme: dark;
 }
@@ -54,9 +55,9 @@ html, body { height: 100%; margin: 0; background: var(--letterbox); overflow: hi
 /* ---------- scenes ---------- */
 .scene { position: absolute; inset: 0; overflow: hidden; }
 .cam {
-  position: absolute; inset: -40px;               /* bleed so shake never shows an edge */
+  position: absolute; inset: -40px;               /* bleed so the push-in never shows an edge */
   padding: 40px;
-  transform-origin: 580px 730px;                  /* stage (540, 690): middle of the scene band: punches stay inside the safe zone */
+  transform-origin: 580px 730px;                  /* stage (540, 690): middle of the scene band, so the push-in stays inside the safe zone */
   background:
     radial-gradient(ellipse 760px 620px at 50% 40%, var(--glow), transparent 70%),
     var(--bg);
@@ -68,9 +69,11 @@ html, body { height: 100%; margin: 0; background: var(--letterbox); overflow: hi
 .fit.center { left: 100px; right: 100px; text-align: center; }
 .row { display: block; width: fit-content; white-space: nowrap; }   /* shrink-wraps so each row can be sized to its column */
 .center .row { margin-left: auto; margin-right: auto; }
-.row i, .numtxt { display: inline-block; font-style: normal; transform-origin: 50% 55%; }
+.row i, .numtxt { display: inline-block; font-style: normal; }
 .fit i { text-shadow: 0 0 36px var(--halo), 0 8px 24px var(--halo); }
-.slam { visibility: hidden; will-change: transform; }
+/* words slide up through a mask: .rise is the mask, .rise-in is the moving word */
+.rise { visibility: hidden; }
+.rise-in { display: inline-block; will-change: transform, opacity; }
 .gold { color: var(--gold); }
 .loss { color: var(--loss); }
 .numtxt {
@@ -82,18 +85,18 @@ html, body { height: 100%; margin: 0; background: var(--letterbox); overflow: hi
 }
 
 /* ---------- captions (global, never zoomed) ---------- */
-#captions { position: absolute; left: 60px; right: 60px; bottom: 410px; }   /* bottom edge at y=1510 */
+#captions { position: absolute; z-index: 2; left: 60px; right: 60px; bottom: 410px; }   /* above both crossfading scenes */   /* bottom edge at y=1510 */
 .cap {
   position: absolute; left: 0; right: 0; bottom: 0;
   margin: 0;
   text-align: center;
-  transform-origin: 50% 100%;
-  will-change: transform;
   font-size: 66px; font-weight: 700; line-height: 1.2; letter-spacing: -0.005em;
   text-wrap: balance;
   color: var(--ink);
   text-shadow: 0 4px 22px var(--halo), 0 2px 4px var(--halo);
 }
+.cap-mask { display: inline-block; max-width: 100%; visibility: hidden; }
+.cap .rise-in { text-wrap: balance; }
 .hl-gold { color: var(--gold); font-weight: 800; }
 .hl-loss { color: var(--loss); font-weight: 800; }
 
@@ -185,6 +188,7 @@ svg text { font-family: var(--font); }
 .check svg { width: 72px; height: 72px; flex: none; overflow: visible; }
 .box { fill: transparent; stroke: var(--gold); stroke-width: 4; }
 .tick { fill: none; stroke: var(--bg); stroke-width: 8; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 1 1; stroke-dashoffset: 1; }
+.check svg { filter: drop-shadow(0 0 16px color-mix(in srgb, var(--gold) 55%, transparent)); }
 
 /* ---------- cta ---------- */
 #cta-chart {
@@ -233,8 +237,7 @@ svg text { font-family: var(--font); }
 }
 
 /* ---------- overlays ---------- */
-#flash { position: absolute; inset: 0; z-index: 6; pointer-events: none; display: none; background: color-mix(in srgb, var(--gold-hi) 26%, transparent); }
-#redflash { position: absolute; inset: 0; z-index: 6; pointer-events: none; opacity: 0; background: radial-gradient(ellipse at 60% 45%, var(--loss), color-mix(in srgb, var(--loss) 60%, var(--bg))); mix-blend-mode: screen; }
+#bloom { position: absolute; inset: 0; z-index: 6; pointer-events: none; opacity: 0; background: radial-gradient(ellipse 620px 760px at 66% 42%, var(--loss), transparent 72%); mix-blend-mode: screen; }
 #grain {
   position: absolute; left: -128px; top: -128px; right: -128px; bottom: -128px;
   z-index: 7; pointer-events: none;
@@ -245,7 +248,7 @@ svg text { font-family: var(--font); }
 #replay {
   position: absolute; left: 0; right: 0; top: 1690px; z-index: 8; margin: 0;
   text-align: center; font-size: 26px; font-weight: 600; letter-spacing: 0.22em; text-transform: uppercase;
-  color: var(--muted); opacity: 0; transition: opacity 0.4s;
+  color: var(--muted); opacity: 0; transition: opacity 0.5s var(--ease);
 }
 #replay.on { opacity: 0.8; }
 #debug {
@@ -277,10 +280,10 @@ svg text { font-family: var(--font); }
         </g>
       </svg>
       <div class="fit center" id="hk-head">
-        <div data-hold><span class="row" data-cap="178"><i class="slam"><span class="gold">3</span> Mistakes</i></span></div>
+        <div data-hold><span class="row" data-cap="178"><i class="rise gold">3</i> <i class="rise">Mistakes</i></span></div>
         <div data-hold>
-          <span class="row" data-cap="245"><i class="slam loss">Killing</i></span>
-          <span class="row" data-cap="150"><i class="slam">Your</i> <i class="slam">account</i></span>
+          <span class="row" data-cap="245"><i class="rise loss">Killing</i></span>
+          <span class="row" data-cap="150"><i class="rise">Your</i> <i class="rise">account</i></span>
         </div>
       </div>
     </div>
@@ -289,12 +292,12 @@ svg text { font-family: var(--font); }
   <!-- 3–10s MISTAKE 1 · NO STOP LOSS -->
   <section class="scene mistake" id="sc-m1" hidden>
     <div class="cam">
-      <div class="bignum" data-hold><i class="numtxt slam">1.</i></div>
+      <div class="bignum" data-hold><i class="numtxt rise">1.</i></div>
       <div class="header">
-        <div class="num" data-hold><i class="numtxt slam">1.</i></div>
+        <div class="num" data-hold><i class="numtxt rise">1.</i></div>
         <div class="fit" data-hold>
-          <span class="row" data-cap="150"><i class="slam">No</i></span>
-          <span class="row" data-cap="150"><i class="slam">Stop</i> <i class="slam">loss</i></span>
+          <span class="row" data-cap="150"><i class="rise">No</i></span>
+          <span class="row" data-cap="150"><i class="rise">Stop</i> <i class="rise">loss</i></span>
         </div>
       </div>
       <div class="vis">
@@ -324,12 +327,12 @@ svg text { font-family: var(--font); }
   <!-- 10–17s MISTAKE 2 · RISKING TOO MUCH -->
   <section class="scene mistake" id="sc-m2" hidden>
     <div class="cam">
-      <div class="bignum" data-hold><i class="numtxt slam">2.</i></div>
+      <div class="bignum" data-hold><i class="numtxt rise">2.</i></div>
       <div class="header">
-        <div class="num" data-hold><i class="numtxt slam">2.</i></div>
+        <div class="num" data-hold><i class="numtxt rise">2.</i></div>
         <div class="fit" data-hold>
-          <span class="row" data-cap="150"><i class="slam">Risking</i></span>
-          <span class="row" data-cap="150"><i class="slam">Too</i> <i class="slam">much</i></span>
+          <span class="row" data-cap="150"><i class="rise">Risking</i></span>
+          <span class="row" data-cap="150"><i class="rise">Too</i> <i class="rise">much</i></span>
         </div>
       </div>
       <div class="vis" id="m2-vis">
@@ -352,12 +355,12 @@ svg text { font-family: var(--font); }
   <!-- 17–24s MISTAKE 3 · TRADING ON EMOTION -->
   <section class="scene mistake" id="sc-m3" hidden>
     <div class="cam">
-      <div class="bignum" data-hold><i class="numtxt slam">3.</i></div>
+      <div class="bignum" data-hold><i class="numtxt rise">3.</i></div>
       <div class="header">
-        <div class="num" data-hold><i class="numtxt slam">3.</i></div>
+        <div class="num" data-hold><i class="numtxt rise">3.</i></div>
         <div class="fit" data-hold>
-          <span class="row" data-cap="150"><i class="slam">Trading</i> <i class="slam">on</i></span>
-          <span class="row" data-cap="150"><i class="slam">emotion</i></span>
+          <span class="row" data-cap="150"><i class="rise">Trading</i> <i class="rise">on</i></span>
+          <span class="row" data-cap="150"><i class="rise">emotion</i></span>
         </div>
       </div>
       <div class="vis">
@@ -403,10 +406,10 @@ svg text { font-family: var(--font); }
       </div>
       <div class="fit center" id="cta-head">
         <div data-hold>
-          <span class="row" data-cap="150"><i class="slam">Protect</i> <i class="slam">your</i></span>
-          <span class="row" data-cap="150"><i class="slam gold">capital</i> <i class="slam gold">first.</i></span>
+          <span class="row" data-cap="150"><i class="rise">Protect</i> <i class="rise">your</i></span>
+          <span class="row" data-cap="150"><i class="rise gold">capital</i> <i class="rise gold">first.</i></span>
         </div>
-        <div data-hold><span class="row" data-cap="150"><i class="slam">Profits</i> <i class="slam">second.</i></span></div>
+        <div data-hold><span class="row" data-cap="150"><i class="rise">Profits</i> <i class="rise">second.</i></span></div>
       </div>
       <div class="pill-row"><div class="pill" id="pill" data-hold><b>Join the Miran Gold community.</b> <span>Link in bio →</span></div></div>
       <p id="disc" data-hold>Educational content only. Not financial advice.</p>
@@ -415,8 +418,7 @@ svg text { font-family: var(--font); }
 
   <div id="captions"></div>
 </div>
-  <div id="redflash"></div>
-  <div id="flash"></div>
+  <div id="bloom"></div>
   <div id="grain"></div>
   <p id="replay">Tap to replay</p>
   <p id="debug" hidden></p>
@@ -427,14 +429,14 @@ svg text { font-family: var(--font); }
 /* =====================================================================
    TIMELINE — edit here. Times in seconds; beats play back to back.
    dur       beat length (start/end are derived from the durations)
-   cues      offsets inside the beat (0 = the cut). Arrays = one per word.
-   punch     offsets of 100% → 108% zoom punches
-   cuts      offsets of extra hard cuts inside the beat (one-frame flash)
+   cues      offsets inside the beat (0 = the cut). Arrays = one per word, in
+             reading order; keep words MOTION.stagger (0.15s) apart.
    caption   the voiceover line as [offset, phrase] pairs, shown ONE phrase at a
              time: each phrase replaces the one before. *word* = gold,
              !word! = red. null = no caption.
    tail      seconds at the end of the beat with no caption (default CAP.gap).
-             Mistake beats use 1s so the visual is seen on its own.
+             The last phrase fades out over the first CAP.out of it. Mistake
+             beats use 1.2s, so the visual is seen alone for a full second.
    Captions belong to their beat and are always gone before the next cut.
    Each phrase stays up ≥ 0.4s + 0.3s per word after it lands: a phrase that
    would start too soon is pushed later, and a beat whose captions would run
@@ -442,60 +444,85 @@ svg text { font-family: var(--font); }
    ?check prints a full report · press D for a beat/time overlay.
    ===================================================================== */
 const TIMELINE = [
-  { id: 'hook', dur: 4.8,
-    cues: { title: -0.05, zoom: 0, crash: 0.72, killing: 1.0, your: 1.2, account: 1.38 },
-    punch: [0.95, 2.35, 3.6],
+  // chart push, red candle glides through the lows, headline rises word by word
+  { id: 'hook', dur: 5.8, tail: 0.5,
+    cues: { head: [-0.1, 0.05, 1.5, 1.65, 1.8], zoom: -0.2, crash: 0.9 },
     caption: [
       [0.00, '*Three mistakes* are quietly !wiping out!'],
-      [2.35, 'beginner accounts. Are you making them?'],
+      [2.60, 'beginner accounts. Are you making them?'],
     ] },
 
-  // headline → chart draws → captions → stop line, entry, drop → 1s of chart alone (stopped out)
-  { id: 'm1', dur: 8.7, tail: 1.0,
-    cues: { num: 0, cut: 0.9, head: [0.9, 1.1, 1.3], chart: 0.9, line: 5.3, exit: 6.0, entry: 6.4, drop: 6.8, hit: 7.7 },
-    punch: [3.25, 5.3, 7.7], cuts: [0.9],
+  // numeral → headline → chart draws → captions → stop line, entry, drop → chart alone (stopped out)
+  { id: 'm1', dur: 9.7, tail: 1.2,
+    cues: { num: 0, cut: 1.05, head: [1.05, 1.2, 1.35], chart: 1.2, line: 5.85, exit: 6.65, entry: 7.05, drop: 7.5, hit: 8.5 },
     caption: [
-      [1.50, 'A single !bad trade!'],
-      [3.25, 'can !erase! weeks of progress.'],
-      [5.30, 'Know your *exit* before you *enter.*'],
+      [1.66, 'A single !bad trade!'],
+      [3.60, 'can !erase! weeks of progress.'],
+      [5.85, 'Know your *exit* before you *enter.*'],
     ] },
 
-  // headline → red slice fills → captions (snap to gold on "small slice") → 1s of donut alone
-  { id: 'm2', dur: 10.1, tail: 1.0,
-    cues: { num: 0, cut: 0.9, head: [0.9, 1.1, 1.3], ring: 0.9, risk: 1.0, snap: 3.3 },
-    punch: [3.3, 5.6, 7.35, 9.1], cuts: [0.9],
+  // numeral → headline → red slice fills → captions (eases back to gold on "small slice") → donut alone
+  { id: 'm2', dur: 11.1, tail: 1.2,
+    cues: { num: 0, cut: 1.05, head: [1.05, 1.2, 1.35], ring: 1.05, risk: 1.3, snap: 3.6 },
     caption: [
-      [1.50, 'Keep each trade'],
-      [2.95, 'to a *small slice* of your account,'],
-      [5.60, 'so no one loss'],
-      [7.35, 'can !end the game.!'],
+      [1.66, 'Keep each trade'],
+      [3.27, 'to a *small slice* of your account,'],
+      [6.08, 'so no one loss'],
+      [7.99, 'can !end the game.!'],
     ] },
 
-  // headline → chaotic trades → captions → hard cut to the plan on "Stick to your plan" → 1s of checklist alone
-  { id: 'm3', dur: 9.0, tail: 1.0,
-    cues: { num: 0, cut: 0.9, head: [0.9, 1.1, 1.3], chaos: 1.0, revenge: 1.8, chasing: 2.7, calm: 6.2, ticks: [6.65, 7.2, 7.75] },
-    punch: [2.7, 4.4, 7.75], cuts: [0.9, 6.2],
+  // numeral → headline → chaotic trades → captions → crossfade to the plan on "Stick to your plan" → checklist alone
+  { id: 'm3', dur: 10.0, tail: 1.2,
+    cues: { num: 0, cut: 1.05, head: [1.05, 1.2, 1.35], chaos: 1.3, revenge: 2.0, chasing: 3.0, calm: 6.75, ticks: [7.25, 7.8, 8.35] },
     caption: [
-      [1.50, '!Revenge trades! and !chasing! the market'],
-      [3.85, 'turn small losses into !big ones.!'],
-      [6.20, '*Stick to your plan.*'],
+      [1.66, '!Revenge trades! and !chasing! the market'],
+      [4.20, 'turn small losses into !big ones.!'],
+      [6.75, '*Stick to your plan.*'],
     ] },
 
-  // end card is complete at 2.7s and holds, caption-free, to the end
-  { id: 'cta', dur: 6.0,
-    cues: { logo: 0, sheen: 0.55, head: [0.55, 0.72, 0.9, 1.08, 1.6, 1.82], pill: 2.4, disc: 2.55 },
-    punch: [1.6],
+  // end card is complete at 3.3s and holds, caption-free, to the end
+  { id: 'cta', dur: 7.0,
+    cues: { logo: 0, sheen: 0.8, head: [0.7, 0.85, 1.0, 1.15, 1.9, 2.05], pill: 2.6, disc: 2.8 },
     caption: null },
 ];
 
-const SLAM  = { from: 1.4, dur: 0.15 };            // words: 140% → 100% in 150ms, hard ease-out
-const SHAKE = { amp: 12, dur: 0.09 };              // screen shake on impact: ~3 frames at 30fps
-const PUNCH = { to: 1.08, rise: 0.1, fall: 0.7 };  // zoom punch in, then settle back
-const CAP   = { dur: 0.12, rise: 22, gap: 0.1 };   // caption pop-in; gap = default caption-free time before a cut
+const MOTION = {
+  curve: [0.22, 1, 0.36, 1],   // cubic-bezier for every move (same as --ease in the CSS)
+  rise: 0.5,                   // a word slides up through its mask
+  stagger: 0.15,               // between words (write the cues this far apart)
+  fade: 0.6,                   // crossfades: between beats and inside a beat
+  slide: 30,                   // px the next beat drifts up while it fades in
+  push: 0.04,                  // slow push-in across every beat: 100% → 104%
+};
+const CAP   = { rise: 0.5, out: 0.2, gap: 0.4 };   // caption reveal, last-phrase fade-out, default tail
 const HOLD  = { base: 0.4, perWord: 0.3 };         // a block stays up ≥ base + perWord × words after it lands
-const DRAW  = { m1: 2.1, line: 0.7, drop: 0.9, chaos: 3.4, sweep: 0.9, snap: 0.2, tick: 0.28, cta: 1.6 };   // animation durations
+const DRAW  = { zoom: 1.8, crash: 0.9, m1: 2.4, line: 0.8, drop: 1.0, ghost: 0.9, sweep: 1.1, snap: 0.6,
+                chaos: 4.0, tick: 0.5, logo: 1.0, sheen: 1.1, cta: 1.8 };   // visual animation durations
 
 /* ===================================================================== */
+
+const REDUCED = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+const clamp = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
+const lerp = (a, b, p) => a + (b - a) * p;
+// the one easing curve, solved for y at a given x
+const ease = (() => {
+  const [x1, y1, x2, y2] = MOTION.curve;
+  const bz = (a, b, s) => 3 * a * (1 - s) * (1 - s) * s + 3 * b * (1 - s) * s * s + s * s * s;
+  return x => {
+    if (x <= 0) return 0;
+    if (x >= 1) return 1;
+    let lo = 0, hi = 1, s = x;
+    for (let i = 0; i < 24; i++) { s = (lo + hi) / 2; if (bz(x1, x2, s) < x) lo = s; else hi = s; }
+    return bz(y1, y2, s);
+  };
+})();
+const P = (t, at, dur) => ease(clamp((t - at) / dur));
+// a reveal has landed once it is within 1.5% of its final place and fully opaque (opacity is full at 60%)
+const LAND = (() => { for (let k = 600; k <= 1000; k++) if (ease(k / 1000) >= 0.985) return k / 1000; return 1; })();
+const hash = n => { const s = Math.sin(n * 12.9898) * 43758.5453; return s - Math.floor(s); };
+const rng = seed => () => (seed = (seed * 16807) % 2147483647) / 2147483647;
 
 // Lay the beats end to end and fit each beat's captions inside it.
 const wordCount = s => s.split(/\s+/).filter(w => /[\p{L}\p{N}]/u.test(w)).length;
@@ -504,21 +531,21 @@ const PHRASES = [];   // every caption phrase, each owned by exactly one beat
   let clock = 0;
   TIMELINE.forEach(b => {
     b.start = clock;
-    b.tail = b.tail ?? CAP.gap;
+    b.tail = Math.max(b.tail ?? CAP.gap, CAP.out + 0.1);
     if (b.caption) {
       let free = 0;   // earliest offset the next phrase may replace the current one
       const own = b.caption.map(([at, text]) => {
         const ph = { beat: b.id, text, words: wordCount(text.replace(/[*!]/g, '')), at: Math.max(at, free) };
         if (ph.at > at + 1e-6) console.warn(`${b.id}: "${text}" pushed from ${at}s to ${ph.at.toFixed(2)}s to meet the hold rule`);
-        free = ph.at + CAP.dur + HOLD.base + HOLD.perWord * ph.words;
+        free = ph.at + CAP.rise * LAND + HOLD.base + HOLD.perWord * ph.words;
         return ph;
       });
       const fit = Math.ceil((free + b.tail) * 20 - 1e-6) / 20;
       if (fit > b.dur + 1e-6) { console.warn(`${b.id}: captions need ${fit}s, beat lengthened from ${b.dur}s`); b.dur = fit; }
       own.forEach((ph, i) => {
-        ph.index = i + 1; ph.of = own.length;
+        ph.index = i + 1; ph.of = own.length; ph.last = i + 1 === own.length;
         ph.from = b.start + ph.at;
-        ph.until = b.start + (i + 1 < own.length ? own[i + 1].at : b.dur - b.tail);
+        ph.until = b.start + (ph.last ? b.dur - b.tail : own[i + 1].at);
       });
       PHRASES.push(...own);
     }
@@ -527,64 +554,38 @@ const PHRASES = [];   // every caption phrase, each owned by exactly one beat
   });
 })();
 const DURATION = TIMELINE[TIMELINE.length - 1].end;
-const REDUCED = matchMedia('(prefers-reduced-motion: reduce)').matches;
-const $ = (s, r = document) => r.querySelector(s);
-const $$ = (s, r = document) => [...r.querySelectorAll(s)];
-const clamp = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
-const lerp = (a, b, p) => a + (b - a) * p;
-const EASE = {
-  hard: p => 1 - Math.pow(1 - p, 4),
-  out: p => 1 - Math.pow(1 - p, 3),
-  in: p => p * p * p,
-  inOut: p => (p < 0.5 ? 4 * p * p * p : 1 - Math.pow(-2 * p + 2, 3) / 2),
-  kick: p => { const k = 1.7, q = p - 1; return 1 + (k + 1) * q * q * q + k * q * q; },
-};
-const P = (t, at, dur, ease = 'hard') => EASE[ease](clamp((t - at) / dur));
-const hash = n => { const s = Math.sin(n * 12.9898) * 43758.5453; return s - Math.floor(s); };
-const rng = seed => () => (seed = (seed * 16807) % 2147483647) / 2147483647;
 
-// absolute cue times: C.m1.hit → 12.5
+// absolute cue times: C.m1.hit → 14.3
 const C = {};
 TIMELINE.forEach(b => {
   const c = C[b.id] = { start: b.start, end: b.end };
   for (const k in b.cues) c[k] = Array.isArray(b.cues[k]) ? b.cues[k].map(x => b.start + x) : b.start + b.cues[k];
-  c.punch = (b.punch || []).map(x => b.start + x);
 });
 
-/* --- frame-level effects --------------------------------------------- */
-let shakeX = 0, shakeY = 0, red = 0;
-const SHAKE_STEPS = [[1, -0.6], [-0.85, 0.7], [0.45, -0.35]];
-function impact(t, at, amp = SHAKE.amp) {
-  const d = t - at;
-  if (REDUCED || d < 0 || d >= SHAKE.dur) return;
-  const [x, y] = SHAKE_STEPS[Math.floor(d / SHAKE.dur * SHAKE_STEPS.length)];
-  shakeX += x * amp; shakeY += y * amp;
-}
-function redFlash(t, at, peak, dur = 0.35) {
-  if (t >= at) red = Math.max(red, peak * (1 - P(t, at, dur, 'out')));
-}
-// `_p` = how far an element has landed (1 = fully in); the ?check report reads it
+/* --- motion helpers -------------------------------------------------- */
+// `_p` = 1 once an element has landed; the ?check report reads it
+let glow = 0;   // soft red bloom over the whole frame (hook crash only)
+const MASK = 'inset(-60% -30% -0.14em -30%)';   // clips only below the word's line box
 function vis(el, on) { el.style.visibility = on ? 'visible' : 'hidden'; }
-function slam(el, t, at, o = {}) {
-  const on = t >= at, dur = o.dur ?? SLAM.dur;
-  vis(el, on);
-  if (!on) return (el._p = 0);
-  const p = (el._p = P(t, at, dur));
-  el.style.transform = `${o.pre || ''} scale(${lerp(o.from ?? SLAM.from, 1, p)})`;
-  impact(t, at + dur, o.amp ?? SHAKE.amp);
-  return p;
+// a word slides up through its mask with a slight fade
+function rise(el, t, at, dur = MOTION.rise) {
+  const inner = el.firstElementChild, x = clamp((t - at) / dur), p = ease(x);
+  vis(el, t >= at);
+  inner.style.transform = `translateY(${(1 - p) * 118}%)`;
+  inner.style.opacity = ease(clamp(x / 0.6));
+  el.style.clipPath = x < 1 ? MASK : '';
+  el._p = x >= LAND ? 1 : 0;
 }
-function pop(el, t, at, dur = 0.3, from = 0) {
-  const on = t >= at;
-  vis(el, on);
-  el._p = clamp((t - at) / dur);
-  el.style.transform = `scale(${on ? lerp(from, 1, P(t, at, dur, 'kick')) : from})`;
+// a box (button, chip, marker) drifts up a little as it fades in
+function fadeUp(el, t, at, o = {}) {
+  const dur = o.dur ?? MOTION.rise, x = clamp((t - at) / dur), p = ease(x);
+  vis(el, t >= at);
+  el.style.opacity = ease(clamp(x / 0.6));
+  el.style.transform = `${o.pre || ''} translateY(${(1 - p) * (o.dist ?? 28)}${o.unit || 'px'})${o.scale ? ` scale(${lerp(o.scale, 1, p)})` : ''}`;
+  el._p = x >= LAND ? 1 : 0;
 }
-// strobes for `dur`, then holds solid
-function flicker(el, t, at, dur = 0.2) {
-  const on = t >= at && (t >= at + dur || Math.floor((t - at) * 30) % 2 === 0);
-  vis(el, on);
-  el._p = t >= at + dur ? 1 : 0;
+function bloom(t, at, peak, rise = 0.35, fall = 1.2) {
+  if (t >= at) glow = Math.max(glow, peak * P(t, at, rise) * (1 - P(t, at + rise, fall)));
 }
 
 /* --- polylines ------------------------------------------------------- */
@@ -678,6 +679,15 @@ $('#m2-ticks').innerHTML = Array.from({ length: 50 }, (_, i) => {
 $('#m3-marks').innerHTML = M3.zig.pts.slice(1).map(([x, y], i) =>
   `<circle cx="${x}" cy="${y}" r="10" style="fill: ${i % 2 ? 'var(--bg)' : 'var(--loss)'}"/>`).join('');
 
+// every .rise word gets an inner span that slides up while the word itself stays put as the mask
+$$('.rise').forEach(el => {
+  const inner = document.createElement('span');
+  inner.className = 'rise-in';
+  while (el.firstChild) inner.appendChild(el.firstChild);
+  if (el.classList.contains('numtxt')) { el.classList.remove('numtxt'); inner.classList.add('numtxt'); }
+  el.appendChild(inner);
+});
+
 // captions: one element per phrase; only the current beat's current phrase is ever shown
 const esc = s => s.replace(/&/g, '&amp;').replace(/</g, '&lt;');
 const marks = s => esc(s).replace(/\*(.+?)\*/g, '<span class="hl-gold">$1</span>').replace(/!(.+?)!/g, '<span class="hl-loss">$1</span>');
@@ -686,173 +696,160 @@ PHRASES.forEach(ph => {
   el.className = 'cap';
   el.hidden = true;
   el.setAttribute('data-hold', '');
-  el.innerHTML = marks(ph.text);
+  el.innerHTML = `<span class="cap-mask"><span class="rise-in">${marks(ph.text)}</span></span>`;
   $('#captions').appendChild(el);
   ph.el = el;
 });
 
 /* --- scenes: each gets absolute time t and its beat's cues ----------- */
 function header(t, el, c) {
-  // the numeral slams in huge, then a hard cut moves it beside the headline
-  $('.bignum', el).hidden = t >= c.cut;
-  $('.vis', el).hidden = t < c.cut;
-  slam($('.bignum i', el), t, c.num, { from: 1.5, dur: 0.16, amp: 22 });
-  slam($('.num i', el), t, c.cut, { amp: 0 });
-  $$('.header .fit i', el).forEach((w, i) => slam(w, t, c.head[i], { amp: i === c.head.length - 1 ? 16 : 10 }));
-  return t >= c.cut;
+  // the numeral rises huge, then crossfades to its place beside the headline
+  const big = $('.bignum', el), visual = $('.vis', el);
+  rise($('.bignum i', el), t, c.num);
+  big.hidden = t >= c.cut + MOTION.fade;
+  big.style.opacity = 1 - P(t, c.cut, MOTION.fade * 0.8);
+  visual.hidden = t < c.cut;
+  visual.style.opacity = P(t, c.cut, MOTION.fade);
+  rise($('.num i', el), t, c.cut);
+  $$('.header .fit i', el).forEach((w, i) => rise(w, t, c.head[i]));
 }
 
 const S = {
   hook(t, el, c) {
-    // fast zoom into the chart: already moving on frame 0
-    const z = P(t, c.zoom - 0.1, 0.95, 'out'), drift = clamp((t - c.zoom - 0.85) / 3.8);
-    const s = lerp(1, HK.zoom, z) + 0.08 * drift;
+    // smooth push into the chart: already moving on frame 0
+    const z = P(t, c.zoom, DRAW.zoom), drift = clamp((t - c.zoom - DRAW.zoom) / 4);
+    const s = lerp(1, HK.zoom, z) + 0.06 * drift;
     const cx = lerp(540, HK.focus[0], z), cy = lerp(480, HK.focus[1], z);
     $('#hk-cam').setAttribute('transform', `translate(540 480) scale(${s}) translate(${-cx} ${-cy})`);
 
-    // the red candle falls, accelerating, straight through the lows
-    const fall = 0.22, hit = c.crash + fall;
-    const g = P(t, c.crash, fall, 'in');
+    // the red candle glides down through the lows and settles; its glow carries the moment
+    const g = P(t, c.crash, DRAW.crash);
     const bottom = lerp(hkOpen, HK.crashTo, g);
     const on = t >= c.crash;
     hkCrash.body.style.visibility = hkCrash.wick.style.visibility = on ? 'visible' : 'hidden';
     hkCrash.body.setAttribute('y', hkOpen);
     hkCrash.body.setAttribute('height', Math.max(1, bottom - hkOpen));
     hkCrash.wick.setAttribute('y1', hkOpen - 16);
-    hkCrash.wick.setAttribute('y2', bottom + (t >= hit ? 44 * P(t, hit, 0.12) : 0));
-    $('#hk-candles').style.opacity = lerp(1, 0.4, P(t, hit, 0.25, 'out'));
-    $('#hk-crash').style.opacity = lerp(1, 0.62, P(t, hit + 0.3, 0.4, 'out'));
-    impact(t, hit, 28);
-    redFlash(t, hit, 0.55);
+    hkCrash.wick.setAttribute('y2', bottom + 44 * g);
+    hkCrash.body.style.filter = `drop-shadow(0 0 ${lerp(10, 40, g)}px color-mix(in srgb, var(--loss) ${Math.round(lerp(30, 65, g))}%, transparent))`;
+    $('#hk-candles').style.opacity = lerp(1, 0.4, P(t, c.crash + 0.2, 1.0));
+    $('#hk-crash').style.opacity = lerp(1, 0.7, P(t, c.crash + DRAW.crash, 1.0));
+    bloom(t, c.crash + 0.1, 0.24);
 
-    const [title, killing, your, account] = $$('#hk-head i.slam', el);
-    slam(title, t, c.title, { amp: 14 });
-    slam(killing, t, c.killing, { from: 1.55, amp: 22 });
-    slam(your, t, c.your);
-    slam(account, t, c.account, { amp: 16 });
+    $$('#hk-head i.rise', el).forEach((w, i) => rise(w, t, c.head[i]));
   },
 
   m1(t, el, c) {
     header(t, el, c);
-    const pre = partial(M1.pre, P(t, c.chart, DRAW.m1, 'out'));
+    const pre = partial(M1.pre, P(t, c.chart, DRAW.m1));
     $('#m1-pre').setAttribute('d', pre.d);
 
-    const stopX = 960 * P(t, c.line, DRAW.line, 'inOut');
     const stop = $('#m1-stop');
-    stop.setAttribute('x2', stopX);
+    stop.setAttribute('x2', 960 * P(t, c.line, DRAW.line));
     stop.style.visibility = t >= c.line ? 'visible' : 'hidden';
-    pop($('#m1-exit'), t, c.exit, 0.36);
+    fadeUp($('#m1-exit'), t, c.exit, { dist: 14 });
 
     const [ex, ey] = M1.pre.pts[M1.pre.pts.length - 1];
     $('#m1-entry-at').setAttribute('transform', `translate(${ex} ${ey})`);
-    pop($('#m1-entry'), t, c.entry, 0.36);
+    fadeUp($('#m1-entry'), t, c.entry, { dist: 14 });
 
-    // price falls into the line and stops there
-    const drop = partial(M1.drop, P(t, c.drop, DRAW.drop, 'in'));
+    // price slides down into the line and comes to rest on it
+    const drop = partial(M1.drop, P(t, c.drop, DRAW.drop));
     $('#m1-drop').setAttribute('d', drop.d);
     $('#m1-area').setAttribute('d', area(drop.d ? { d: pre.d + drop.d.replace('M', ' L'), head: drop.head } : pre, 0, 590));
     const [hx, hy] = M1.drop.pts[M1.drop.pts.length - 1];
     const hit = $('#m1-hit'), ring = $('#m1-ring');
     hit.setAttribute('cx', hx); hit.setAttribute('cy', hy);
     hit.style.visibility = t >= c.hit ? 'visible' : 'hidden';
-    hit.setAttribute('r', 12 * lerp(1.8, 1, P(t, c.hit, 0.15)));
-    const q = clamp((t - c.hit) / 0.55);
+    hit.style.opacity = P(t, c.hit, 0.3);
+    const q = clamp((t - c.hit) / 1.0);
     ring.setAttribute('cx', hx); ring.setAttribute('cy', hy);
-    ring.setAttribute('r', 12 + EASE.out(q) * 70);
-    ring.style.opacity = q > 0 && q < 1 ? 1 - q : 0;
-    $('#m1-ghost').setAttribute('d', partial(M1.ghost, P(t, c.hit + 0.15, 0.8, 'out')).d);
-    impact(t, c.hit, 16);
-    redFlash(t, c.hit, 0.16, 0.25);
+    ring.setAttribute('r', 12 + ease(q) * 70);
+    ring.style.opacity = q > 0 && q < 1 ? 1 - ease(q) : 0;
+    $('#m1-ghost').setAttribute('d', partial(M1.ghost, P(t, c.hit + 0.15, DRAW.ghost)).d);
   },
 
   m2(t, el, c) {
     header(t, el, c);
-    const arc = $('#m2-arc'), bad = $('#m2-bad'), good = $('#m2-good');
-    pop($('#m2-vis svg'), t, c.ring, 0.4, 0.85);
+    const arc = $('#m2-arc'), bad = $('#m2-bad'), good = $('#m2-good'), ring = $('#m2-vis svg');
+    vis(ring, t >= c.ring);
+    ring.style.opacity = P(t, c.ring, MOTION.fade);
+    ring.style.transform = `scale(${lerp(0.94, 1, P(t, c.ring, MOTION.fade))})`;
     vis($('.ring-k', el), t >= c.ring);
     // a huge red slice fills most of the ring…
-    const fill = P(t, c.risk, DRAW.sweep, 'inOut');
-    let f = M2.bad * fill;
-    // …then snaps back to a small gold slice
+    const fill = P(t, c.risk, DRAW.sweep);
+    // …then eases back to a small gold slice, the color blending as it shrinks
     const snap = P(t, c.snap, DRAW.snap);
-    if (t >= c.snap) f = lerp(M2.bad, M2.good, snap);
-    const gold = t >= c.snap + DRAW.snap;
+    const f = t >= c.snap ? lerp(M2.bad, M2.good, snap) : M2.bad * fill;
+    const g = Math.round(snap * 100);
     arc.style.strokeDasharray = `${f} 100`;
-    arc.style.stroke = gold ? 'var(--gold)' : 'var(--loss)';
-    arc.style.filter = gold ? 'drop-shadow(0 0 18px var(--gold))' : 'drop-shadow(0 0 22px color-mix(in srgb, var(--loss) 45%, transparent))';
+    arc.style.stroke = `color-mix(in srgb, var(--gold) ${g}%, var(--loss))`;
+    arc.style.filter = `drop-shadow(0 0 20px color-mix(in srgb, color-mix(in srgb, var(--gold) ${g}%, var(--loss)) 55%, transparent))`;
     vis(arc, t >= c.risk);
-    impact(t, c.risk + DRAW.sweep, 18);
 
-    const showBad = t >= c.risk && t < c.snap;
-    vis(bad, showBad);
-    bad._p = fill;
+    vis(bad, t >= c.risk && t < c.snap + MOTION.fade);
+    bad.style.opacity = ease(clamp((t - c.risk) / 0.3)) * (1 - P(t, c.snap, MOTION.fade * 0.6));
+    bad._p = clamp((t - c.risk) / DRAW.sweep) >= LAND ? 1 : 0;
     $('#m2-pct').textContent = Math.round(M2.bad * fill) + '%';
-    bad.style.transform = `scale(${t >= c.risk + DRAW.sweep ? lerp(1.25, 1, P(t, c.risk + DRAW.sweep, SLAM.dur)) : 1})`;
-    slam(good, t, c.snap + DRAW.snap, { amp: 18 });
+    fadeUp(good, t, c.snap + 0.3, { dist: 24 });
   },
 
   m3(t, el, c) {
     header(t, el, c);
-    const calm = t >= c.calm;
+    // chaotic trades, then a crossfade to the calm plan
+    const away = 1 - P(t, c.calm, MOTION.fade * 0.8);
     const chaos = $('#m3-chaos');
-    chaos.style.display = calm ? 'none' : '';
-    const p = P(t, c.chaos, DRAW.chaos, 'inOut');
-    const z = partial(M3.zig, p);
-    $('#m3-zig').setAttribute('d', z.d);
+    chaos.style.display = t >= c.calm + MOTION.fade ? 'none' : '';
+    chaos.style.opacity = away;
+    const p = P(t, c.chaos, DRAW.chaos);
+    $('#m3-zig').setAttribute('d', partial(M3.zig, p).d);
     $$('#m3-marks circle').forEach((m, i) => {
       const at = M3.zig.cum[i + 1] / M3.zig.len;
       m.style.visibility = p >= at ? 'visible' : 'hidden';
     });
-    // jittery while trading
-    const j = t >= c.chaos && !REDUCED ? 7 : 0, n = Math.floor(t * 30);
-    chaos.setAttribute('transform', `translate(${(hash(n) - 0.5) * j} ${(hash(n + 3) - 0.5) * j})`);
 
-    const a = $('#chip-a'), b = $('#chip-b');
-    flicker(a, t, c.revenge); flicker(b, t, c.chasing);
-    a.hidden = b.hidden = calm;
-    a.style.transform = `rotate(var(--r)) scale(${lerp(1.3, 1, P(t, c.revenge, 0.2))})`;
-    b.style.transform = `rotate(var(--r)) scale(${lerp(1.3, 1, P(t, c.chasing, 0.2))})`;
-    impact(t, c.revenge + 0.2, 12); impact(t, c.chasing + 0.2, 14);
-    if (t < c.calm) { redFlash(t, c.revenge, 0.12, 0.2); redFlash(t, c.chasing, 0.14, 0.2); }
+    [[$('#chip-a'), c.revenge], [$('#chip-b'), c.chasing]].forEach(([chip, at]) => {
+      fadeUp(chip, t, at, { pre: 'rotate(var(--r))' });
+      chip.hidden = t >= c.calm + MOTION.fade;
+      if (t >= c.calm) chip.style.opacity = away;
+    });
 
-    // hard cut to calm: the plan ticks off one item at a time
     const card = $('#m3-card');
-    card.hidden = !calm;
-    card.style.transform = `scale(${lerp(1.03, 1, P(t, c.calm, 0.4, 'out'))})`;
+    card.hidden = t < c.calm;
+    card.style.opacity = P(t, c.calm, MOTION.fade);
+    card.style.transform = `translateY(${(1 - P(t, c.calm, MOTION.fade)) * 24}px)`;
+    // the plan ticks off one item at a time
     $$('.check', card).forEach((row, i) => {
-      const at = c.ticks[i], on = t >= at;
-      const box = $('.box', row), tick = $('.tick', row), sv = $('svg', row);
-      box.style.fill = on ? 'var(--gold)' : 'transparent';
-      tick.style.strokeDashoffset = 1 - P(t, at + 0.03, DRAW.tick, 'out');
-      sv.style.transform = `scale(${on ? lerp(1.35, 1, P(t, at, 0.18)) : 1})`;
-      sv.style.filter = on ? 'drop-shadow(0 0 16px color-mix(in srgb, var(--gold) 55%, transparent))' : 'none';
-      impact(t, at + 0.12, 6);
+      const at = c.ticks[i], k = P(t, at, DRAW.tick);
+      $('.box', row).style.fill = `color-mix(in srgb, var(--gold) ${Math.round(k * 100)}%, transparent)`;
+      $('.tick', row).style.strokeDashoffset = 1 - P(t, at + 0.08, DRAW.tick);
+      $('svg', row).style.filter = t >= at ? '' : 'none';
     });
   },
 
   cta(t, el, c) {
     // rising gold market behind everything, drawn in then drifting up
-    const r = partial(CTA.line, P(t, c.start, DRAW.cta, 'out'));
+    const r = partial(CTA.line, P(t, c.start, DRAW.cta));
     $('#cta-line').setAttribute('d', r.d);
     $('#cta-area').setAttribute('d', area(r, 0, 1380));
-    $('#cta-drift').setAttribute('transform', `translate(0 ${lerp(30, -40, clamp((t - c.start) / 6))})`);
+    $('#cta-drift').setAttribute('transform', `translate(0 ${lerp(30, -40, clamp((t - c.start) / 7))})`);
 
-    // logo scales in, glow blooms, a light sweep crosses the metal
-    const logo = $('#logo');
+    // logo settles in, glow blooms, a light sweep crosses the metal
+    const logo = $('#logo'), k = P(t, c.logo, DRAW.logo);
     vis(logo, t >= c.logo);
-    logo.style.transform = `scale(${lerp(0.55, 1, P(t, c.logo, 0.45, 'kick'))})`;
-    impact(t, c.logo + 0.3, 14);
-    const bloom = P(t, c.logo + 0.15, 0.4, 'out'), settle = P(t, c.logo + 0.55, 0.8, 'inOut');
-    $('#cta-glow').style.opacity = bloom * lerp(1, 0.65, settle);
-    $('#cta-glow').style.transform = `scale(${lerp(0.7, 1, bloom)})`;
-    $('#sheen').setAttribute('x', lerp(-600, 1500, P(t, c.sheen, 0.75, 'inOut')));
+    logo.style.opacity = ease(clamp((t - c.logo) / (DRAW.logo * 0.6)));
+    logo.style.transform = `scale(${lerp(0.92, 1, k)})`;
+    const bloomIn = P(t, c.logo + 0.1, 0.8), settle = P(t, c.logo + 0.9, 1.2);
+    $('#cta-glow').style.opacity = bloomIn * lerp(1, 0.65, settle);
+    $('#cta-glow').style.transform = `scale(${lerp(0.8, 1, bloomIn)})`;
+    $('#sheen').setAttribute('x', lerp(-600, 1500, P(t, c.sheen, DRAW.sheen)));
 
-    $$('#cta-head i', el).forEach((w, i) => slam(w, t, c.head[i], { amp: i === 5 ? 16 : 10 }));
-    slam($('#pill'), t, c.pill, { from: 1.25, amp: 12 });
+    $$('#cta-head i', el).forEach((w, i) => rise(w, t, c.head[i]));
+    fadeUp($('#pill'), t, c.pill, { dist: 26 });
     const d = $('#disc');
     vis(d, t >= c.disc);
-    d._p = clamp((t - c.disc) / 0.15);
-    d.style.opacity = d._p;
+    d.style.opacity = ease(clamp((t - c.disc) / (MOTION.rise * 0.6)));
+    d._p = (t - c.disc) / MOTION.rise >= LAND ? 1 : 0;
   },
 };
 
@@ -862,47 +859,32 @@ function clearCaptions() {
   PHRASES.forEach(({ el }) => {
     el.hidden = true;
     el._p = 0;
-    el.style.opacity = el.style.transform = '';
+    el.style.opacity = '';
+    rise(el.firstElementChild, -1, 0);
   });
 }
+// the current phrase slides up through its mask; the next one replaces it; the beat's last one fades out
 function captions(t, beat) {
   let showing = null;
   PHRASES.forEach(ph => {
-    const on = ph.beat === beat.id && t >= ph.from && t < ph.until;
+    const end = ph.until + (ph.last ? CAP.out : 0);
+    const on = ph.beat === beat.id && t >= ph.from && t < end;
     ph.el.hidden = !on;
     if (!on) { ph.el._p = 0; return; }
     showing = ph;
-    const p = P(t, ph.from, CAP.dur);
-    ph.el._p = p;
-    ph.el.style.opacity = clamp((t - ph.from) / 0.05);
-    ph.el.style.transform = `translateY(${lerp(CAP.rise, 0, p)}px) scale(${lerp(1.1, 1, p)})`;
+    const mask = ph.el.firstElementChild;
+    rise(mask, t, ph.from, CAP.rise);
+    ph.el._p = mask._p;
+    ph.el.style.opacity = t >= ph.until ? 1 - P(t, ph.until, CAP.out) : '';
   });
   return showing;
 }
 
-/* --- cuts, punches, flashes ------------------------------------------ */
-const CUTS = [];
-TIMELINE.forEach((b, i) => {
-  if (i) CUTS.push(b.start);
-  (b.cuts || []).forEach(x => CUTS.push(b.start + x));
-});
-const flashEl = $('#flash');
+/* --- camera --------------------------------------------------------- */
 let lastT = -1;
-function flash(t, still) {
-  // exactly one rendered frame of light right after each cut
-  const cut = CUTS.find(at => (still ? t >= at && t < at + 1 / 60 : lastT < at && t >= at));
-  flashEl.style.display = cut !== undefined ? 'block' : 'none';
-}
-function zoom(t, c) {
-  if (REDUCED) return 1;
-  let z = 0;
-  c.punch.forEach(at => {
-    const d = t - at;
-    if (d < 0) return;
-    const e = d < PUNCH.rise ? EASE.hard(d / PUNCH.rise) : 1 - EASE.inOut(clamp((d - PUNCH.rise) / PUNCH.fall));
-    z = Math.max(z, e);
-  });
-  return lerp(1, PUNCH.to, z);
+// a slow, constant push-in across the whole beat (linear on purpose, so it never visibly starts or stops)
+function push(t, b) {
+  return REDUCED ? 1 : 1 + MOTION.push * clamp((t - b.start) / b.dur);
 }
 
 /* --- grain ----------------------------------------------------------- */
@@ -928,25 +910,38 @@ function jitterGrain(t) {
 
 /* --- engine ---------------------------------------------------------- */
 let current = null, nowT = 0, debugOn = false;
-const world = $('#world'), redEl = $('#redflash'), debugEl = $('#debug');
-function render(t, still = false) {
+const bloomEl = $('#bloom'), debugEl = $('#debug');
+function render(t) {
   t = clamp(t, 0, DURATION);
   nowT = t;
-  let beat = TIMELINE[0];
-  for (const b of TIMELINE) if (t >= b.start) beat = b;
+  let i = 0;
+  TIMELINE.forEach((b, j) => { if (t >= b.start) i = j; });
+  const beat = TIMELINE[i];
+  // the outgoing beat keeps playing underneath while the new one fades in over it
+  const prev = i > 0 && t < beat.start + MOTION.fade ? TIMELINE[i - 1] : null;
+  const mix = prev ? P(t, beat.start, MOTION.fade) : 1;
+  for (const k in scenes) scenes[k].hidden = k !== beat.id && k !== prev?.id;
   if (current !== beat.id) {
-    for (const k in scenes) scenes[k].hidden = k !== beat.id;
     current = beat.id;
     clearCaptions();
   }
-  const el = scenes[beat.id], c = C[beat.id];
-  shakeX = shakeY = red = 0;
-  S[beat.id](t, el, c);
-  $('.cam', el).style.transform = `scale(${zoom(t, c)})`;
-  world.style.transform = `translate3d(${shakeX}px, ${shakeY}px, 0)`;
-  redEl.style.opacity = red;
+  glow = 0;
+  if (prev) {
+    const pel = scenes[prev.id];
+    S[prev.id](t, pel, C[prev.id]);
+    $('.cam', pel).style.transform = `scale(${push(t, prev)})`;
+    pel.style.opacity = 1 - mix;
+    pel.style.transform = '';
+    pel.style.zIndex = 0;
+  }
+  const el = scenes[beat.id];
+  S[beat.id](t, el, C[beat.id]);
+  $('.cam', el).style.transform = `scale(${push(t, beat)})`;
+  el.style.opacity = mix < 1 ? mix : '';
+  el.style.transform = mix < 1 ? `translateY(${(1 - mix) * MOTION.slide}px)` : '';
+  el.style.zIndex = 1;
+  bloomEl.style.opacity = glow;
   const ph = captions(t, beat);
-  flash(t, still);
   jitterGrain(t);
   if (debugOn) showDebug(t, beat, ph);
   lastT = t;
@@ -998,7 +993,7 @@ function checkHolds() {
     const t = k / 60;
     render(t, true);
     const beat = TIMELINE.find(b => b.id === current), up = PHRASES.filter(ph => !ph.el.hidden);
-    if (up.length > 1 || up.some(ph => ph.beat !== beat.id || t >= beat.end - beat.tail)) leaks.push(t.toFixed(2));
+    if (up.length > 1 || up.some(ph => ph.beat !== beat.id || t > beat.end - beat.tail + CAP.out + 1e-6)) leaks.push(t.toFixed(2));
     blocks.forEach(b => {
       const parts = [b.el, ...b.el.querySelectorAll('*')].filter(n => n._p !== undefined);
       const up = shown(b.el) && parts.every(n => shown(n) && n._p >= 1);
@@ -1007,19 +1002,16 @@ function checkHolds() {
     });
   }
   const rows = blocks.map(b => {
-    const need = 0.4 + 0.3 * b.words, held = b.landed === null ? 0 : (b.gone ?? DURATION) - b.landed;
+    const need = HOLD.base + HOLD.perWord * b.words, held = b.landed === null ? 0 : (b.gone ?? DURATION) - b.landed;
     return { text: b.text.slice(0, 40), lands: b.landed?.toFixed(2), held: +held.toFixed(2), need: +need.toFixed(2), ok: held + 1 / 60 >= need };
   });
-  const events = [...TIMELINE.map(b => b.start), ...CUTS, ...TIMELINE.flatMap(b => C[b.id].punch)].sort((a, b) => a - b);
   const lastLand = Math.max(...blocks.map(b => b.landed ?? 0));
-  let gap = 0;
-  [...events, lastLand].forEach((x, i, a) => { if (i) gap = Math.max(gap, x - a[i - 1]); });
   const beats = TIMELINE.map(b => ({ beat: b.id, start: +b.start.toFixed(2), end: +b.end.toFixed(2), dur: b.dur, tail: b.tail }));
   const phrases = PHRASES.map(ph => ({ beat: ph.beat, at: +ph.from.toFixed(2), until: +ph.until.toFixed(2), words: ph.words, text: ph.text.replace(/[*!]/g, '') }));
-  window.CHECK = { rows, beats, phrases, leaks, duration: DURATION, maxGap: +gap.toFixed(2), finalHold: +(DURATION - lastLand).toFixed(2) };
+  window.CHECK = { rows, beats, phrases, leaks, duration: DURATION, finalHold: +(DURATION - lastLand).toFixed(2) };
   console.table(beats);
   console.table(rows);
-  console.log('caption leaks:', leaks.length, '· longest stretch without a cut or punch:', window.CHECK.maxGap, 's · final frame hold:', window.CHECK.finalHold, 's');
+  console.log('caption leaks:', leaks.length, '· final frame hold:', window.CHECK.finalHold, 's');
 }
 
 const params = new URLSearchParams(location.search);
