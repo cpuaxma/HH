@@ -70,3 +70,18 @@ This steps the timeline frame by frame in headless Chromium and pipes the frames
 ```
 ffmpeg -i exports/miran-gold.mp4 -c:v libx264 -preset slow -crf 26 -tune grain -pix_fmt yuv420p -movflags +faststart exports/miran-gold-preview.mp4
 ```
+
+## Voiceover
+
+`voiceover-script.md` has the script, one line per clip, with start and must-end-by times. `tools/make-voiceover.py` voices it with Kokoro, an open-source neural TTS that runs locally, and lays each line at its start time:
+
+```
+pip install kokoro-onnx soundfile
+# model files: kokoro-v1.0.onnx and voices-v1.0.bin from
+# https://github.com/thewh1teagle/kokoro-onnx/releases/tag/model-files-v1.0
+python tools/make-voiceover.py miran-gold/voiceover-script.md <model dir> exports/vo-raw.wav af_heart 43.6
+ffmpeg -i exports/vo-raw.wav -af "highpass=f=70,acompressor=threshold=-20dB:ratio=2.5:attack=8:release=120,loudnorm=I=-14:TP=-1.5:LRA=7" -ar 48000 -ac 2 exports/miran-gold-voiceover.wav
+ffmpeg -i exports/miran-gold-preview.mp4 -i exports/miran-gold-voiceover.wav -map 0:v -map 1:a -c:v copy -c:a aac -b:a 192k -movflags +faststart exports/miran-gold-with-vo.mp4
+```
+
+A line that would overrun its slot is sped up just enough to fit, up to 1.25x, and the script prints each line's length against its slot. If you retime the video, update the table in `voiceover-script.md` and run it again.
