@@ -8,6 +8,7 @@ Open it straight from disk or from any local web server. Useful switches:
 
 - Press **D** (or add `?debug`) to show the current beat, the time inside the beat, the total time and which caption is up, in the top-left corner. It never appears in exports.
 - Add `?t=12.5` to freeze on one frame.
+- Add `?nocaptions` to hide the on-screen captions. Timing is unchanged, so the voiceover script still lines up.
 - Add `?check` to print a timing report to the browser console: every text block's hold time, beat start and end times, and any frame where a caption shows outside its beat.
 
 ## Beats
@@ -63,6 +64,12 @@ From the repository root:
 
 ```
 node tools/export-video.js 30 exports/miran-gold.mp4 miran-gold/index.html
+```
+
+For a version without on-screen captions:
+
+```
+node tools/export-video.js 30 exports/miran-gold-no-captions.mp4 "miran-gold/index.html?nocaptions"
 ```
 
 This steps the timeline frame by frame in headless Chromium and pipes the frames into ffmpeg. It needs the `playwright` package and ffmpeg on your PATH, and an internet connection for the Outfit font. The output is H.264 at CRF 12, around 450 MB, because the film grain is costly to encode. For a smaller upload copy:
