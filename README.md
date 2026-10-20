@@ -1,6 +1,6 @@
 # Hot Pepper Media — brand intro
 
-Also in this repo: [`miran-gold/`](miran-gold/README.md), a 30-second educational reel for the Miran Gold trading community.
+Also in this repo: [`miran-gold/`](miran-gold/README.md), a 30-second educational reel for the Miran Gold trading community, and [`miran-gold-remotion/`](miran-gold-remotion/README.md), the 33-second Remotion reel "Why Gold Rises When the Dollar Falls" in English and Arabic.
 
 `index.html` is a ~25-second, 9:16 (1080×1920) hook-first kinetic-typography intro. Words slam in one at a time, the frame shakes on each impact, cuts get a one-frame color flash, and key words get a 108% zoom punch. It scales to fit any screen, auto-plays, and replays on tap (or Enter/Space). No audio.
 
