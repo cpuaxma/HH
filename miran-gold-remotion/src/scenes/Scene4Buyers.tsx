@@ -9,8 +9,8 @@ import {colors, ease, fonts, HEIGHT, layout, WIDTH} from '../theme';
 
 const BAR = {x: 540, y: 1200, width: 360};
 // Illustrative prices only
-const PRICE_FROM = 2350.0;
-const PRICE_TO = 2418.6;
+const PRICE_FROM = 4110.0;
+const PRICE_TO = 4218.6;
 
 const T = {
   bar: 0,
