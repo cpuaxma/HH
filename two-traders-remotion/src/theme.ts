@@ -62,3 +62,17 @@ export const layout = {
   rayBoxX: 132,
   samBoxX: 548,
 };
+
+export const text = {
+  // Per-unit entrance and exit durations (frames). Exits run ~40% faster.
+  enterDuration: 25,
+  exitDuration: 15,
+  enStagger: 1.5,
+  enExitStagger: 0.5,
+  arStagger: 4,
+  arExitStagger: 2,
+  blur: 8,
+  rise: 18,
+  startSpacing: 0.35,
+  lineHeight: {en: 1.15, ar: 1.5},
+};
