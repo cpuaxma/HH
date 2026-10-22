@@ -1,6 +1,7 @@
 import React from 'react';
 import {useCurrentFrame} from 'remotion';
-import {Brow, Eye, Glow, Hand, HandShape, Limb, Mouth, Nose} from './parts';
+import {Glow, Hand, HandShape, Limb} from './parts';
+import {Head} from './Head';
 import {Can, Keyboard, Monitor, NoiseFeed, Phone, Sticky} from './props';
 import {
   blink,
@@ -205,9 +206,17 @@ const NOTES: Array<[number, number, number, string, boolean]> = [
   [60, 930, 8, '#8FD1B8', true], [300, 935, -12, '#E58BA0', true], [-110, 900, 20, '#E8D36A', true],
   [392, 520, 6, '#E58BA0', false], [120, 860, -30, '#E8D36A', true], [-90, 700, 4, '#8FD1B8', false], [400, 860, 18, '#E8D36A', true],
 ];
-// Hairline sweeps from the temple, across the forehead, down past the ear
+// Messy cap: over the skull, spiky bangs across the forehead, sideburn by the ear
 const HAIR_CAP =
-  'M -66 12 C -76 -48 -52 -110 4 -116 C 52 -120 86 -98 88 -64 C 90 -52 86 -42 80 -38 L 72 -50 L 66 -34 L 56 -52 L 48 -38 L 38 -56 L 28 -44 L 18 -58 L 8 -50 L -4 -60 C -18 -54 -28 -40 -34 -20 C -38 -6 -40 4 -44 10 C -50 14 -58 16 -66 12 Z';
+  'M -62 6 C -70 -40 -58 -100 -6 -116 C 40 -128 84 -106 90 -70 C 92 -58 88 -46 82 -40 L 74 -50 L 70 -38 L 60 -52 L 52 -40 L 42 -56 L 32 -44 L 22 -58 L 10 -50 L 0 -60 C -14 -56 -24 -44 -30 -26 L -33 6 L -40 8 L -42 -6 C -48 -8 -56 -4 -62 6 Z';
+// Pointed clumps that give the top its volume
+const CLUMPS = [
+  'M -50 -70 C -66 -96 -56 -126 -34 -128 C -42 -114 -42 -98 -36 -86 Z',
+  'M -34 -96 C -36 -128 -10 -146 8 -140 C -6 -130 -10 -116 -8 -102 Z',
+  'M -4 -108 C 6 -140 40 -146 54 -132 C 36 -130 24 -120 18 -106 Z',
+  'M 26 -106 C 46 -130 82 -124 90 -104 C 74 -108 58 -104 48 -96 Z',
+  'M 56 -92 C 80 -100 100 -84 98 -62 C 88 -76 76 -80 64 -78 Z',
+];
 const COUNTS = {cans: [3, 4, 6, 8], notes: [4, 7, 10, 14]};
 
 export const Ray: React.FC<RayProps> = ({
@@ -264,14 +273,8 @@ export const Ray: React.FC<RayProps> = ({
   const gx = Math.max(-1, Math.min(1, look.gx + body.gxAdd));
   const gy = Math.max(-1, Math.min(1, look.gy + body.gyAdd));
 
-  const nearX = lerp(24, 40, turn);
-  const farX = lerp(-22, -4, turn);
-  const eyeY = -8 + nod * 9;
   const lid = Math.max(clamp01(ex.lid + nod * 0.32), lidBlink);
   const mouthOpen = ex.open + vis.open * (1 - ex.open * 0.45);
-  const mouthW = 34 * ex.width * vis.width;
-  const mouthX = lerp(10, 28, turn);
-  const mouthY = 50 + nod * 7;
   const cl = Math.round(evalNumber(clutter, frame, 1));
 
   // Phones: desk spots → juggled in hands
@@ -385,64 +388,66 @@ export const Ray: React.FC<RayProps> = ({
 
       {/* ── Head ── */}
       <g transform={`translate(${neck[0] + now.sway.x} ${neck[1] + now.sway.y}) rotate(${now.headRot}) translate(0 -98)`}>
-        {/* hair back mass */}
-        <path d="M -64 12 C -76 -40 -60 -94 -8 -108 C 32 -118 72 -102 84 -62 C 88 -46 80 -38 72 -42 C 64 -60 48 -70 28 -68 C 8 -62 -10 -62 -28 -58 C -40 -40 -46 -10 -52 14 Z" fill={L.rim} transform="translate(-4 -2)" />
-        <path d="M -64 12 C -76 -40 -60 -94 -8 -108 C 32 -118 72 -102 84 -62 C 88 -46 80 -38 72 -42 C 64 -60 48 -70 28 -68 C 8 -62 -10 -62 -28 -58 C -40 -40 -46 -10 -52 14 Z" fill={C.hair} />
-        {/* face */}
-        <path d="M -62 -20 C -66 -75 -30 -100 5 -100 C 50 -100 72 -70 72 -25 C 74 -5 80 10 76 22 C 74 45 64 70 40 84 C 25 92 8 92 -8 86 C -35 76 -55 50 -60 20 Z" fill={L.rim} transform="translate(-3 0)" />
-        <path d="M -62 -20 C -66 -75 -30 -100 5 -100 C 50 -100 72 -70 72 -25 C 74 -5 80 10 76 22 C 74 45 64 70 40 84 C 25 92 8 92 -8 86 C -35 76 -55 50 -60 20 Z" fill={`url(#${uid}-skin)`} />
-        {/* far-cheek shadow + jaw */}
-        <path d="M -60 -10 C -58 30 -40 64 -8 86 C -30 80 -54 56 -60 20 Z" fill={C.skinDeep} opacity={0.35} />
-        <path d="M -40 30 C -30 64 -6 86 14 88 C 36 86 58 68 70 40 C 60 56 48 62 36 62 C 20 72 0 70 -10 62 C -24 54 -34 44 -40 30 Z" fill="#2A2232" opacity={0.28} />
-        <path d={`M ${mouthX - 18} ${mouthY - 12} C ${mouthX - 6} ${mouthY - 17} ${mouthX + 10} ${mouthY - 17} ${mouthX + 22} ${mouthY - 11} L ${mouthX + 20} ${mouthY - 6} C ${mouthX + 8} ${mouthY - 10} ${mouthX - 6} ${mouthY - 10} ${mouthX - 16} ${mouthY - 6} Z`} fill="#2A2232" opacity={0.18} />
-        <path d={HAIR_CAP} fill={C.hair} />
-        <Glow id={`${uid}-faceglow`} cx={70} cy={10} r={70} color={screenPulse > 0.05 ? L.rim : L.screenGlow} opacity={0.22 + screenPulse * 0.3} />
-        {/* ear */}
-        <ellipse cx={lerp(-58, -46, turn)} cy={8} rx={11} ry={18} fill={C.skinShade} />
-        <path d={`M ${lerp(-58, -46, turn) - 2} -4 C ${lerp(-58, -46, turn) + 5} 2 ${lerp(-58, -46, turn) + 4} 14 ${lerp(-58, -46, turn) - 2} 18`} fill="none" stroke={C.skinDeep} strokeWidth={2} opacity={0.6} />
-        {/* dark circles */}
-        <path d={`M ${nearX - 12} ${eyeY + 9} Q ${nearX} ${eyeY + 17} ${nearX + 13} ${eyeY + 8}`} fill="none" stroke="#6A4A6E" strokeWidth={4} opacity={0.22} strokeLinecap="round" />
-        <path d={`M ${farX - 10} ${eyeY + 9} Q ${farX} ${eyeY + 15} ${farX + 10} ${eyeY + 8}`} fill="none" stroke="#6A4A6E" strokeWidth={3.5} opacity={0.2} strokeLinecap="round" />
-        {/* eyes */}
-        <Eye id={`${uid}-eyeF`} cx={farX} cy={eyeY} w={lerp(24, 19, turn)} h={12} lid={lid} lower={ex.lower} gazeX={gx} gazeY={gy} pupil={ex.pupil} iris={C.iris} lidFill={C.skinShade} />
-        <Eye id={`${uid}-eyeN`} cx={nearX} cy={eyeY} w={26} h={13} lid={lid} lower={ex.lower} gazeX={gx} gazeY={gy} pupil={ex.pupil} iris={C.iris} lidFill={C.skin} />
-        {/* brows */}
-        <Brow ix={nearX - 13} ox={nearX + 16} y={eyeY - 17} inner={ex.bIn + ex.bAsym} outer={ex.bOut + ex.bAsym} color={C.hair} width={6.5} />
-        <Brow ix={farX + 11} ox={farX - 12} y={eyeY - 16} inner={ex.bIn - ex.bAsym * 0.6} outer={ex.bOut - ex.bAsym * 0.6} color={C.hair} width={5.5} />
-        {/* nose */}
-        <Nose x={lerp(40, 66, turn)} y={-4 + nod * 6} skin={C.skin} shade={C.skinShade} deep={C.skinDeep} />
-        {/* mouth */}
-        <Mouth id={`${uid}-mouth`} cx={mouthX} cy={mouthY} w={mouthW} open={mouthOpen} curve={ex.curve} skew={ex.skew} lip={C.lip} />
-        {/* stubble speckle */}
-        {Array.from({length: 26}, (_, i) => (
-          <circle key={i} cx={-30 + ((i * 29) % 96)} cy={56 + ((i * 17) % 26)} r={0.9} fill="#2A2232" opacity={0.35} />
-        ))}
-        {/* sweat drop */}
-        {ex.sweat > 0.05 && (
-          <path d={`M -44 ${-48 + ((frame % 50) / 50) * 30} c 4 6 6 10 0 12 c -6 -2 -4 -6 0 -12 Z`} fill="#BFD8F2" opacity={ex.sweat * 0.8 * (1 - (frame % 50) / 60)} />
-        )}
-        {/* hair front: cap over the skull, hairline, spikes, short fringe tufts */}
-        <path d="M -44 -96 L -40 -122 L -26 -104 L -12 -128 L 0 -108 L 18 -130 L 28 -108 L 48 -124 L 54 -102 L 76 -108 L 72 -86 C 50 -100 0 -104 -44 -96 Z" fill={C.hair} />
-                <path d="M -30 -104 C -8 -114 24 -116 52 -106" fill="none" stroke={C.hairHi} strokeWidth={3} opacity={0.55} strokeLinecap="round" />
-        <path d="M -60 -40 C -62 -20 -60 -4 -56 8" fill="none" stroke={C.hairHi} strokeWidth={2} opacity={0.35} strokeLinecap="round" />
-        {/* flyaway strands with lag */}
-        {[
-          {r: [-20, -106], d: 'M 0 0 C -6 -20 6 -32 18 -28'},
-          {r: [10, -112], d: 'M 0 0 C 4 -22 22 -28 28 -16'},
-          {r: [46, -102], d: 'M 0 0 C 16 -14 34 -10 36 2'},
-          {r: [-50, -80], d: 'M 0 0 C -18 -12 -26 2 -22 14'},
-          {r: [68, -84], d: 'M 0 0 C 18 -4 28 10 22 22'},
-        ].map((s, i) => (
-          <path
-            key={i}
-            d={s.d}
-            transform={`translate(${s.r[0]} ${s.r[1]}) rotate(${hairLag * (1.2 + i * 0.25) + flutter(i)})`}
-            fill="none"
-            stroke={i === 2 ? C.hairHi : C.hair}
-            strokeWidth={3.2}
-            strokeLinecap="round"
-          />
-        ))}
+        <Head
+          uid={`${uid}-head`}
+          variant="ray"
+          turn={turn}
+          nod={nod}
+          gx={gx}
+          gy={gy}
+          ex={ex}
+          lid={lid}
+          open={mouthOpen}
+          width={ex.width * vis.width}
+          skin={{base: C.skin, light: '#F0D2B6', shade: C.skinShade, deep: C.skinDeep, lip: '#B88A7E', lipDeep: '#6E4440', blush: '#C9786E'}}
+          rim={L.rim}
+          glow={screenPulse > 0.05 ? L.rim : L.screenGlow}
+          glowOpacity={0.14 + screenPulse * 0.3}
+          iris={C.iris}
+          browColor={C.hair}
+          stubble
+          darkCircles
+          blush={0.25}
+          sweat={ex.sweat}
+          frame={frame}
+          hairBack={
+            <g>
+              <path d={HAIR_CAP} fill={L.rim} transform="translate(-4 -2)" />
+              {CLUMPS.slice(0, 2).map((d, i) => (
+                <path key={i} d={d} fill={L.rim} transform="translate(-4 -2)" />
+              ))}
+              <path d={HAIR_CAP} fill={C.hair} />
+            </g>
+          }
+          hairFront={
+            <g>
+              <path d={HAIR_CAP} fill={C.hair} />
+              {CLUMPS.map((d, i) => (
+                <path key={i} d={d} fill={i % 2 ? '#211C24' : C.hair} transform={`rotate(${hairLag * (0.25 + i * 0.08)} 20 -96)`} />
+              ))}
+              <path d="M -28 -110 C -8 -122 26 -126 56 -114" fill="none" stroke={C.hairHi} strokeWidth={3} opacity={0.55} strokeLinecap="round" />
+              <path d="M 40 -76 C 54 -72 66 -64 74 -52" fill="none" stroke={C.hairHi} strokeWidth={2} opacity={0.5} strokeLinecap="round" />
+              <path d="M -56 -40 C -60 -20 -58 -6 -54 4" fill="none" stroke={L.rim} strokeWidth={1.6} opacity={0.5} strokeLinecap="round" />
+              {[
+                {r: [-20, -126], d: 'M 0 0 C -6 -16 6 -26 18 -22'},
+                {r: [14, -132], d: 'M 0 0 C 4 -18 20 -24 26 -14'},
+                {r: [62, -112], d: 'M 0 0 C 14 -12 30 -8 32 4'},
+                {r: [-52, -96], d: 'M 0 0 C -16 -10 -24 2 -20 14'},
+                {r: [92, -76], d: 'M 0 0 C 14 -2 22 10 16 20'},
+              ].map((st, i) => (
+                <path
+                  key={`s${i}`}
+                  d={st.d}
+                  transform={`translate(${st.r[0]} ${st.r[1]}) rotate(${hairLag * (1.2 + i * 0.25) + flutter(i)})`}
+                  fill="none"
+                  stroke={i === 2 ? C.hairHi : C.hair}
+                  strokeWidth={2.6}
+                  strokeLinecap="round"
+                />
+              ))}
+            </g>
+          }
+        />
       </g>
 
       {/* ── Desk ── */}

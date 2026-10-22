@@ -1,6 +1,7 @@
 import React from 'react';
 import {useCurrentFrame} from 'remotion';
-import {Brow, Eye, Glow, Hand, HandShape, Limb, Mouth, Nose} from './parts';
+import {Glow, Hand, HandShape, Limb} from './parts';
+import {Head} from './Head';
 import {Keyboard, Monitor, Mug, Notebook, Phone} from './props';
 import {
   blink,
@@ -269,14 +270,8 @@ export const Sam: React.FC<SamProps> = ({
   const nod = clamp01(look.nod + body.nodAdd);
   const gx = Math.max(-1, Math.min(1, look.gx + body.gxAdd));
   const gy = Math.max(-1, Math.min(1, look.gy + body.gyAdd));
-  const nearX = lerp(24, 40, turn);
-  const farX = lerp(-22, -4, turn);
-  const eyeY = -8 + nod * 9;
   const lid = Math.max(clamp01(ex.lid + nod * 0.3 - body.sip * 0.2), lidBlink);
   const mouthOpen = ex.open + vis.open;
-  const mouthW = 32 * ex.width * vis.width;
-  const mouthX = lerp(10, 28, turn);
-  const mouthY = 50 + nod * 7;
 
   const phoneHold = clamp01(body.phone);
   const phonePos = {x: lerp(PHONE_DOCK.x, back.hx + 10, phoneHold), y: lerp(PHONE_DOCK.y, back.hy - 36, phoneHold)};
@@ -291,10 +286,9 @@ export const Sam: React.FC<SamProps> = ({
   const rimDx = -4;
   const handProps = {skin: C.skin, shade: C.skinShade, rim: L.rim, rimDx};
   const torso = 'M 74 458 C 44 462 20 478 12 506 C 2 550 -2 640 0 760 L 222 760 C 224 650 222 562 212 516 C 204 488 180 466 150 458 Z';
-  const face = 'M -60 -20 C -64 -76 -28 -100 6 -100 C 50 -100 72 -70 72 -26 C 74 -6 78 10 74 24 C 72 50 58 76 34 86 C 18 92 2 92 -12 84 C -36 72 -54 48 -58 18 Z';
   const hairCap =
-    'M -62 12 C -72 -50 -48 -110 6 -114 C 52 -118 84 -94 84 -60 C 84 -52 80 -48 76 -48 C 66 -58 50 -64 30 -64 C 12 -64 -6 -60 -20 -56 C -30 -46 -36 -30 -40 -14 C -42 -4 -44 4 -46 10 C -52 14 -58 16 -62 12 Z';
-  const hairBack = 'M -62 8 C -72 -46 -50 -98 2 -106 C 46 -112 80 -88 80 -54 C 72 -62 54 -68 34 -68 C 14 -66 -6 -62 -22 -58 C -36 -44 -42 -16 -50 8 Z';
+    'M -60 8 C -70 -40 -58 -100 -4 -114 C 40 -124 82 -104 88 -70 C 90 -60 88 -52 84 -46 C 74 -56 58 -62 40 -62 C 22 -62 6 -58 -8 -54 C -20 -48 -28 -36 -32 -18 L -34 2 L -40 4 L -42 -8 C -48 -8 -56 -2 -60 8 Z';
+  const hairSwoop = 'M -6 -112 C 30 -128 82 -112 90 -76 C 82 -86 64 -92 46 -92 C 28 -92 10 -98 -6 -106 Z';
 
   const art = (
     <g>
@@ -372,40 +366,45 @@ export const Sam: React.FC<SamProps> = ({
 
       {/* ── Head ── */}
       <g transform={`translate(${neck[0] + now.sway.x * 0.6} ${neck[1] + now.sway.y * 0.6}) rotate(${now.headRot}) translate(0 -98)`}>
-        <path d={hairBack} fill={L.rim} transform="translate(-4 -2)" />
-        <path d={hairBack} fill={C.hair} />
-        <path d={face} fill={L.rim} transform="translate(-3 0)" />
-        <path d={face} fill={`url(#${uid}-skin)`} />
-        <path d="M -58 -10 C -56 30 -40 62 -12 84 C -34 76 -52 54 -58 18 Z" fill={C.skinDeep} opacity={0.3} />
-        <path d={hairCap} fill={C.hair} />
-        <Glow id={`${uid}-faceglow`} cx={70} cy={10} r={70} color={L.screenGlow} opacity={0.18} />
-        {/* ear */}
-        <ellipse cx={lerp(-56, -44, turn)} cy={8} rx={11} ry={18} fill={C.skinShade} />
-        <path d={`M ${lerp(-56, -44, turn) - 2} -4 C ${lerp(-56, -44, turn) + 5} 2 ${lerp(-56, -44, turn) + 4} 14 ${lerp(-56, -44, turn) - 2} 18`} fill="none" stroke={C.skinDeep} strokeWidth={2} opacity={0.6} />
-        {/* cheeks warm when smiling */}
-        <ellipse cx={nearX + 6} cy={eyeY + 26} rx={12} ry={7} fill="#E07A5F" opacity={0.12 + ex.lower * 0.15} />
-        <Eye id={`${uid}-eyeF`} cx={farX} cy={eyeY} w={lerp(23, 18, turn)} h={11.5} lid={lid} lower={ex.lower} gazeX={gx} gazeY={gy} pupil={ex.pupil} iris={C.iris} lidFill={C.skinShade} />
-        <Eye id={`${uid}-eyeN`} cx={nearX} cy={eyeY} w={25} h={12.5} lid={lid} lower={ex.lower} gazeX={gx} gazeY={gy} pupil={ex.pupil} iris={C.iris} lidFill={C.skin} />
-        <Brow ix={nearX - 12} ox={nearX + 16} y={eyeY - 19} inner={ex.bIn} outer={ex.bOut} color={C.hair} width={5} />
-        <Brow ix={farX + 10} ox={farX - 12} y={eyeY - 18} inner={ex.bIn} outer={ex.bOut} color={C.hair} width={4.5} />
-        {/* thin round glasses */}
-        <g fill="none" stroke={C.frame} strokeWidth={2.4}>
-          <ellipse cx={nearX + 1} cy={eyeY + 1} rx={17} ry={16} fill="#fff" fillOpacity={0.05} />
-          <ellipse cx={farX} cy={eyeY + 1} rx={lerp(16, 12.5, turn)} ry={15} fill="#fff" fillOpacity={0.05} />
-          <path d={`M ${farX + lerp(16, 12.5, turn)} ${eyeY - 2} Q ${(farX + nearX) / 2 + 2} ${eyeY - 7} ${nearX - 16} ${eyeY - 2}`} />
-          <path d={`M ${farX - lerp(16, 12.5, turn)} ${eyeY - 2} L ${lerp(-52, -42, turn)} ${eyeY - 4}`} />
-          <path d={`M ${nearX - 6} ${eyeY - 12} A 14 14 0 0 1 ${nearX + 12} ${eyeY - 8}`} stroke="#F3D27A" strokeOpacity={0.55} strokeWidth={1.4} />
-        </g>
-        {/* nose */}
-        <Nose x={lerp(40, 66, turn)} y={-4 + nod * 6} skin={C.skin} shade={C.skinShade} deep={C.skinDeep} />
-        <Mouth id={`${uid}-mouth`} cx={mouthX} cy={mouthY} w={mouthW} open={mouthOpen} curve={ex.curve} skew={ex.skew} lip={C.lip} />
-        {/* neat short hair with a side part */}
-        <path d="M -30 -98 C 0 -112 50 -108 76 -74 C 80 -64 80 -56 78 -50 C 66 -62 50 -70 30 -70 C 10 -66 -12 -64 -30 -60 Z" fill={C.hair} />
-        <g transform={`rotate(${hairLag * 0.6} 20 -70)`}>
-          <path d="M 30 -70 C 50 -72 68 -62 78 -50 C 66 -58 50 -62 34 -62 Z" fill={C.hair} />
-          <path d="M -8 -96 C 20 -104 50 -98 70 -80" fill="none" stroke={C.hairHi} strokeWidth={2.5} opacity={0.6} strokeLinecap="round" />
-        </g>
-        <path d="M -20 -102 C -16 -90 -14 -76 -14 -62" fill="none" stroke="#120C08" strokeWidth={1.8} opacity={0.6} />
+        <Head
+          uid={`${uid}-head`}
+          variant="sam"
+          turn={turn}
+          nod={nod}
+          gx={gx}
+          gy={gy}
+          ex={ex}
+          lid={lid}
+          open={mouthOpen}
+          width={ex.width * vis.width}
+          skin={{base: C.skin, light: '#EBBC96', shade: C.skinShade, deep: C.skinDeep, lip: '#B86E5C', lipDeep: '#7A3F33', blush: '#E07A5F'}}
+          rim={L.rim}
+          glow={L.screenGlow}
+          glowOpacity={0.12}
+          iris={C.iris}
+          browColor={C.hair}
+          glasses={{frame: C.frame, hi: '#F3D27A'}}
+          blush={0.6}
+          frame={frame}
+          hairBack={
+            <g>
+              <path d={hairCap} fill={L.rim} transform="translate(-4 -2)" />
+              <path d={hairCap} fill={C.hair} />
+            </g>
+          }
+          hairFront={
+            <g>
+              <path d={hairCap} fill={C.hair} />
+              <g transform={`rotate(${hairLag * 0.5} 0 -100)`}>
+                <path d={hairSwoop} fill="#3A2A1E" />
+                <path d="M 8 -110 C 36 -118 66 -106 82 -86" fill="none" stroke={C.hairHi} strokeWidth={3} opacity={0.6} strokeLinecap="round" />
+                <path d="M 30 -94 C 50 -94 68 -86 80 -76" fill="none" stroke={C.hairHi} strokeWidth={1.6} opacity={0.4} strokeLinecap="round" />
+              </g>
+              <path d="M -8 -110 C -10 -96 -12 -84 -14 -70" fill="none" stroke="#120C08" strokeWidth={2} opacity={0.55} strokeLinecap="round" />
+              <path d="M -56 -40 C -60 -20 -58 -6 -54 4" fill="none" stroke={L.rim} strokeWidth={1.6} opacity={0.5} strokeLinecap="round" />
+            </g>
+          }
+        />
       </g>
 
       {/* ── Desk ── */}
