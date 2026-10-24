@@ -35,9 +35,7 @@ const Column: React.FC<{pos: number; width?: number}> = ({pos, width}) => (
 export const Clock: React.FC<{frame: number; color?: string; opacity?: number}> = ({frame, color = HPM.charcoal, opacity = 1}) => {
   const j = jumpAt(frame);
   const size = LOCK.clockSize;
-  const font = `${WEIGHT.headline} ${size}px ${FONT}`;
-  const w = Math.max(...'0123456789'.split('').map((d) => measureText(d, font)), size * 0.7);
-  const colon = measureText(':', font) || size * 0.3;
+  const w = Math.max(...'0123456789'.split('').map((d) => measureText({text: d, fontSize: size, fontWeight: WEIGHT.headline})), size * 0.7);
 
   const from = j ? digits(j.from.hour, j.from.minute) : digits(START_MOMENT.hour, START_MOMENT.minute);
   const to = j ? digits(j.to.hour, j.to.minute) : from;
@@ -89,7 +87,7 @@ export const Clock: React.FC<{frame: number; color?: string; opacity?: number}> 
         <Column pos={cols[0].pos} width={cols[0].width} />
       </span>
       <Column pos={cols[1].pos} width={cols[1].width} />
-      <span style={{display: 'inline-block', width: colon, textAlign: 'center', marginRight: TYPE.headlineTracking, transform: 'translateY(-0.04em)'}}>:</span>
+      <span style={{display: 'inline-block', marginRight: TYPE.headlineTracking, transform: 'translateY(-0.04em)'}}>:</span>
       <Column pos={cols[2].pos} width={cols[2].width} />
       <Column pos={cols[3].pos} width={cols[3].width} />
     </div>

@@ -7,7 +7,7 @@
 // arrival plus every later layout change, each springing in from the frame that caused
 // it. Springs add up linearly, so cards glide even when arrivals overlap: nothing jumps.
 import {MAIN_RUN, Notif, OPEN_RUN, Run} from '../notifications';
-import {CARD, FONT, LOCK, WEIGHT} from '../theme';
+import {CARD, LOCK, WEIGHT} from '../theme';
 import {fontsReady, measureText} from '../fonts';
 import {cardSpring} from './anim';
 import {interpolate} from 'remotion';
@@ -23,13 +23,12 @@ export const TEXT_WIDTH = CARD.width - CARD.padX * 2 - CARD.tile - CARD.gap;
 
 // Body wraps to 1–2 lines; heights follow the card spec (label, title, body).
 export const bodyLines = (body: string) => {
-  const font = `${WEIGHT.body} ${CARD.bodySize}px ${FONT}`;
   const words = body.split(' ');
   let lines = 1;
   let line = '';
   for (const w of words) {
     const next = line ? `${line} ${w}` : w;
-    if (line && measureText(next, font) > TEXT_WIDTH) {
+    if (line && measureText({text: next, fontSize: CARD.bodySize, fontWeight: WEIGHT.body}) > TEXT_WIDTH) {
       lines++;
       line = w;
     } else line = next;

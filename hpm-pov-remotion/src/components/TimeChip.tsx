@@ -7,7 +7,7 @@ import {Swap} from './Swap';
 
 const SIZE = 26;
 const PAD_X = 26;
-const labelWidth = (s: string) => measureText(s, `${WEIGHT.label} ${SIZE}px ${FONT}`, SIZE * 0.08) + PAD_X * 2;
+const labelWidth = (s: string) => measureText({text: s, fontSize: SIZE, fontWeight: WEIGHT.label, letterSpacing: TYPE.labelTracking}) + PAD_X * 2;
 
 // "Time jump" chip: Hot Red pill with a Cream uppercase label. The label rolls and the
 // pill morphs to the new width with a little kick.

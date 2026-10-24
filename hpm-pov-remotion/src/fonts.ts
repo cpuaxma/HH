@@ -2,6 +2,7 @@ import '@fontsource/montserrat/500.css';
 import '@fontsource/montserrat/600.css';
 import '@fontsource/montserrat/700.css';
 import '@fontsource/montserrat/800.css';
+import {measureText as measure} from '@remotion/layout-utils';
 import {useEffect, useState} from 'react';
 import {continueRender, delayRender} from 'remotion';
 
@@ -19,11 +20,11 @@ export const useFonts = () => {
 
 export const fontsReady = () => typeof document !== 'undefined' && FACES.every((f) => document.fonts.check(f));
 
-// Canvas text measurement (only meaningful once fontsReady()).
-let ctx: CanvasRenderingContext2D | null = null;
-export const measureText = (text: string, font: string, letterSpacingPx = 0) => {
-  ctx ??= document.createElement('canvas').getContext('2d');
-  if (!ctx) return text.length * 0.6 * parseFloat(font.split(' ')[1]);
-  ctx.font = font;
-  return ctx.measureText(text).width + letterSpacingPx * Array.from(text).length;
+// Text width via @remotion/layout-utils, with the same family, size, weight and tracking
+// the text renders with. It refuses to measure (or cache) before the fonts are loaded,
+// because layout-utils caches results and a fallback-font width would stick.
+export type TextSpec = {text: string; fontSize: number; fontWeight: number; letterSpacing?: string};
+export const measureText = ({text, fontSize, fontWeight, letterSpacing}: TextSpec) => {
+  if (!fontsReady()) return text.length * fontSize * 0.6;
+  return measure({text, fontFamily: 'Montserrat', fontSize, fontWeight, letterSpacing, validateFontIsLoaded: true}).width;
 };

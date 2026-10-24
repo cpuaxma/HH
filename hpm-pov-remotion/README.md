@@ -8,7 +8,8 @@ It opens cold on the payoff: frame 0 is already mid-flood at Month 3, under "POV
 npm install
 npm run studio            # preview and scrub in the browser
 npm run stills            # QA stills: one per beat (0.8s … 28s) → out/stills
-npm run render            # → out/hpm-pov.mp4 (H.264, CRF 18)
+npm run render            # → out/hpm-pov.mp4 (H.264, CRF 18, with sound)
+python3 scripts/make-sfx.py   # regenerate the sound effects in public/sfx (numpy)
 ```
 
 Rendering goes frame by frame through `remotion render`. To use a Chrome or Chromium you already have, add `--browser-executable=/path/to/chrome` to the render, or set `REMOTION_BROWSER` for `npm run stills`. Montserrat 500/600/700/800 is bundled locally from `@fontsource/montserrat`. All icons come from `lucide-react`.
@@ -37,7 +38,18 @@ The lock screen and notifications are generic: no real app names, logos or OS br
   - `MOMENTS` holds the clock, date and chip after each time jump.
   - Each run's `counter` drives its "+N more" counter: the real hidden count until `from`, then the keyframes.
 - **Timing:** `src/timeline.ts`. `SCENES` holds the scene ranges; `CUE` holds every cue as an absolute frame. `CUE.jumps` lists the time jumps, including the reversed rewind. `storyTime()` freezes time during the stillness.
+- **Sound:** `src/sound.ts`, see below.
 - **Look:** `src/theme.ts` holds the colours, springs and easing, the lock-screen and card layout, and the notification type → icon and tile colour map.
+
+## Sound
+
+The reel has a sound layer. All cues live as data in `src/sound.ts`, and `<SoundTrack>` plays each one in its own `<Sequence>` with `@remotion/media` `<Audio>`.
+
+- **Pings:** each arrival pings. The pitch rises through the story: one lonely ping for mom, then C6 in Week 1, D6 in Week 4, E6 in the flood. The flood pings every other card at lower volume, so it builds like a beat instead of turning to noise.
+- **Moves:** whooshes play on the time jumps, a falling stutter on the rewind, and a low thump when the pepper lands.
+- **Overheat and the end:** a rumble swells under the overheat and cuts dead on the 6-frame freeze, so the stillness is real silence. Then a snap and swoosh on "Clear all", a boom on the red flood, and a final ping for the CTA card.
+
+`scripts/make-sfx.py` synthesises every effect from sine waves and filtered noise. They're original and license-free, and deliberately generic: no real phone or OS notification sounds. Running it again produces identical files.
 
 ## How the stack works
 

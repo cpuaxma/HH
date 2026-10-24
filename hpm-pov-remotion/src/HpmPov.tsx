@@ -7,6 +7,7 @@ import {LockClock} from './components/LockClock';
 import {HeatGlow, LockScreen} from './components/LockScreen';
 import {NotificationStack} from './components/NotificationStack';
 import {PepperLayer} from './components/PepperLayer';
+import {SoundTrack} from './components/SoundTrack';
 import {StatusBar} from './components/StatusBar';
 import {useFonts} from './fonts';
 import {exit, progress} from './lib/anim';
@@ -18,10 +19,12 @@ import {Quiet} from './scenes/Quiet';
 import {Overheat} from './scenes/Overheat';
 import {TimeJump} from './scenes/TimeJump';
 import {CUE, SCENES, storyTime} from './timeline';
-import {EASE_IN_OUT, HPM} from './theme';
+import {EASE_IN_OUT, FPS, HPM} from './theme';
 import {interpolateColors} from 'remotion';
 
-const seq = (s: {from: number; to: number}) => ({from: s.from, durationInFrames: s.to - s.from});
+// Every scene is premounted a second early (skill rule: always premount), so images such
+// as the CTA logo are decoded before their first visible frame.
+const seq = (s: {from: number; to: number}) => ({from: s.from, durationInFrames: s.to - s.from, premountFor: FPS});
 
 // "POV: You Hired Hot Pepper Media": 30s, 1080×1920, 60fps. The full frame is the
 // viewer's lock screen. It opens mid-flood, rewinds three months, then builds back up. Persistent layers (wallpaper, heat, clock, stack, status bar,
@@ -81,6 +84,7 @@ export const HpmPov: React.FC = () => {
         <Cta />
       </Sequence>
       <Grain />
+      <SoundTrack />
     </AbsoluteFill>
   );
 };
