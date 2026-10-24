@@ -5,12 +5,12 @@ import {useSceneFrame} from '../lib/useSceneFrame';
 import {CUE} from '../timeline';
 import {LOCK} from '../theme';
 
-// 3a / 3b / 3c · A time jump: the clock, date and chip roll forward (LockClock) while two
-// soft light streaks whoosh across the clock. The notifications themselves are data
+// A time jump (the rewind and Week 1 / Week 4 / Month 3): the clock, date and chip roll
+// (LockClock) while two soft light streaks whoosh across the clock, backwards on the rewind. The notifications themselves are data
 // (notifications.ts) played by the persistent NotificationStack.
 export const TimeJump: React.FC<{from: number; jump: number}> = ({from, jump}) => {
   const f = useSceneFrame(from);
-  const start = CUE.jumps[jump];
+  const {at: start, reverse} = CUE.jumps[jump];
   const streaks = [0, 5].map((d, i) => {
     const p = progress(f, start + d, 26);
     return {p, y: LOCK.clockCenterY - 40 + i * 70, w: 520 - i * 140};
@@ -24,7 +24,7 @@ export const TimeJump: React.FC<{from: number; jump: number}> = ({from, jump}) =
             style={{
               position: 'absolute',
               top: s.y,
-              left: -s.w + (1080 + s.w * 2) * s.p,
+              left: -s.w + (1080 + s.w * 2) * (reverse ? 1 - s.p : s.p),
               width: s.w,
               height: 10,
               borderRadius: 5,

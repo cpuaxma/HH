@@ -1,7 +1,6 @@
 import {BatteryFull, Signal, Wifi} from 'lucide-react';
 import React from 'react';
-import {jumpAt, timeText} from '../lib/moments';
-import {MOMENTS} from '../notifications';
+import {START_MOMENT, jumpAt, timeText} from '../lib/moments';
 import {FONT, HPM, LOCK, WEIGHT} from '../theme';
 import {Swap} from './Swap';
 
@@ -14,7 +13,7 @@ export const StatusBar: React.FC<{frame: number; color?: string}> = ({frame, col
       <Swap
         frame={frame}
         at={j ? j.start + 8 : null}
-        from={timeText(j ? j.from : MOMENTS[0])}
+        from={timeText(j ? j.from : START_MOMENT)}
         to={j ? timeText(j.to) : ''}
         distance={18}
         style={{position: 'absolute', left: 64, top: 2, fontWeight: WEIGHT.label, fontSize: 30, lineHeight: '40px'}}

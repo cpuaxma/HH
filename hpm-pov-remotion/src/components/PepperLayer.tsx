@@ -1,6 +1,6 @@
 import React from 'react';
 import {interpolateColors} from 'remotion';
-import {kick, mix, progress} from '../lib/anim';
+import {exit, kick, mix, progress} from '../lib/anim';
 import {CUE} from '../timeline';
 import {EASE_IN_OUT, HPM} from '../theme';
 import {PepperDraw} from './PepperDraw';
@@ -11,7 +11,19 @@ export const DOCK = {left: 150, top: 34, width: 50};
 // The pepper drops in, draws itself in Hot Red, kicks, then shrinks and docks in the
 // status bar next to the time for the rest of the video (Cream once the frame floods).
 export const PepperLayer: React.FC<{frame: number}> = ({frame}) => {
-  if (frame < CUE.pepperDrop) return null;
+  if (frame < CUE.pepperDrop) {
+    // Cold open: already docked (this is the future); it pops out on the rewind.
+    const out = exit(frame, CUE.rewind, 16);
+    if (out >= 1) return null;
+    return (
+      <PepperDraw
+        frame={frame}
+        width={DOCK.width}
+        strokePx={2.8}
+        style={{position: 'absolute', left: DOCK.left, top: DOCK.top, opacity: 1 - out, transform: `scale(${1 - 0.6 * out})`}}
+      />
+    );
+  }
   const drop = kick(frame, CUE.pepperDrop);
   const dock = kick(frame, CUE.pepperDock);
   const left = mix(REST.left, DOCK.left, dock);

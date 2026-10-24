@@ -1,6 +1,5 @@
 import React from 'react';
-import {jumpAt, dateText} from '../lib/moments';
-import {MOMENTS} from '../notifications';
+import {START_MOMENT, dateText, jumpAt} from '../lib/moments';
 import {FONT, HPM, LOCK, WEIGHT} from '../theme';
 import {Clock} from './Clock';
 import {Swap} from './Swap';
@@ -15,7 +14,7 @@ export const LockClock: React.FC<{frame: number; opacity?: number}> = ({frame, o
         <Swap
           frame={frame}
           at={j ? j.start + 4 : null}
-          from={dateText(j ? j.from : MOMENTS[0])}
+          from={dateText(j ? j.from : START_MOMENT)}
           to={j ? dateText(j.to) : ''}
           style={{fontFamily: FONT, fontWeight: WEIGHT.label, fontSize: 36, color: HPM.charcoal, opacity: 0.8, whiteSpace: 'nowrap', textAlign: 'center'}}
         />

@@ -7,11 +7,11 @@ import {enter, exit, kick, mix} from '../lib/anim';
 import {useSceneFrame} from '../lib/useSceneFrame';
 import {CUE, SCENES, storyTime} from '../timeline';
 import {CARD, FONT, HPM, LOCK, SAFE, TYPE, WEIGHT} from '../theme';
-import {CAPTION} from './Hook';
+import {CAPTION} from './Quiet';
 
 const BURST = 1900;
 
-// 4 · Overheat. Cards blur together (CameraMotionBlur around the stack), the shake builds
+// 6 · Overheat. Cards blur together (CameraMotionBlur around the stack), the shake builds
 // (Haptic), the wallpaper heats (HeatGlow + shimmer). A system alert drops in, then six
 // frames of stillness, then "Clear all" sends everything flying up.
 export const Overheat: React.FC = () => {

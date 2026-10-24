@@ -5,9 +5,9 @@ import {exit} from '../lib/anim';
 import {useSceneFrame} from '../lib/useSceneFrame';
 import {CUE, SCENES} from '../timeline';
 import {HPM} from '../theme';
-import {CAPTION, MomCard} from './Hook';
+import {CAPTION, MomCard} from './Quiet';
 
-// 2 · The hire. The mom card swipes away; the pepper (PepperLayer) drops, draws, kicks
+// 4 · The hire. The mom card swipes away; the pepper (PepperLayer) drops, draws, kicks
 // and docks in the status bar; the wallpaper line glows (LockScreen).
 export const Hire: React.FC = () => {
   const f = useSceneFrame(SCENES.hire.from);
@@ -17,7 +17,7 @@ export const Hire: React.FC = () => {
       {f >= CUE.momSwipe && swipe < 1 ? <MomCard frame={f} swipe={swipe} /> : null}
       <MaskReveal
         frame={f}
-        lines={['then you hired', '*hot pepper media.*']}
+        lines={['it all started', '*with one call.*']}
         start={CUE.hireCaption}
         exitAt={CUE.hireCaptionExit}
         fontSize={CAPTION.size + 8}

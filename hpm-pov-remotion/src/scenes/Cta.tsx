@@ -78,7 +78,7 @@ const Button: React.FC<{f: number}> = ({f}) => {
   );
 };
 
-// 5 · CTA on Hot Red (the flood itself is HeatGlow). All text in Cream.
+// 7 · CTA on Hot Red (the flood itself is HeatGlow). All text in Cream.
 export const Cta: React.FC = () => {
   const f = useSceneFrame(SCENES.cta.from);
   const logo = kick(f, CUE.logo);

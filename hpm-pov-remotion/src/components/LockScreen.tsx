@@ -21,7 +21,9 @@ export const heatAt = (t: number) => progress(t, CUE.heat, 190, EASE_IN_OUT);
 // Wallpaper: Cream → Peach, a faint single-line pepper and one thin Hot Red line.
 // During the overheat a turbulence displacement adds a subtle heat shimmer.
 export const LockScreen: React.FC<{frame: number; t: number}> = ({frame, t}) => {
-  const glow = progress(frame, CUE.lineGlow, 50);
+  // The line glows in the cold open (the future), dims on the rewind, and lights up
+  // again when they hire Hot Pepper Media.
+  const glow = Math.max(1 - progress(frame, CUE.rewind, 40), progress(frame, CUE.lineGlow, 50));
   const heat = heatAt(t);
   const shimmer = heat * 9;
   const id = 'heat-shimmer';

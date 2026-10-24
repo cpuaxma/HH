@@ -1,8 +1,7 @@
 import React from 'react';
 import {enter, kick, mix} from '../lib/anim';
-import {jumpAt} from '../lib/moments';
+import {START_MOMENT, jumpAt} from '../lib/moments';
 import {measureText} from '../fonts';
-import {MOMENTS} from '../notifications';
 import {FONT, HPM, LOCK, TYPE, WEIGHT} from '../theme';
 import {Swap} from './Swap';
 
@@ -14,7 +13,7 @@ const labelWidth = (s: string) => measureText(s, `${WEIGHT.label} ${SIZE}px ${FO
 // pill morphs to the new width with a little kick.
 export const TimeChip: React.FC<{frame: number; opacity?: number}> = ({frame, opacity = 1}) => {
   const j = jumpAt(frame);
-  const from = j ? j.from.chip : MOMENTS[0].chip;
+  const from = j ? j.from.chip : START_MOMENT.chip;
   const to = j ? j.to.chip : from;
   const width = mix(labelWidth(from), labelWidth(to), j ? enter(frame, j.start + 6, 26) : 0);
   const k = j ? mix(0.88, 1, kick(frame, j.start + 8)) : 1;

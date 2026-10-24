@@ -1,12 +1,12 @@
 import React from 'react';
 import {AbsoluteFill, random} from 'remotion';
 import {exit, progress} from '../lib/anim';
-import {NOTIFICATIONS} from '../notifications';
+import {ALL_ARRIVALS} from '../notifications';
 import {CUE} from '../timeline';
 
 const BUZZ = 6; // frames
 const AMP = 3; // px
-const ARRIVALS = [CUE.momIn, ...NOTIFICATIONS.map((n) => n.frame)];
+const ARRIVALS = [CUE.momIn, ...ALL_ARRIVALS];
 
 // Haptic buzz: every arrival nudges the whole screen ±3px over 6 frames, decaying.
 // In the overheat it builds into a steady shake. t is story time (frozen in the stillness).

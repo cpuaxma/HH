@@ -1,8 +1,7 @@
 import React from 'react';
 import {progress} from '../lib/anim';
-import {jumpAt} from '../lib/moments';
+import {START_MOMENT, jumpAt} from '../lib/moments';
 import {measureText} from '../fonts';
-import {MOMENTS} from '../notifications';
 import {FONT, HPM, LOCK, TYPE, WEIGHT} from '../theme';
 
 const ROLL = 30;
@@ -40,7 +39,7 @@ export const Clock: React.FC<{frame: number; color?: string; opacity?: number}> 
   const w = Math.max(...'0123456789'.split('').map((d) => measureText(d, font)), size * 0.7);
   const colon = measureText(':', font) || size * 0.3;
 
-  const from = j ? digits(j.from.hour, j.from.minute) : digits(MOMENTS[0].hour, MOMENTS[0].minute);
+  const from = j ? digits(j.from.hour, j.from.minute) : digits(START_MOMENT.hour, START_MOMENT.minute);
   const to = j ? digits(j.to.hour, j.to.minute) : from;
 
   const cols = COLUMNS.map((c) => {
@@ -52,7 +51,8 @@ export const Clock: React.FC<{frame: number; color?: string; opacity?: number}> 
       const vis = (a > 0 ? 1 : 0) + ((b > 0 ? 1 : 0) - (a > 0 ? 1 : 0)) * p;
       return {pos: a + (b - a) * p, width: vis >= 1 ? undefined : w * vis, opacity: vis};
     }
-    const travel = (((b - a) % 10) + 10) % 10 + 10 * c.spins;
+    // Forward jumps roll up through the digits; the rewind rolls them back down.
+    const travel = j?.reverse ? -((((a - b) % 10) + 10) % 10 + 10 * c.spins) : (((b - a) % 10) + 10) % 10 + 10 * c.spins;
     return {pos: a + travel * p, width: undefined, opacity: 1};
   });
 

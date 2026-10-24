@@ -1,11 +1,13 @@
 # Hot Pepper Media: "POV: You Hired Hot Pepper Media"
 
-A 30-second vertical reel (1080×1920, 60fps, 1800 frames) built in Remotion. The full frame is the viewer's own lock screen. It starts dead quiet with one sad notification. After they hire Hot Pepper Media, notifications arrive slowly, then faster, then in a flood. At the peak the phone overheats red, and the red floods into the CTA.
+A 30-second vertical reel (1080×1920, 60fps, 1800 frames) built in Remotion. The full frame is the viewer's own lock screen.
+
+It opens cold on the payoff: frame 0 is already mid-flood at Month 3, under "POV: you hired hot pepper media." Then it rewinds three months to a dead-quiet phone with one sad notification. After the hire, notifications arrive slowly, then faster, then in a flood. At the peak the phone overheats red, and the red floods into the CTA.
 
 ```
 npm install
 npm run studio            # preview and scrub in the browser
-npm run stills            # QA stills at 2.5s, 5.5s, 9s, 15s, 19.5s, 22.5s, 28s → out/stills
+npm run stills            # QA stills: one per beat (0.8s … 28s) → out/stills
 npm run render            # → out/hpm-pov.mp4 (H.264, CRF 18)
 ```
 
@@ -17,21 +19,24 @@ The lock screen and notifications are generic: no real app names, logos or OS br
 
 | # | Frames | Beat |
 |---|---|---|
-| 1 | 0–210 | The quiet phone: DAY 1, one notification from mom |
-| 2 | 200–400 | The hire: the pepper drops, draws in red, kicks and docks in the status bar |
-| 3a | 390–640 | WEEK 1: one card every ~40 frames |
-| 3b | 630–900 | WEEK 4: the gap tightens from 22 to 16 frames |
-| 3c | 890–1230 | MONTH 3: the flood (every 8 → 6 frames), "+more" climbs 12 → 47 → 99+ |
-| 4 | 1220–1500 | Overheat: motion blur, shake, heat glow and shimmer, system alert, 6-frame freeze, "Clear all" burst |
-| 5 | 1490–1800 | CTA: the heat floods the frame Hot Red |
+| 1 | 0–150 | Cold open: Month 3, mid-flood from frame 0, "POV: you hired / hot pepper media." |
+| 2 | 140–220 | Rewind: the cards fly back up, the clock rolls backwards to 9:00 / DAY 1, "99+" counts down |
+| 3 | 210–380 | The quiet phone: "3 months earlier…", one notification from mom |
+| 4 | 370–540 | The hire: "it all started / with one call.", the pepper drops, draws, kicks and docks |
+| 5a | 530–700 | WEEK 1: one card every ~36 frames |
+| 5b | 690–910 | WEEK 4: the gap tightens from 20 to 15 frames |
+| 5c | 900–1150 | MONTH 3: the flood again (every 7 → 6 frames), "+more" climbs 12 → 47 → 99+ |
+| 6 | 1140–1420 | Overheat: faster than the cold open (every 5 → 4 frames), motion blur, shake, heat glow and shimmer, system alert, 6-frame freeze, "Clear all" burst |
+| 7 | 1410–1800 | CTA: the heat floods the frame Hot Red; the final frame holds ~3s |
 
 ## Editing
 
 - **Notifications:** `src/notifications.ts`.
   - Every card is `{frame, type, title, body}`. `cadence()` spaces the flood with a gap that tightens.
+  - There are two runs, each its own stack. `OPEN_RUN` is the cold open; its cards have negative frames so the stack is already full on frame 0. `MAIN_RUN` is the story after the rewind.
   - `MOMENTS` holds the clock, date and chip after each time jump.
-  - `COUNTER_KEYS` drives the "+N more" counter during the flood. Before the flood it shows the real hidden count.
-- **Timing:** `src/timeline.ts`. `SCENES` holds the scene ranges; `CUE` holds every cue as an absolute frame. `storyTime()` freezes time during the stillness.
+  - Each run's `counter` drives its "+N more" counter: the real hidden count until `from`, then the keyframes.
+- **Timing:** `src/timeline.ts`. `SCENES` holds the scene ranges; `CUE` holds every cue as an absolute frame. `CUE.jumps` lists the time jumps, including the reversed rewind. `storyTime()` freezes time during the stillness.
 - **Look:** `src/theme.ts` holds the colours, springs and easing, the lock-screen and card layout, and the notification type → icon and tile colour map.
 
 ## How the stack works

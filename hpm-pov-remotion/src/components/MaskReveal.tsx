@@ -1,5 +1,6 @@
 import React from 'react';
-import {enter, exit, kick} from '../lib/anim';
+import {Easing} from 'remotion';
+import {exit, kick, progress} from '../lib/anim';
 import {FONT, HPM, TIMING, TYPE, WEIGHT} from '../theme';
 
 const PAD_TOP = 0.3;
@@ -70,7 +71,9 @@ export const MaskReveal: React.FC<Props> = ({
         const lineStart = start + charIndex * TIMING.charStagger;
         const out = exitAt === undefined ? 0 : exit(frame, exitAt + li * 2, exitDuration);
         const lift = exitDistance ?? fontSize * HIDDEN_Y;
-        const open = pill ? enter(frame, lineStart - 6, 18) : 1;
+        // The pill opens in step with its own letters, so it never shows as an empty bar.
+        const lineChars = line.replace(/[\s*]/g, '').length;
+        const open = pill ? progress(frame, lineStart + 4, lineChars * TIMING.charStagger + 4, Easing.out(Easing.quad)) : 1;
         const chars: React.ReactNode[] = [];
         for (const run of parseRuns(line)) {
           for (const ch of run.text) {

@@ -12,7 +12,7 @@ import {CARD_SPRING, FONT, FPS, HPM, WEIGHT} from '../theme';
 export const CAPTION = {left: 80, top: 650, size: 60} as const;
 export const MOM_TOP = 880;
 
-// Scene 1 and 2 share the mom card: it drifts in here and is swiped away in Hire.
+// Scenes 3 and 4 share the mom card: it drifts in here and is swiped away in Hire.
 export const MomCard: React.FC<{frame: number; swipe?: number}> = ({frame, swipe = 0}) => {
   const e = spring({frame: frame - CUE.momIn, fps: FPS, config: CARD_SPRING, durationInFrames: 50});
   return (
@@ -28,17 +28,17 @@ export const MomCard: React.FC<{frame: number; swipe?: number}> = ({frame, swipe
   );
 };
 
-// 1 · The quiet phone: one sad notification.
-export const Hook: React.FC = () => {
-  const f = useSceneFrame(SCENES.hook.from);
-  const sub = 0.4 * enter(f, CUE.momSub, 40) * (1 - exit(f, CUE.hookCaptionExit, 14));
+// 3 · Three months earlier: the quiet phone and one sad notification.
+export const Quiet: React.FC = () => {
+  const f = useSceneFrame(SCENES.quiet.from);
+  const sub = 0.4 * enter(f, CUE.momSub, 40) * (1 - exit(f, CUE.quietCaptionExit, 14));
   return (
     <AbsoluteFill>
       <MaskReveal
         frame={f}
-        lines={['POV: your business page', 'before us…']}
-        start={CUE.hookCaption}
-        exitAt={CUE.hookCaptionExit}
+        lines={['3 months earlier…']}
+        start={CUE.quietCaption}
+        exitAt={CUE.quietCaptionExit}
         fontSize={CAPTION.size}
         pill={HPM.cream}
         style={{position: 'absolute', left: CAPTION.left, top: CAPTION.top}}
