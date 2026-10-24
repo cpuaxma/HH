@@ -23,7 +23,7 @@ export const NotificationStack: React.FC = () => {
 
   const count = counterValue(t);
   const counterIn = cardSpring(t - firstGroupFrame());
-  const counterOut = flyOut(order.length);
+  const counterOut = flyOut(0);
   const disclaimer = enter(frame, CUE.disclaimer, 30) * (1 - flyOut(order.length + 2));
 
   return (
@@ -54,7 +54,7 @@ export const NotificationStack: React.FC = () => {
             top: groupBottom + 4,
             zIndex: 2000,
             transform: `translate(-50%, ${-CLEAR_DISTANCE * counterOut}px) scale(${mix(0.6, 1, counterIn)})`,
-            opacity: Math.min(1, counterIn),
+            opacity: Math.min(1, counterIn) * (1 - counterOut),
             background: HPM.charcoal,
             color: HPM.cream,
             fontFamily: FONT,

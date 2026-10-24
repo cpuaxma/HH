@@ -50,7 +50,9 @@ export const Overheat: React.FC = () => {
         exitDistance={BURST}
         exitDuration={24}
         fontSize={CAPTION.size + 8}
-        pill={HPM.cream}
+        // Charcoal pills: a warning has to cut through the white wall of cards.
+        pill={HPM.charcoal}
+        color={HPM.cream}
         style={{position: 'absolute', left: CAPTION.left, top: 820, zIndex: 3000}}
       />
       {clearIn > 0 ? (
