@@ -39,30 +39,30 @@ const cue = (at: number, sfx: Sfx, volume: number, until?: number): SoundCue => 
 
 const every = <T,>(list: T[], n: number) => list.filter((_, i) => i % n === 0);
 
-const openPings = every(OPEN_RUN.list.filter((x) => x.frame >= 0 && x.frame < CUE.rewind), 2).map((x) => cue(x.frame, 'ping-c', 0.3));
+const openPings = every(OPEN_RUN.list.filter((x) => x.frame >= 0 && x.frame < CUE.rewind), 2).map((x) => cue(x.frame, 'ping-c', 0.5));
 
 const main = MAIN_RUN.list;
-const week1 = main.filter((x) => x.frame < SCENES.week4.from).map((x) => cue(x.frame, 'ping-a', 0.55));
-const week4 = main.filter((x) => x.frame >= SCENES.week4.from && x.frame < SCENES.month3.from).map((x) => cue(x.frame, 'ping-b', 0.45));
-const month3 = every(main.filter((x) => x.frame >= SCENES.month3.from && x.frame < CUE.heat), 2).map((x) => cue(x.frame, 'ping-c', 0.3));
-const overheat = every(main.filter((x) => x.frame >= CUE.heat), 2).map((x) => cue(x.frame, 'ping-c', 0.2, CUE.freeze));
+const week1 = main.filter((x) => x.frame < SCENES.week4.from).map((x) => cue(x.frame, 'ping-a', 0.85));
+const week4 = main.filter((x) => x.frame >= SCENES.week4.from && x.frame < SCENES.month3.from).map((x) => cue(x.frame, 'ping-b', 0.75));
+const month3 = every(main.filter((x) => x.frame >= SCENES.month3.from && x.frame < CUE.heat), 2).map((x) => cue(x.frame, 'ping-c', 0.5));
+const overheat = every(main.filter((x) => x.frame >= CUE.heat), 2).map((x) => cue(x.frame, 'ping-c', 0.35, CUE.freeze));
 
 export const SOUND_CUES: SoundCue[] = [
   ...openPings,
-  cue(CUE.rewind, 'rewind', 0.8),
-  cue(CUE.momIn, 'ping-a', 0.6), // one lonely ping
-  cue(CUE.pepperDrop + 14, 'thump', 0.9), // the pepper lands
-  cue(CUE.pepperDock, 'whoosh', 0.3),
-  ...CUE.jumps.filter((j) => !j.reverse).map((j) => cue(j.at, 'whoosh', 0.45)),
+  cue(CUE.rewind, 'rewind', 1),
+  cue(CUE.momIn, 'ping-a', 0.95), // one lonely ping
+  cue(CUE.pepperDrop + 14, 'thump', 1), // the pepper lands
+  cue(CUE.pepperDock, 'whoosh', 0.5),
+  ...CUE.jumps.filter((j) => !j.reverse).map((j) => cue(j.at, 'whoosh', 0.7)),
   ...week1,
   ...week4,
   ...month3,
   ...overheat,
   // The heat builds under the overheat and cuts dead on the freeze: real silence.
-  {at: CUE.shakeRamp[0], sfx: 'rumble', volume: 0.55, duration: CUE.freeze - CUE.shakeRamp[0], loop: true, fadeIn: 120, fadeOut: 2},
-  cue(CUE.alert, 'thump', 0.55),
-  cue(CUE.clearAll, 'clear', 0.85),
-  cue(CUE.flood, 'flood', 0.9),
-  cue(CUE.logo, 'thump', 0.4),
-  cue(CUE.ctaCard, 'ping-a', 0.55), // the last notification: "your free call is one message away"
+  {at: CUE.shakeRamp[0], sfx: 'rumble', volume: 0.75, duration: CUE.freeze - CUE.shakeRamp[0], loop: true, fadeIn: 120, fadeOut: 2},
+  cue(CUE.alert, 'thump', 0.8),
+  cue(CUE.clearAll, 'clear', 1),
+  cue(CUE.flood, 'flood', 1),
+  cue(CUE.logo, 'thump', 0.6),
+  cue(CUE.ctaCard, 'ping-a', 0.9), // the last notification: "your free call is one message away"
 ];

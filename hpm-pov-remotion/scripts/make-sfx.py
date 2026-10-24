@@ -108,6 +108,9 @@ def main():
     f = 110 * np.exp(-t / 0.08) + 48
     phase = 2 * np.pi * np.cumsum(f) / SR
     thump = np.sin(phase) * env(t, 0.002, 0.09) + 0.25 * rng.standard_normal(len(t)) * env(t, 0.0005, 0.006)
+    # Upper harmonics + a woody knock so the hit still reads on phone speakers (no sub bass there).
+    thump += 0.5 * np.sin(2 * phase) * env(t, 0.002, 0.06) + 0.35 * np.sin(3 * phase) * env(t, 0.002, 0.04)
+    thump += 0.4 * np.sin(2 * np.pi * 320 * t) * env(t, 0.001, 0.03)
     write('thump', thump)
 
     # Overheat rumble: low filtered noise with a slow wobble (looped under the overheat).
@@ -118,6 +121,9 @@ def main():
     seam = int(SR * 0.08)
     rum[:seam] = rum[:seam] * np.linspace(0, 1, seam) + rum[-seam:] * np.linspace(1, 0, seam)
     rum = rum[:-seam]
+    # A mid-band hiss on top, so the heat is audible on small speakers too.
+    hiss = bandpass_sweep(rng.standard_normal(len(rum)), 380, 520, q=2.0)
+    rum = rum / (np.max(np.abs(rum)) + 1e-9) + 0.55 * hiss / (np.max(np.abs(hiss)) + 1e-9)
     write('rumble', rum, peak=0.8)
 
     # "Clear all": a crisp snap into an upward swoosh.
@@ -129,7 +135,11 @@ def main():
     # CTA flood: a deep boom under a wide whoosh.
     t = t_axis(1.2)
     f = 70 * np.exp(-t / 0.25) + 38
-    boom = np.sin(2 * np.pi * np.cumsum(f) / SR) * env(t, 0.004, 0.35)
+    bphase = 2 * np.pi * np.cumsum(f) / SR
+    boom = np.sin(bphase) * env(t, 0.004, 0.35)
+    # Harmonics carry the boom on phone speakers.
+    boom += 0.55 * np.sin(2 * bphase) * env(t, 0.004, 0.25) + 0.4 * np.sin(3 * bphase) * env(t, 0.004, 0.18)
+    boom += 0.3 * np.sin(4 * bphase) * env(t, 0.004, 0.12)
     write('flood', boom + 0.5 * whoosh(1.2, 300, 2400, curve=0.6) * env(t, 0.05, 0.5), peak=0.85)
 
 

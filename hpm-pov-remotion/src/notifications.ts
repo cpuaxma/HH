@@ -1,5 +1,5 @@
 // Every notification as data. Edit copy or timing here; the stack lays itself out.
-// All names and handles are fictional; types map to icons/colours in theme.NOTIF_STYLE.
+// All names and handles are fictional (Lebanese / Arabic first names); types map to icons/colours in theme.NOTIF_STYLE.
 import {NotifType} from './theme';
 import {CUE} from './timeline';
 
@@ -41,7 +41,7 @@ const FLOOD_COPY: Copy[] = [
   n('BOOKINGS', 'Bookings', 'fully booked this weekend 🔥'),
   n('MESSAGES', 'Messages', 'collab request from a local creator'),
   n('FOLLOWERS', '+1,240 new followers', 'this month'),
-  n('COMMENTS', 'rosa.v commented', 'best in town, no debate'),
+  n('COMMENTS', 'omar.k commented', 'best in town, no debate'),
   n('INSIGHTS', 'Account insights', 'your account is trending in your area'),
   n('MESSAGES', 'Messages', '12 new messages'),
   n('ORDERS', 'New order received', '#1203'),
@@ -49,14 +49,14 @@ const FLOOD_COPY: Copy[] = [
 ];
 const VARIANTS = (startOrder: number): Copy[] => [
   n('ORDERS', 'New order received', `#${startOrder}`),
-  n('FOLLOWERS', 'ben.ortiz', 'started following you'),
-  n('COMMENTS', 'ari.food commented', 'came back twice this week 😅'),
+  n('FOLLOWERS', 'george.haddad', 'started following you'),
+  n('COMMENTS', 'tatiana.eats commented', 'came back twice this week 😅'),
   n('ORDERS', 'New order received', `#${startOrder + 3}`),
   n('MESSAGES', 'Messages', 'is there parking nearby?'),
   n('BOOKINGS', 'New booking request', 'Sunday, 6 guests'),
   n('INSIGHTS', 'Account insights', 'profile visits up 312% this month'),
   n('ORDERS', 'New order received', `#${startOrder + 7}`),
-  n('COMMENTS', 'kim.eats commented', 'need this every day 🤤'),
+  n('COMMENTS', 'joe.khoury commented', 'need this every day 🤤'),
   n('FOLLOWERS', '+64 new followers', 'today'),
 ];
 const FLOOD = [...FLOOD_COPY, ...VARIANTS(1206), ...VARIANTS(1219), ...VARIANTS(1234)];
@@ -66,26 +66,26 @@ const OPEN = place(cadence(-150, 49, 6, 6), FLOOD);
 
 // 5a · Week 1: slow and hopeful, ~one every 36 frames.
 const WEEK1: Notif[] = [
-  {frame: 572, ...n('FOLLOWERS', 'sara.eats', 'started following you')},
-  {frame: 610, ...n('COMMENTS', 'jules.k commented', 'where is this?? 😍 need to go')},
+  {frame: 572, ...n('FOLLOWERS', 'sarah.eats', 'started following you')},
+  {frame: 610, ...n('COMMENTS', 'rami.n commented', 'where is this?? 😍 need to go')},
   {frame: 646, ...n('INSIGHTS', 'Weekly insights', 'your post is performing better than 90% of your recent posts')},
-  {frame: 680, ...n('MESSAGES', 'nina.m', 'hi! are you open on sundays?')},
+  {frame: 680, ...n('MESSAGES', 'nour.m', 'hi! are you open on sundays?')},
 ];
 
 // 5b · Week 4: picking up, gap 20 → 15 frames.
 const WEEK4 = place(cadence(734, 10, 20, 15), [
   n('BOOKINGS', 'New booking request', 'Saturday, 4 guests'),
   n('ORDERS', 'New order received', '#1043'),
-  n('MESSAGES', 'tom.rivera', 'do you deliver? 🙏'),
+  n('MESSAGES', 'karim.fares', 'do you deliver? 🙏'),
   n('FOLLOWERS', '+86 new followers', 'this week'),
-  n('COMMENTS', 'maya.lou commented', 'omg this reel 😂 sent it to everyone'),
+  n('COMMENTS', 'lara.azar commented', 'omg this reel 😂 sent it to everyone'),
   n('INSIGHTS', 'Reel insights', 'your reel reached 48K accounts'),
   n('ORDERS', 'New order received', '#1061'),
-  n('COMMENTS', 'dani.b commented', 'the vibes here 🙌'),
+  n('COMMENTS', 'hadi.b commented', 'the vibes here 🙌'),
   n('ORDERS', 'New order received', '#1064'),
   n('BOOKINGS', 'New booking request', 'Friday, 2 guests'),
-  n('MESSAGES', 'leo.park', 'can I book for a birthday?'),
-  n('FOLLOWERS', 'lena.bakes', 'started following you'),
+  n('MESSAGES', 'elie.chamoun', 'can I book for a birthday?'),
+  n('FOLLOWERS', 'yara.bakes', 'started following you'),
 ]);
 
 // 5c · Month 3: the flood again, gap 7 → 6 frames.
