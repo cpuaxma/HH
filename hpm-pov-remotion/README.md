@@ -12,9 +12,13 @@ npm run render            # → out/hpm-pov.mp4 (H.264, CRF 18, with sound)
 python3 scripts/make-sfx.py   # regenerate the sound effects in public/sfx (numpy)
 ```
 
-Rendering goes frame by frame through `remotion render`. To use a Chrome or Chromium you already have, add `--browser-executable=/path/to/chrome` to the render, or set `REMOTION_BROWSER` for `npm run stills`. Montserrat 500/600/700/800 is bundled locally from `@fontsource/montserrat`. All icons come from `lucide-react`.
+Rendering goes frame by frame through `remotion render`. To use a Chrome or Chromium you already have, add `--browser-executable=/path/to/chrome` to the render, or set `REMOTION_BROWSER` for `npm run stills`. Montserrat 500/600/700/800 and Inter 400/600 are bundled locally from `@fontsource`. All icons come from `lucide-react`.
 
-The lock screen and notifications are generic: no real app names, logos or OS branding. All usernames are fictional.
+The lock screen and notifications are styled as an iPhone (iOS):
+- **What's there:** the Dynamic Island, frosted notification cards, contact monogram avatars with an app badge, and the flashlight, camera and home bar along the bottom.
+- **What isn't:** no Apple logos, no real app icons, and no Apple sounds. The app icons are fictional, in brand colours.
+- **Font:** the cards use Inter, a stand-in for Apple's SF Pro, which may only be used on Apple platforms.
+- **Names:** all usernames are fictional, with Lebanese and Arabic names.
 
 ## Scenes (frames at 60fps; the overlaps are intentional)
 
@@ -47,7 +51,12 @@ The reel has a sound layer. All cues live as data in `src/sound.ts`, and `<Sound
 
 - **Pings:** each arrival pings. The pitch rises through the story: one lonely ping for mom, then C6 in Week 1, D6 in Week 4, E6 in the flood. The flood pings every other card at lower volume, so it builds like a beat instead of turning to noise.
 - **Moves:** whooshes play on the time jumps, a falling stutter on the rewind, and a low thump when the pepper lands.
-- **Overheat and the end:** a rumble swells under the overheat and cuts dead on the 6-frame freeze, so the stillness is real silence. Then a snap and swoosh on "Clear all", a boom on the red flood, and a final ping for the CTA card.
+- **Overheat:** a rumble swells under the overheat and cuts dead on the 6-frame freeze, so the stillness is real silence. Then a snap and swoosh on "Clear all", and a boom on the red flood.
+- **Outro:** the CTA has its own sound, with nothing reused from the story.
+  - A warm Cmaj9 pad swells under the whole CTA.
+  - A mallet arpeggio stings the logo.
+  - A kick lands on the button and on every pulse after it ("marketing with a kick").
+  - A two-note message tone plays for the final card, and a sparkle on the shine.
 
 `scripts/make-sfx.py` synthesises every effect from sine waves and filtered noise. They're original and license-free, and deliberately generic: no real phone or OS notification sounds. Running it again produces identical files.
 

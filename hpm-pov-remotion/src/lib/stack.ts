@@ -7,7 +7,7 @@
 // arrival plus every later layout change, each springing in from the frame that caused
 // it. Springs add up linearly, so cards glide even when arrivals overlap: nothing jumps.
 import {MAIN_RUN, Notif, OPEN_RUN, Run} from '../notifications';
-import {CARD, LOCK, WEIGHT} from '../theme';
+import {CARD, LOCK, UI_FONT} from '../theme';
 import {fontsReady, measureText} from '../fonts';
 import {cardSpring} from './anim';
 import {interpolate} from 'remotion';
@@ -21,22 +21,22 @@ const GROUP = [
 
 export const TEXT_WIDTH = CARD.width - CARD.padX * 2 - CARD.tile - CARD.gap;
 
-// Body wraps to 1–2 lines; heights follow the card spec (label, title, body).
+// Body wraps to 1–2 lines; heights follow the iOS card: title line + body lines, never
+// shorter than the avatar.
 export const bodyLines = (body: string) => {
   const words = body.split(' ');
   let lines = 1;
   let line = '';
   for (const w of words) {
     const next = line ? `${line} ${w}` : w;
-    if (line && measureText({text: next, fontSize: CARD.bodySize, fontWeight: WEIGHT.body}) > TEXT_WIDTH) {
+    if (line && measureText({text: next, fontSize: CARD.bodySize, fontWeight: 400, fontFamily: UI_FONT}) > TEXT_WIDTH) {
       lines++;
       line = w;
     } else line = next;
   }
   return Math.min(2, lines);
 };
-const HEADER = CARD.labelSize * 1.2 + 6 + CARD.titleSize * 1.2 + 2;
-export const cardHeight = (body: string) => CARD.padY * 2 + HEADER + CARD.bodyLine * bodyLines(body);
+export const cardHeight = (body: string) => CARD.padY * 2 + Math.max(CARD.tile, CARD.line * (1 + bodyLines(body)));
 
 type Slot = {y: number; scale: number; opacity: number; z: number};
 type Layout = {slots: Slot[]; groupBottom: number; grouped: number};

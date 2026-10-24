@@ -142,6 +142,69 @@ def main():
     boom += 0.3 * np.sin(4 * bphase) * env(t, 0.004, 0.12)
     write('flood', boom + 0.5 * whoosh(1.2, 300, 2400, curve=0.6) * env(t, 0.05, 0.5), peak=0.85)
 
+    outro()
+
+
+def note(name):
+    """'C4' → Hz (A4 = 440)."""
+    names = {'C': -9, 'D': -7, 'E': -5, 'F': -4, 'G': -2, 'A': 0, 'B': 2}
+    return 440.0 * 2 ** ((names[name[0]] + 12 * (int(name[1]) - 4)) / 12)
+
+
+def mallet(f0, seconds=0.5, decay=0.18):
+    """Marimba-like mallet: a fundamental with the bar's 4th partial, quick decay."""
+    t = t_axis(seconds)
+    return np.sin(2 * np.pi * f0 * t) * env(t, 0.002, decay) + 0.35 * np.sin(2 * np.pi * f0 * 3.93 * t) * env(t, 0.001, decay / 4)
+
+
+def outro():
+    """The CTA has its own palette: warm, musical, on a pulse (nothing from the story)."""
+    # Warm pad: Cmaj9, soft detuned saw voices, slow swell, long tail.
+    t = t_axis(6.6)
+    pad = np.zeros(len(t))
+    for name in ['C3', 'G3', 'B3', 'D4', 'E4']:
+        for detune in (-0.004, 0.004):
+            f = note(name) * (1 + detune)
+            for h in range(1, 9):  # band-limited saw, soft top end
+                pad += np.sin(2 * np.pi * f * h * t + h) / h * (0.85 ** h)
+    swell = np.clip(t / 0.8, 0, 1) ** 2 * (0.88 + 0.12 * np.sin(2 * np.pi * 0.5 * t))
+    write('outro-pad', pad * swell, peak=0.7)
+
+    # Kick: a tight synth kick with harmonics so it lands on phone speakers too.
+    t = t_axis(0.45)
+    f = 150 * np.exp(-t / 0.035) + 50
+    ph = 2 * np.pi * np.cumsum(f) / SR
+    kick = np.sin(ph) * env(t, 0.001, 0.16) + 0.45 * np.sin(2 * ph) * env(t, 0.001, 0.08) + 0.3 * np.sin(3 * ph) * env(t, 0.001, 0.05)
+    kick += 0.35 * rng.standard_normal(len(t)) * env(t, 0.0003, 0.004)
+    write('outro-kick', kick)
+
+    # Logo sting: a rising C major arpeggio on mallets.
+    t = t_axis(1.1)
+    sting = np.zeros(len(t))
+    for i, name in enumerate(['C5', 'E5', 'G5', 'C6']):
+        start = int(SR * 0.07 * i)
+        m = mallet(note(name), 1.1 - 0.07 * i, decay=0.22 + 0.08 * i)
+        sting[start:start + len(m)] += m * (0.8 + 0.1 * i)
+    write('outro-sting', sting, peak=0.8)
+
+    # Shine sparkle: a quick high glissando of tiny bells.
+    t = t_axis(0.7)
+    sparkle = np.zeros(len(t))
+    for i in range(9):
+        start = int(SR * 0.045 * i)
+        m = mallet(note('G6') * 2 ** (i / 12 * 2), 0.7 - 0.045 * i, decay=0.07)
+        sparkle[start:start + len(m)] += m * (0.5 + 0.05 * i)
+    write('outro-sparkle', sparkle, peak=0.55)
+
+    # Final message tone: a soft two-note (G5 → C6) "you've got a message".
+    t = t_axis(0.8)
+    msg = np.zeros(len(t))
+    for i, name in enumerate(['G5', 'C6']):
+        start = int(SR * 0.12 * i)
+        m = mallet(note(name), 0.8 - 0.12 * i, decay=0.25)
+        msg[start:start + len(m)] += m
+    write('outro-msg', msg, peak=0.8)
+
 
 if __name__ == '__main__':
     main()

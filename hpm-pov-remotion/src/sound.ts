@@ -3,9 +3,11 @@
 // Pings rise in pitch and thin out as the cadence speeds up, so the build reads like a beat.
 import {MAIN_RUN, OPEN_RUN} from './notifications';
 import {CUE, SCENES} from './timeline';
-import {FPS} from './theme';
+import {DURATION, FPS} from './theme';
 
-export type Sfx = 'ping-a' | 'ping-b' | 'ping-c' | 'whoosh' | 'rewind' | 'thump' | 'rumble' | 'clear' | 'flood';
+export type Sfx =
+  | 'ping-a' | 'ping-b' | 'ping-c' | 'whoosh' | 'rewind' | 'thump' | 'rumble' | 'clear' | 'flood'
+  | 'outro-pad' | 'outro-kick' | 'outro-sting' | 'outro-sparkle' | 'outro-msg';
 
 // Length of each file in seconds (see make-sfx.py).
 const LENGTH: Record<Sfx, number> = {
@@ -18,6 +20,11 @@ const LENGTH: Record<Sfx, number> = {
   rumble: 1.92,
   clear: 0.6,
   flood: 1.2,
+  'outro-pad': 6.6,
+  'outro-kick': 0.45,
+  'outro-sting': 1.1,
+  'outro-sparkle': 0.7,
+  'outro-msg': 0.8,
 };
 
 export type SoundCue = {
@@ -47,6 +54,18 @@ const week4 = main.filter((x) => x.frame >= SCENES.week4.from && x.frame < SCENE
 const month3 = every(main.filter((x) => x.frame >= SCENES.month3.from && x.frame < CUE.heat), 2).map((x) => cue(x.frame, 'ping-c', 0.5));
 const overheat = every(main.filter((x) => x.frame >= CUE.heat), 2).map((x) => cue(x.frame, 'ping-c', 0.35, CUE.freeze));
 
+// The CTA sounds like nothing before it: a warm pad, a kick on every button pulse
+// ("marketing with a kick"), a mallet sting for the logo, a sparkle on the shine and a
+// two-note message tone for the last card. No pings, whooshes or rumble.
+const PULSES = [CUE.ctaButton, ...[0, 1, 2, 3].map((i) => CUE.pulseFrom + i * FPS)];
+const OUTRO: SoundCue[] = [
+  {at: CUE.flood + 4, sfx: 'outro-pad', volume: 0.6, duration: DURATION - (CUE.flood + 4), fadeIn: 30, fadeOut: 30},
+  cue(CUE.logo, 'outro-sting', 0.8),
+  ...PULSES.map((at) => cue(at, 'outro-kick', 0.9, DURATION)),
+  cue(CUE.ctaCard, 'outro-msg', 0.85), // "your free call is one message away"
+  cue(CUE.shine, 'outro-sparkle', 0.6),
+];
+
 export const SOUND_CUES: SoundCue[] = [
   ...openPings,
   cue(CUE.rewind, 'rewind', 1),
@@ -63,6 +82,5 @@ export const SOUND_CUES: SoundCue[] = [
   cue(CUE.alert, 'thump', 0.8),
   cue(CUE.clearAll, 'clear', 1),
   cue(CUE.flood, 'flood', 1),
-  cue(CUE.logo, 'thump', 0.6),
-  cue(CUE.ctaCard, 'ping-a', 0.9), // the last notification: "your free call is one message away"
+  ...OUTRO,
 ];

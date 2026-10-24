@@ -6,7 +6,7 @@ import {EASE_IN_OUT, HPM} from '../theme';
 import {PepperDraw} from './PepperDraw';
 
 const REST = {left: 540 - 190, top: 1010, width: 380};
-export const DOCK = {left: 150, top: 34, width: 50};
+export const DOCK = {left: 150, top: 49, width: 50};
 
 // The pepper drops in, draws itself in Hot Red, kicks, then shrinks and docks in the
 // status bar next to the time for the rest of the video (Cream once the frame floods).

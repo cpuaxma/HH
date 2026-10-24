@@ -3,6 +3,7 @@ import React from 'react';
 import {AbsoluteFill, Sequence, useCurrentFrame} from 'remotion';
 import {Grain} from './components/Grain';
 import {Haptic} from './components/Haptic';
+import {LockChrome} from './components/LockChrome';
 import {LockClock} from './components/LockClock';
 import {HeatGlow, LockScreen} from './components/LockScreen';
 import {NotificationStack} from './components/NotificationStack';
@@ -54,6 +55,7 @@ export const HpmPov: React.FC = () => {
           <NotificationStack stack={MAIN_STACK} clearAt={CUE.clearBurst} stagger={1.5} disclaimerFrom={CUE.disclaimer} />
         )}
         <StatusBar frame={frame} color={chrome} />
+        <LockChrome opacity={clockFade} color={chrome} />
         <PepperLayer frame={frame} />
         <Sequence {...seq(SCENES.coldOpen)} name="1 · Cold open">
           <ColdOpen />

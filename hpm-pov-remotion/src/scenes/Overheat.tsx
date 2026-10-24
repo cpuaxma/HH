@@ -27,11 +27,10 @@ export const Overheat: React.FC = () => {
     <AbsoluteFill>
       <NotificationCard
         notif={{type: 'INSIGHTS', title: '⚠️ Things are getting spicy', body: 'Your phone may need a minute to cool down.'}}
-        label="SYSTEM"
-        glass="rgba(255,255,255,0.86)"
+        glass="rgba(255,255,255,0.88)"
         icon={
-          <div style={{flex: 'none', width: CARD.tile, height: CARD.tile, borderRadius: CARD.tileRadius, background: HPM.red, display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
-            <Thermometer size={38} color={HPM.cream} strokeWidth={2.2} />
+          <div style={{width: CARD.tile, height: CARD.tile, borderRadius: CARD.tileRadius, background: HPM.red, display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
+            <Thermometer size={CARD.tile * 0.5} color={HPM.cream} strokeWidth={2.2} />
           </div>
         }
         style={{

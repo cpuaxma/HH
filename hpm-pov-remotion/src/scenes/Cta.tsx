@@ -3,11 +3,12 @@ import React from 'react';
 import {AbsoluteFill, spring} from 'remotion';
 import {LogoReversed} from '../components/Logo';
 import {MaskReveal} from '../components/MaskReveal';
+import {PepperDraw} from '../components/PepperDraw';
 import {NotificationCard} from '../components/NotificationCard';
 import {enter, kick, mix, progress} from '../lib/anim';
 import {useSceneFrame} from '../lib/useSceneFrame';
 import {CUE, SCENES} from '../timeline';
-import {CARD_SPRING, EASE_IN_OUT, FONT, FPS, HEIGHT, HPM, SAFE, WEIGHT, WIDTH} from '../theme';
+import {CARD, CARD_SPRING, EASE_IN_OUT, FONT, FPS, HEIGHT, HPM, SAFE, WEIGHT, WIDTH} from '../theme';
 
 const CENTER = (SAFE.left + SAFE.right) / 2;
 
@@ -109,8 +110,13 @@ export const Cta: React.FC = () => {
       </div>
       <Button f={f} />
       <NotificationCard
-        notif={{type: 'MESSAGES', title: 'Hot Pepper Media', body: 'Your free call is one message away 🌶️'}}
+        notif={{type: 'MESSAGES', title: 'Hot Pepper Media', body: 'Your free call is one message away 🌶️', person: true}}
         glass="rgba(254,249,239,0.9)"
+        icon={
+          <div style={{width: CARD.tile, height: CARD.tile, borderRadius: '50%', background: HPM.red, display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
+            <PepperDraw frame={f} width={CARD.tile * 0.66} color={HPM.cream} strokePx={2.6} />
+          </div>
+        }
         style={{
           top: 990,
           transformOrigin: '50% 100%',
