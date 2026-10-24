@@ -41,6 +41,7 @@ TIME        FRAME  BEAT   SECTION  SFX         NOTE
 00:11.500    690      23  grid     IMPACT      red ✗ on tile 2 (punch-zoom)
 00:12.000    720      24  grid     IMPACT      red ✗ on tile 3 (punch-zoom)
 00:12.500    750      25  grid     WHOOSH      tiles explode outward in 3D
+00:13.000    780      26  grid     WHOOSH      tiles flip edge-on to the new design mid-air
 00:13.267    796   26.53  grid     WHOOSH      tiles fly back (reverse whoosh)
 00:13.500    810      27  grid     IMPACT      tiles snap into the new grid (punch-zoom)
 00:14.000    840      28  grid     POP         palette swatch 1
@@ -62,6 +63,7 @@ TIME        FRAME  BEAT   SECTION  SFX         NOTE
 00:20.000   1200      40  reel     POP         hearts burst
 00:20.500   1230      41  reel     POP         "stops the scroll" chip
 00:21.000   1260      42  reel     RISER       pull back out → 00:22.000 (f1320)
+00:21.500   1290      43  reel     WHOOSH      reel shrinks back into its grid tile
 00:21.900   1314   43.80  reel     WHOOSH      flat -> 3D pull-out
 00:22.000   1320      44  result   IMPACT      back on the 3D phone (punch-zoom)
 00:22.500   1350      45  result   WHOOSH      360° spin, screen swaps to AFTER mid-spin
@@ -85,4 +87,4 @@ TIME        FRAME  BEAT   SECTION  SFX         NOTE
 00:29.000   1740      58  cta      POP         "Comment AUDIT…" pill (punch-zoom)
 00:29.500   1770      59  cta      POP         soft pill pulse (last beat)
 
-Totals: impact ×22 · whoosh ×17 · scribble ×1 · stamp hit ×2 · pop ×18 · riser ×6 · swipe ×3 · typing ×2 · ding ×2 · freeze ×1 · tick ×3 · odometer ×1
+Totals: impact ×22 · whoosh ×19 · scribble ×1 · stamp hit ×2 · pop ×18 · riser ×6 · swipe ×3 · typing ×2 · ding ×2 · freeze ×1 · tick ×3 · odometer ×1

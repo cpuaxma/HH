@@ -12,7 +12,8 @@ const TRACK = '-0.035em';
 
 // Shared size for a headline: the largest size (≤ max) at which every line fits the safe width.
 export const fitSize = (lines: HeadlineLine[], boxed: boolean) => {
-  const avail = TEXT_MAX_X - SAFE.left - (boxed ? 2 * PAD_X : 0);
+  // 20 px of headroom so a punch-zoom on top of the widest line still clears the safe zone.
+  const avail = TEXT_MAX_X - 20 - SAFE.left - (boxed ? 2 * PAD_X : 0);
   const fits = lines.map((l) => (avail / textWidth(l.text, 100, 900, TRACK)) * 100);
   return Math.max(SLAM.minSize, Math.min(SLAM.maxSize, Math.floor(Math.min(...fits))));
 };

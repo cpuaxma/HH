@@ -3,7 +3,7 @@ import {C} from '../theme';
 
 // Full-screen latte-art pour, drawn in SVG. `t` is pour time in frames; it loops every 150.
 // Width/height + preserveAspectRatio let the same drawing act as a grid-tile thumbnail.
-export const POUR_LOOP = 150;
+export const POUR_LOOP = 270; // longer than the reel is on screen, so the pattern never resets mid-shot
 
 const smooth = (x: number) => x * x * (3 - 2 * x);
 
