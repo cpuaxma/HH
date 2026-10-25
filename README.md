@@ -1,5 +1,7 @@
 # Hot Pepper Media — brand intro
 
+Also in this repo: [`hpm-remotion/`](hpm-remotion/README.md), the 30-second Remotion services-overview reel; [`hpm-makeover-remotion/`](hpm-makeover-remotion/README.md), the 30-second Remotion reel "The Bland Brand Makeover"; [`hpm-pov-remotion/`](hpm-pov-remotion/README.md), the 30-second Remotion reel "POV: You Hired Hot Pepper Media"; [`miran-gold/`](miran-gold/README.md), a 30-second educational reel for the Miran Gold trading community, [`miran-gold-remotion/`](miran-gold-remotion/README.md), the 33-second Remotion reel "Why Gold Rises When the Dollar Falls" in English and Arabic; and [`two-traders-remotion/`](two-traders-remotion/README.md), the 60-second Remotion reel "Two Traders, One Gold Market" in English and Arabic.
+
 `index.html` is a ~25-second, 9:16 (1080×1920) hook-first kinetic-typography intro. Words slam in one at a time, the frame shakes on each impact, cuts get a one-frame color flash, and key words get a 108% zoom punch. It scales to fit any screen, auto-plays, and replays on tap (or Enter/Space). No audio.
 
 Open it with any local web server or straight from disk. Add `?t=12.5` to the URL to freeze on a single frame.
@@ -24,5 +26,7 @@ Open it with any local web server or straight from disk. Add `?t=12.5` to the UR
 npm install playwright        # once; also run `npx playwright install chromium` if Chromium isn't installed
 node tools/export-video.js 60 exports/hot-pepper-intro.mp4
 ```
+
+A third argument renders a different page, for example `miran-gold/index.html`.
 
 The script steps the timeline frame by frame in headless Chromium at the full 1080×1920 and pipes every frame into ffmpeg, which must be on your PATH. The result is an H.264 MP4 at CRF 12 with no dropped frames or screen scaling. Pass `30` instead of `60` for 30fps. Montserrat loads from Google Fonts, so stay online while it runs.

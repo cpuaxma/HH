@@ -1,0 +1,30 @@
+{
+  "name": "hpm-pov-remotion",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Hot Pepper Media: POV: You Hired Hot Pepper Media, a 30-second 1080x1920 Remotion reel",
+  "scripts": {
+    "studio": "remotion studio",
+    "render": "remotion render HpmPov out/hpm-pov.mp4 --codec=h264 --crf=18",
+    "stills": "node scripts/stills.mjs out/stills",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@fontsource/inter": "5.3.0",
+    "@fontsource/montserrat": "5.3.0",
+    "@remotion/bundler": "4.0.537",
+    "@remotion/cli": "4.0.537",
+    "@remotion/layout-utils": "4.0.537",
+    "@remotion/media": "4.0.537",
+    "@remotion/motion-blur": "4.0.537",
+    "@remotion/renderer": "4.0.537",
+    "lucide-react": "1.61.0",
+    "react": "19.2.0",
+    "react-dom": "19.2.0",
+    "remotion": "4.0.537"
+  },
+  "devDependencies": {
+    "@types/react": "19.2.2",
+    "typescript": "5.9.3"
+  }
+}
