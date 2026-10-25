@@ -1,6 +1,6 @@
 # Miran Gold reel: الذهب أم الأسهم؟
 
-A 33-second vertical Arabic reel built in Remotion (1080×1920, 60fps, 1980 frames). One composition, `GoldVsStocksAR`.
+A 43.5-second vertical Arabic reel built in Remotion (1080×1920, 60fps, 2610 frames). One composition, `GoldVsStocksAR`.
 
 ## Render
 
@@ -11,8 +11,8 @@ npx remotion render GoldVsStocksAR out/gold-vs-stocks-ar.mp4 --codec=h264 --crf=
 
 Codec, CRF, pixel format (yuv420p) and colour space (bt709) are also set in `remotion.config.ts`, so `npm run render` gives the same result.
 
-- **QA stills (one bundle, many frames):** `node scripts/stills.mjs 90 325 655 985 1285 1585 1855` writes `out/stills/fNNNN.png`
-- **Single still:** `npx remotion still GoldVsStocksAR out/still.png --frame=325`
+- **QA stills (one bundle, many frames):** `node scripts/stills.mjs 135 460 880 1300 1690 2080 2440` writes `out/stills/fNNNN.png`
+- **Single still:** `npx remotion still GoldVsStocksAR out/still.png --frame=460`
 - **Live preview:** `npm run studio`
 
 Remotion downloads its own headless Chrome the first time. To use a browser you already have, set `REMOTION_BROWSER=/path/to/chrome-headless-shell`. IBM Plex Sans Arabic (300 and 600) is bundled through @fontsource, so rendering never fetches fonts.
@@ -21,13 +21,13 @@ Remotion downloads its own headless Chrome the first time. To use a browser you 
 
 | # | Frames | Text |
 |---|---|---|
-| 1 Hook | 0–180 | الذهب أم الأسهم… / أيهما أفضل لأموالك؟ |
-| 2 | 170–480 | الأسهم حصة في شركات / تنمو وتربح. |
-| 3 | 470–840 | الذهب لا يُنتج أرباحاً… / لكنه يحفظ القيمة. |
-| 4 | 830–1140 | في الأزمات، تهبط الأسهم / غالباً ويصمد الذهب. |
-| 5 | 1130–1440 | على المدى الطويل: / الأسهم للنمو، والذهب للحماية. |
-| 6 Tip | 1430–1740 | السؤال ليس «أيهما»… بل «كم من كلٍّ منهما». / كثيرون يوزّعون أموالهم بين الاثنين حسب أهدافهم. |
-| 7 CTA | 1730–1980 | انضم إلى مجتمع ميران جولد. / الرابط في البايو. |
+| 1 Hook | 0–270 | الذهب أم الأسهم… / أيهما أفضل لأموالك؟ |
+| 2 | 260–660 | الأسهم حصة في شركات / تنمو وتربح. |
+| 3 | 650–1110 | الذهب لا يُنتج أرباحاً… / لكنه يحفظ القيمة. |
+| 4 | 1100–1500 | في الأزمات، تهبط الأسهم / غالباً ويصمد الذهب. |
+| 5 | 1490–1890 | على المدى الطويل: / الأسهم للنمو، والذهب للحماية. |
+| 6 Tip | 1880–2280 | السؤال ليس «أيهما»… بل «كم من كلٍّ منهما». / كثيرون يوزّعون أموالهم بين الاثنين حسب أهدافهم. |
+| 7 CTA | 2270–2610 | انضم إلى مجتمع ميران جولد. / الرابط في البايو. |
 
 Scenes overlap by 10 frames on purpose, so there are no hard cuts. The chart in scene 4 and the donut split in scene 6 are illustrative shapes, not real data.
 

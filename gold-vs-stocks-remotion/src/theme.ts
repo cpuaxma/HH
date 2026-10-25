@@ -1,6 +1,6 @@
 import {Easing} from 'remotion';
 
-export const VIDEO = {width: 1080, height: 1920, fps: 60, durationInFrames: 1980};
+export const VIDEO = {width: 1080, height: 1920, fps: 60, durationInFrames: 2610};
 
 export const COLORS = {
   bgTop: '#0A0E18',
@@ -59,11 +59,11 @@ export const LAYOUT = {
 
 // Scene frame ranges at 60fps (overlaps are intentional: each scene starts 10 frames before the previous ends)
 export const SCENES = {
-  hook: [0, 180],
-  stocks: [170, 480],
-  gold: [470, 840],
-  crisis: [830, 1140],
-  longTerm: [1130, 1440],
-  tip: [1430, 1740],
-  cta: [1730, 1980],
+  hook: [0, 270],
+  stocks: [260, 660],
+  gold: [650, 1110],
+  crisis: [1100, 1500],
+  longTerm: [1490, 1890],
+  tip: [1880, 2280],
+  cta: [2270, 2610],
 } as const;
