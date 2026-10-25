@@ -37,6 +37,7 @@ Scenes overlap by 10 frames on purpose, so there are no hard cuts. The chart in 
 - `src/theme.ts`: colours, easing curves, springs, motion constants, safe zones and the scene frame ranges.
 - `src/scenes/*`: one component per scene (`Hook`, `Stocks`, `GoldValue`, `Crisis`, `LongTerm`, `Tip`, `Cta`).
 - `src/components/*`: shared pieces (`ArabicText`, `LightStreak` with `gold` / `blue` / `goldToBlue` variants, `GoldBar`, `Candles`, `ChartLine`, `GlassCard`, `Donut`, `BackgroundGlow`, `Grain`).
+- `voiceover-script-ar.md`: Arabic voiceover scripts for the original 33-second cut and the current 43.5-second cut, with timings and delivery notes.
 - `public/logo.png`: the logo, cropped to a circle from `assets/logo-source.jpg`. If you delete it, the CTA falls back to a gold "ميران جولد" wordmark.
 
 Text animates one word at a time, never letter by letter, so Arabic letters keep joining. Latin tokens (XAU/USD, S&P 500, VS) are wrapped in `<bdi>`. Everything important stays inside x 140–940 and above y 1600 (right and bottom safe zones).
