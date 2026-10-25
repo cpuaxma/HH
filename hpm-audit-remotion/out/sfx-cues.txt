@@ -1,5 +1,5 @@
 HOT PEPPER MEDIA · "3 Instagram fixes in 30 seconds" · SFX cue sheet
-Video: out/hpm-audit.mp4 · 1080x1920 · 60 fps · 1800 frames (30s), silent
+Video: out/hpm-audit.mp4 · 1080x1920 · 60 fps · 2460 frames (41s), silent
 Beat grid: 120 BPM, first downbeat at frame 0 → one beat every 30 frames (0.500s)
 Timecode is mm:ss.mmm from the first frame. "beat" = beat number on that grid (whole numbers are downbeats).
 Ranges (typing, risers, odometer) give start → end; place risers so they peak on the end time.
@@ -10,81 +10,83 @@ TIME        FRAME  BEAT   SECTION  SFX         NOTE
 00:00.000      0       0  hook     WHOOSH      phone spins in (already moving on frame 0)
 00:00.500     30       1  hook     IMPACT      phone lands + slam "is losing" (punch-zoom)
 00:01.000     60       2  hook     IMPACT      slam "customers."
-00:01.500     90       3  hook     SCRIBBLE    red circle draws around the phone
-00:01.900    114    3.80  hook     WHOOSH      headline whips out
-00:02.000    120       4  hook     STAMP HIT   "3 FIXES" stamp (punch-zoom)
-00:02.033    122    4.07  hook     POP         0/3 counter chip
-00:02.200    132    4.40  hook     RISER       dive into the screen → 00:02.500 (f150)
-00:02.433    146    4.87  hook     WHOOSH      zoom-through into the glass
-00:02.500    150       5  bio      IMPACT      cut to flat profile (punch-zoom)
-00:03.000    180       6  bio      POP         chip 1/3 + "FIX 01 · BIO"
-00:03.500    210       7  bio      IMPACT      slam "your bio"
-00:04.000    240       8  bio      IMPACT      slam "says nothing."
-00:04.500    270       9  bio      SWIPE       red strike-through on old bio (punch-zoom)
-00:04.900    294    9.80  bio      WHOOSH      headline whips out
-00:05.000    300      10  bio      WHOOSH      cream card slides over the old bio
-00:05.033    302   10.07  bio      TYPING      new bio types on → 00:06.833 (f410)
-00:05.500    330      11  bio      POP         ☕ pops
-00:06.000    360      12  bio      POP         "Open 7am–7pm"
-00:06.500    390      13  bio      POP         "Order ahead ↓"
-00:07.000    420      14  bio      DING        red check pops (punch-zoom)
-00:07.500    450      15  bio      POP         "who it's for + why come in" + underline
-00:08.000    480      16  bio      POP         pull back, chip fills red
-00:08.500    510      17  bio      RISER       red line streaks across → 00:08.833 (f530)
-00:08.833    530   17.67  bio      WHOOSH      whip-pan down to the grid
-00:09.000    540      18  grid     IMPACT      grid lands (punch-zoom)
-00:09.500    570      19  grid     POP         chip 2/3 + "FIX 02 · GRID"
-00:10.000    600      20  grid     IMPACT      slam "zero"
-00:10.500    630      21  grid     IMPACT      slam "brand."
-00:11.000    660      22  grid     IMPACT      red ✗ on tile 1 (punch-zoom)
-00:11.400    684   22.80  grid     WHOOSH      headline whips out
-00:11.500    690      23  grid     IMPACT      red ✗ on tile 2 (punch-zoom)
-00:12.000    720      24  grid     IMPACT      red ✗ on tile 3 (punch-zoom)
-00:12.500    750      25  grid     WHOOSH      tiles explode outward in 3D
-00:13.000    780      26  grid     WHOOSH      tiles flip edge-on to the new design mid-air
-00:13.267    796   26.53  grid     WHOOSH      tiles fly back (reverse whoosh)
-00:13.500    810      27  grid     IMPACT      tiles snap into the new grid (punch-zoom)
-00:14.000    840      28  grid     POP         palette swatch 1
-00:14.100    846   28.20  grid     POP         palette swatch 2
-00:14.500    870      29  grid     POP         "1 font" chip
-00:15.000    900      30  grid     DING        grid check
-00:15.200    912   30.40  grid     RISER       push into the reel tile → 00:15.500 (f930)
-00:15.433    926   30.87  grid     WHOOSH      zoom-through into the reel
-00:15.500    930      31  reel     IMPACT      reel full screen (punch-zoom)
-00:16.000    960      32  reel     POP         chip 3/3 + "FIX 03 · HOOK"
-00:16.500    990      33  reel     FREEZE      freeze + desaturate (record-scratch / tape stop)
-00:17.000   1020      34  reel     TICK        countdown 3 + slam
-00:17.500   1050      35  reel     TICK        countdown 2 + slam
-00:18.000   1080      36  reel     TICK        countdown 1 + slam
-00:18.500   1110      37  reel     RISER       ring closes → 00:19.000 (f1140)
-00:18.900   1134   37.80  reel     WHOOSH      headline whips out
-00:19.000   1140      38  reel     IMPACT      full color + caption slam (punch-zoom)
-00:19.500   1170      39  reel     SWIPE       red underline under caption
-00:20.000   1200      40  reel     POP         hearts burst
-00:20.500   1230      41  reel     POP         "stops the scroll" chip
-00:21.000   1260      42  reel     RISER       pull back out → 00:22.000 (f1320)
-00:21.500   1290      43  reel     WHOOSH      reel shrinks back into its grid tile
-00:21.900   1314   43.80  reel     WHOOSH      flat -> 3D pull-out
-00:22.000   1320      44  result   IMPACT      back on the 3D phone (punch-zoom)
-00:22.500   1350      45  result   WHOOSH      360° spin, screen swaps to AFTER mid-spin
-00:23.000   1380      46  result   IMPACT      phone lands (punch-zoom)
-00:23.000   1380      46  result   ODOMETER    followers 212 -> 12.4K (ticking) → 00:23.833 (f1430)
-00:23.500   1410      47  result   IMPACT      slam "same café."
-00:24.000   1440      48  result   IMPACT      slam "now it sells."
-00:24.500   1470      49  result   WHOOSH      BEFORE phone slides in
-00:24.900   1494   49.80  result   WHOOSH      headline whips out
-00:25.000   1500      50  result   POP         BEFORE / AFTER tags + red arrow (punch-zoom)
-00:25.500   1530      51  result   POP         bio ✓ grid ✓ hook ✓ chips
-00:25.500   1530      51  result   RISER       into the CTA → 00:26.000 (f1560)
-00:26.000   1560      52  cta      WHOOSH      red line sweeps and floods the frame
-00:26.250   1575   52.50  cta      IMPACT      frame fully red
-00:26.500   1590      53  cta      STAMP HIT   logo slams in (punch-zoom)
-00:27.000   1620      54  cta      IMPACT      slam "want us to"
-00:27.500   1650      55  cta      IMPACT      slam "audit yours?"
-00:28.000   1680      56  cta      WHOOSH      comment bubble slides up
-00:28.100   1686   56.20  cta      TYPING      types "AUDIT 🌶️" → 00:28.400 (f1704)
-00:28.500   1710      57  cta      SWIPE       cream arrow draws toward the comments
-00:29.000   1740      58  cta      POP         "Comment AUDIT…" pill (punch-zoom)
-00:29.500   1770      59  cta      POP         soft pill pulse (last beat)
+00:02.367    142    4.73  hook     WHOOSH      headline whips out
+00:02.500    150       5  hook     SCRIBBLE    red circle draws around the phone
+00:03.000    180       6  hook     STAMP HIT   "3 FIXES" stamp (punch-zoom)
+00:03.033    182    6.07  hook     POP         0/3 counter chip
+00:03.600    216    7.20  hook     RISER       dive into the screen → 00:04.000 (f240)
+00:03.933    236    7.87  hook     WHOOSH      zoom-through into the glass
+00:04.000    240       8  bio      IMPACT      cut to flat profile (punch-zoom)
+00:04.500    270       9  bio      POP         chip 1/3 + "FIX 01 · BIO"
+00:05.000    300      10  bio      IMPACT      slam "your bio"
+00:05.500    330      11  bio      IMPACT      slam "says nothing."
+00:06.000    360      12  bio      SWIPE       red strike-through on old bio (punch-zoom)
+00:06.867    412   13.73  bio      WHOOSH      headline whips out
+00:07.000    420      14  bio      WHOOSH      cream card slides over the old bio
+00:07.067    424   14.13  bio      TYPING      new bio types on → 00:09.400 (f564)
+00:08.000    480      16  bio      POP         ☕ pops
+00:08.500    510      17  bio      POP         "Open 7am–7pm"
+00:09.000    540      18  bio      POP         "Order ahead ↓"
+00:09.500    570      19  bio      DING        red check pops (punch-zoom)
+00:10.000    600      20  bio      POP         "who it's for + why come in" + underline
+00:10.500    630      21  bio      POP         pull back, chip fills red
+00:11.000    660      22  bio      RISER       red line streaks across → 00:11.233 (f674)
+00:11.233    674   22.47  bio      WHOOSH      whip-pan down to the grid
+00:11.500    690      23  grid     IMPACT      grid lands (punch-zoom)
+00:12.000    720      24  grid     POP         chip 2/3 + "FIX 02 · GRID"
+00:12.500    750      25  grid     IMPACT      slam "zero"
+00:13.000    780      26  grid     IMPACT      slam "brand."
+00:13.500    810      27  grid     IMPACT      red ✗ on tile 1 (punch-zoom)
+00:14.000    840      28  grid     IMPACT      red ✗ on tile 2 (punch-zoom)
+00:14.367    862   28.73  grid     WHOOSH      headline whips out
+00:14.500    870      29  grid     IMPACT      red ✗ on tile 3 (punch-zoom)
+00:15.000    900      30  grid     WHOOSH      tiles explode outward in 3D
+00:15.500    930      31  grid     WHOOSH      tiles flip edge-on to the new design mid-air
+00:15.767    946   31.53  grid     WHOOSH      tiles fly back (reverse whoosh)
+00:16.000    960      32  grid     IMPACT      tiles snap into the new grid + colour burst (punch-zoom)
+00:16.500    990      33  grid     POP         palette swatch 1
+00:16.600    996   33.20  grid     POP         palette swatch 2
+00:17.000   1020      34  grid     POP         "1 font" chip
+00:17.500   1050      35  grid     DING        grid check
+00:18.000   1080      36  grid     RISER       push into the reel tile → 00:19.000 (f1140)
+00:18.933   1136   37.87  grid     WHOOSH      zoom-through into the reel
+00:19.000   1140      38  reel     IMPACT      reel full screen (punch-zoom)
+00:19.500   1170      39  reel     POP         chip 3/3 + "FIX 03 · HOOK"
+00:20.000   1200      40  reel     FREEZE      freeze + desaturate (record-scratch / tape stop)
+00:20.500   1230      41  reel     TICK        countdown 3 + slam
+00:21.000   1260      42  reel     TICK        countdown 2 + slam
+00:21.500   1290      43  reel     TICK        countdown 1 + slam
+00:22.000   1320      44  reel     RISER       ring closes → 00:22.500 (f1350)
+00:22.367   1342   44.73  reel     WHOOSH      headline whips out
+00:22.500   1350      45  reel     IMPACT      full color + caption slam (punch-zoom)
+00:23.000   1380      46  reel     SWIPE       red underline under caption
+00:23.500   1410      47  reel     POP         hearts burst
+00:24.000   1440      48  reel     POP         "stops the scroll" chip
+00:24.500   1470      49  reel     RISER       pull back out → 00:26.000 (f1560)
+00:25.000   1500      50  reel     WHOOSH      reel shrinks back into its grid tile
+00:25.900   1554   51.80  reel     WHOOSH      flat -> 3D pull-out
+00:26.000   1560      52  result   IMPACT      back on the 3D phone (punch-zoom)
+00:26.667   1600   53.33  result   WHOOSH      360° spin, screen swaps to AFTER mid-spin
+00:27.500   1650      55  result   IMPACT      phone lands on the AFTER profile + colour burst (punch-zoom)
+00:27.500   1650      55  result   ODOMETER    followers 212 -> 12.4K (ticking) → 00:28.833 (f1730)
+00:28.500   1710      57  result   IMPACT      slam "same café."
+00:29.000   1740      58  result   IMPACT      slam "now it sells."
+00:30.367   1822   60.73  result   WHOOSH      headline whips out
+00:30.500   1830      61  result   WHOOSH      BEFORE phone slides in
+00:31.000   1860      62  result   POP         BEFORE / AFTER tags + red arrow (punch-zoom)
+00:32.000   1920      64  result   POP         bio ✓ grid ✓ hook ✓ chips
+00:32.000   1920      64  result   RISER       into the CTA → 00:33.500 (f2010)
+00:33.250   1995   66.50  result   SWIPE       red line enters across the phones
+00:33.500   2010      67  cta      WHOOSH      red line sweeps and floods the frame
+00:33.750   2025   67.50  cta      IMPACT      frame fully red
+00:34.000   2040      68  cta      STAMP HIT   logo slams in (punch-zoom)
+00:34.500   2070      69  cta      IMPACT      slam "want us to"
+00:35.000   2100      70  cta      IMPACT      slam "audit yours?"
+00:36.000   2160      72  cta      WHOOSH      DM bubble slides up
+00:36.133   2168   72.27  cta      TYPING      types "free call? 🌶️" → 00:36.833 (f2210)
+00:37.000   2220      74  cta      WHOOSH      message sends (paper plane flies off) + "Sent" pop
+00:37.500   2250      75  cta      SWIPE       cream arrow draws toward the share / DM button
+00:38.000   2280      76  cta      POP         "Hit us a DM / get a free call" pill (punch-zoom)
+00:39.000   2340      78  cta      POP         pill pulses on each beat to the end (soft)
 
-Totals: impact ×22 · whoosh ×19 · scribble ×1 · stamp hit ×2 · pop ×18 · riser ×6 · swipe ×3 · typing ×2 · ding ×2 · freeze ×1 · tick ×3 · odometer ×1
+Totals: impact ×22 · whoosh ×20 · scribble ×1 · stamp hit ×2 · pop ×18 · riser ×6 · swipe ×4 · typing ×2 · ding ×2 · freeze ×1 · tick ×3 · odometer ×1

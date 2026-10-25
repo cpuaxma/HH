@@ -51,8 +51,8 @@ export const LatteReel: React.FC<{t: number; width?: number | string; height?: n
     <svg width={width} height={height} viewBox="0 0 1080 1920" preserveAspectRatio={slice ? 'xMidYMid slice' : 'xMidYMid meet'} style={{display: 'block'}}>
       <defs>
         <linearGradient id="lr-table" x1="0" y1="0" x2="0.3" y2="1">
-          <stop offset="0" stopColor="#3A281E" />
-          <stop offset="1" stopColor={C.espresso} />
+          <stop offset="0" stopColor="#4A63FF" />
+          <stop offset="1" stopColor="#1F35D6" />
         </linearGradient>
         <radialGradient id="lr-crema" cx="0.5" cy="0.45" r="0.6">
           <stop offset="0" stopColor="#C98E5A" />
@@ -72,16 +72,16 @@ export const LatteReel: React.FC<{t: number; width?: number | string; height?: n
       </defs>
       <rect width="1080" height="1920" fill="url(#lr-table)" />
       {[0, 1, 2, 3, 4, 5].map((i) => (
-        <path key={i} d={`M -20 ${260 + i * 290} C 300 ${220 + i * 300}, 700 ${320 + i * 280}, 1100 ${250 + i * 295}`} stroke="#4A3328" strokeWidth={5} fill="none" opacity={0.5} />
+        <path key={i} d={`M -20 ${260 + i * 290} C 300 ${220 + i * 300}, 700 ${320 + i * 280}, 1100 ${250 + i * 295}`} stroke="#FFFFFF" strokeWidth={5} fill="none" opacity={0.12} />
       ))}
       <rect width="1080" height="1920" fill="url(#lr-light)" />
       {/* Saucer + cup */}
       <ellipse cx={cx + 16} cy={cy + 120} rx={440} ry={280} fill="#000" opacity={0.28} />
-      <ellipse cx={cx} cy={cy + 90} rx={430} ry={270} fill={C.oat} />
-      <ellipse cx={cx} cy={cy + 90} rx={330} ry={200} fill="#E4D9C6" />
-      <path d={`M ${cx + 300} ${cy - 40} C ${cx + 470} ${cy - 70}, ${cx + 470} ${cy + 130}, ${cx + 300} ${cy + 90}`} stroke={C.oat} strokeWidth={44} fill="none" strokeLinecap="round" />
-      <ellipse cx={cx} cy={cy + 20} rx={330} ry={240} fill="#F7F0E4" />
-      <ellipse cx={cx} cy={cy} rx={318} ry={226} fill={C.oat} />
+      <ellipse cx={cx} cy={cy + 90} rx={430} ry={270} fill={C.butter} />
+      <ellipse cx={cx} cy={cy + 90} rx={330} ry={200} fill="#F2BF1E" />
+      <path d={`M ${cx + 300} ${cy - 40} C ${cx + 470} ${cy - 70}, ${cx + 470} ${cy + 130}, ${cx + 300} ${cy + 90}`} stroke={C.pink} strokeWidth={44} fill="none" strokeLinecap="round" />
+      <ellipse cx={cx} cy={cy + 20} rx={330} ry={240} fill="#F2779F" />
+      <ellipse cx={cx} cy={cy} rx={318} ry={226} fill={C.pink} />
       <ellipse cx={cx} cy={cy + 6} rx={286} ry={198} fill="url(#lr-crema)" />
       {/* Milk pattern */}
       <g>

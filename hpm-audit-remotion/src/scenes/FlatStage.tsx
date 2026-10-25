@@ -3,6 +3,7 @@ import React from 'react';
 import {AbsoluteFill, interpolate, random, useCurrentFrame} from 'remotion';
 import {COPY} from '../copy';
 import {CheckBadge} from '../components/CheckBadge';
+import {ColorBurst} from '../components/ColorBurst';
 import {CountdownRing} from '../components/CountdownRing';
 import {TypeOn} from '../components/TypeOn';
 import {Grid} from '../components/Grid';
@@ -190,6 +191,9 @@ export const FlatStage: React.FC = () => {
         </div>
       )}
 
+      {/* The rebrand lands: a burst of the new palette from the centre of the grid */}
+      <ColorBurst at={T.snap} x={camPoint(cam, 540, LAYOUT.gridY + (3 * TILE + 6) / 2)[0]} y={camPoint(cam, 540, LAYOUT.gridY + (3 * TILE + 6) / 2)[1]} radius={600} seed="grid" />
+
       {/* Bio overlays */}
       {frame < T.gridWhip[0] + 8 && (
         <AbsoluteFill style={{transform: `translateY(${-600 * bioOut}px)`, opacity: 1 - bioOut}}>
@@ -209,20 +213,20 @@ export const FlatStage: React.FC = () => {
           {COPY.grid.swatches.map((sw, i) => {
             const s = pop(frame, T.swatches + i * 6);
             return (
-              <div key={sw.name} style={{...pill, left: 64 + i * 196, top: 300, width: 180, height: 214, flexDirection: 'column', justifyContent: 'center', gap: 14, transform: `scale(${s}) rotate(${(i ? 3 : -3) * s}deg)`}}>
-                <div style={{width: 112, height: 112, borderRadius: 24, background: sw.hex, border: `4px solid ${C.charcoal}`}} />
+              <div key={sw.name} style={{...pill, left: 64 + i * 164, top: 300, width: 150, height: 190, flexDirection: 'column', justifyContent: 'center', gap: 12, transform: `scale(${s}) rotate(${(i % 2 ? 3 : -3) * s}deg)`}}>
+                <div style={{width: 96, height: 96, borderRadius: 22, background: sw.hex, border: `4px solid ${C.charcoal}`}} />
                 <div style={{fontSize: 30}}>{sw.name}</div>
               </div>
             );
           })}
           {frame >= T.fontChip && (
-            <div style={{...pill, left: 470, top: 352, height: 110, padding: '0 30px', gap: 18, fontSize: 48, transform: `scale(${pop(frame, T.fontChip)})`}}>
+            <div style={{...pill, left: 568, top: 340, height: 110, padding: '0 30px', gap: 18, fontSize: 48, transform: `scale(${pop(frame, T.fontChip)})`}}>
               <span style={{fontWeight: 900, fontSize: 64}}>Aa</span>
               <span style={{width: 4, height: 54, background: C.charcoal}} />
               {COPY.grid.font}
             </div>
           )}
-          <CheckBadge at={T.gridCheck} x={786} y={354} size={106} />
+          <CheckBadge at={T.gridCheck} x={800} y={468} size={100} />
         </AbsoluteFill>
       )}
 

@@ -52,17 +52,18 @@ const Avatar: React.FC<{state: PState}> = ({state}) =>
       <Coffee size={110} color="#8F877C" strokeWidth={1.6} />
     </div>
   ) : (
-    <div style={{width: 230, height: 230, borderRadius: '50%', padding: 8, background: `conic-gradient(${C.sage}, ${C.espresso}, ${C.sage})`}}>
+    <div style={{width: 230, height: 230, borderRadius: '50%', padding: 8, background: `conic-gradient(${C.cobalt}, ${C.pink}, ${C.butter}, ${C.cobalt})`}}>
       <div style={{width: '100%', height: '100%', borderRadius: '50%', background: C.white, padding: 7}}>
-        <div style={{width: '100%', height: '100%', borderRadius: '50%', background: C.espresso, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center'}}>
-          <div style={{fontFamily: FONT, fontWeight: 900, fontSize: 64, color: C.oat, letterSpacing: '-0.03em', lineHeight: 0.9}}>b&amp;b</div>
-          <div style={{width: 70, height: 6, borderRadius: 3, background: C.sage, marginTop: 10}} />
+        <div style={{width: '100%', height: '100%', borderRadius: '50%', background: C.cobalt, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center'}}>
+          <div style={{fontFamily: FONT, fontWeight: 900, fontSize: 64, color: C.butter, letterSpacing: '-0.03em', lineHeight: 0.9}}>b&amp;b</div>
+          <div style={{width: 70, height: 6, borderRadius: 3, background: C.pink, marginTop: 10}} />
         </div>
       </div>
     </div>
   );
 
 const HIGHLIGHT_ICONS = [Coffee, Clock, Sparkles, Users, Star];
+const HIGHLIGHT_FILLS = [C.butter, C.cobalt, C.pink, C.cobalt, C.butter];
 
 const Highlights: React.FC<{state: PState}> = ({state}) => (
   <div style={{position: 'absolute', left: 48, top: 890, display: 'flex', gap: 55}}>
@@ -78,9 +79,9 @@ const Highlights: React.FC<{state: PState}> = ({state}) => (
         const Icon = HIGHLIGHT_ICONS[i];
         return (
           <div key={label} style={{display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 14, width: 150}}>
-            <div style={{width: 150, height: 150, borderRadius: '50%', border: `4px solid ${C.sage}`, padding: 6}}>
-              <div style={{width: '100%', height: '100%', borderRadius: '50%', background: i % 2 ? C.espresso : C.oat, display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
-                <Icon size={58} color={i % 2 ? C.oat : C.espresso} strokeWidth={2} />
+            <div style={{width: 150, height: 150, borderRadius: '50%', border: `5px solid ${C.pink}`, padding: 6}}>
+              <div style={{width: '100%', height: '100%', borderRadius: '50%', background: HIGHLIGHT_FILLS[i], display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
+                <Icon size={58} color={HIGHLIGHT_FILLS[i] === C.cobalt ? C.white : C.espresso} strokeWidth={2.2} />
               </div>
             </div>
             <div style={{fontFamily: FONT_APP, fontSize: 30, color: ink, whiteSpace: 'nowrap'}}>{label}</div>

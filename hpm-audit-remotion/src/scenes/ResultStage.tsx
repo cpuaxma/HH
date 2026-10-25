@@ -2,12 +2,14 @@ import {Check} from 'lucide-react';
 import React from 'react';
 import {AbsoluteFill, Easing, interpolate, useCurrentFrame} from 'remotion';
 import {COPY} from '../copy';
+import {ColorBurst} from '../components/ColorBurst';
 import {Odometer} from '../components/Odometer';
 import {Phone3D} from '../components/Phone3D';
 import {formatFollowers, Profile} from '../components/Profile';
 import {RedLine, RedWander} from '../components/RedLine';
-import {clamp, exitP, pop} from '../lib/anim';
+import {clamp, exitP, pop, progress} from '../lib/anim';
 import {afterPose, beforePose, reelTime} from '../lib/cameras';
+import {projectLocal} from '../lib/projection';
 import {smoothPath} from '../lib/path';
 import {T} from '../timeline';
 import {C, FONT} from '../theme';
@@ -45,11 +47,27 @@ export const ResultStage: React.FC = () => {
   const phones = [{id: 'after', pose: afterPose(frame), screen: swapped ? after : wip}];
   if (frame >= T.split[0]) phones.unshift({id: 'before', pose: beforePose(frame), screen: <Profile state="before" />});
 
+  const afterCentre = projectLocal(afterPose(frame), [0, 0, 0]);
   const statIn = pop(frame, T.odometer[0]);
   const statOut = exitP(frame, T.statExit, 8);
   return (
     <AbsoluteFill>
       <RedWander d={WANDER} at={T.odometer[0] + 10} dur={90} width={6} length={0.4} />
+      {/* Once the AFTER profile is on, a warm palette glow follows that phone, plus a burst as it lands */}
+      {swapped && (
+        <div
+          style={{
+            position: 'absolute',
+            left: afterCentre[0] - 520,
+            top: afterCentre[1] - 620,
+            width: 1040,
+            height: 1240,
+            background: `radial-gradient(closest-side, ${C.butter}cc, ${C.pink}88 55%, rgba(255,143,184,0) 100%)`,
+            opacity: progress(frame, T.swap, 20) * 0.85,
+          }}
+        />
+      )}
+      <ColorBurst at={T.spin[1]} x={afterCentre[0]} y={afterCentre[1]} radius={560} seed="spin" />
       <Phone3D phones={phones} />
 
       {/* Followers stat card */}

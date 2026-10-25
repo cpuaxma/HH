@@ -177,27 +177,28 @@ export const BeforeTile: React.FC<{i: number; reelT?: number}> = ({i, reelT = 40
 
 const H: React.CSSProperties = {fontFamily: FONT, fontWeight: 900, lineHeight: 0.92, letterSpacing: '-0.02em'};
 
+// AFTER: one font, one loud palette (cobalt / butter / pink on espresso), laid out as a checkerboard.
 export const AfterTile: React.FC<{i: number; reelT?: number}> = ({i, reelT = 40}) => {
   switch (i) {
     case 0:
       return (
-        <Fill bg={C.oat}>
+        <Fill bg={C.butter}>
           <Svg>
-            <CupTop x={179} y={179} r={92} cup="#FBF6EE" coffee="#7A4A2C" foam="#F6E9D6" saucer={C.sage} />
+            <CupTop x={179} y={179} r={92} cup="#FFFFFF" coffee="#7A4A2C" foam="#FFF1DC" saucer={C.cobalt} />
           </Svg>
         </Fill>
       );
     case 1:
       return (
-        <Fill bg={C.espresso}>
+        <Fill bg={C.cobalt}>
           <LatteReel t={reelT} width={S} height={S} />
-          <ReelBadge color={C.oat} />
+          <ReelBadge color={C.butter} />
         </Fill>
       );
     case 2:
       return (
-        <Fill bg={C.sage}>
-          <div style={{position: 'absolute', left: 28, bottom: 34, ...H, fontSize: 54, color: C.oat}}>
+        <Fill bg={C.pink}>
+          <div style={{position: 'absolute', left: 28, bottom: 34, ...H, fontSize: 54, color: C.espresso}}>
             slow
             <br />
             mornings.
@@ -206,9 +207,9 @@ export const AfterTile: React.FC<{i: number; reelT?: number}> = ({i, reelT = 40}
       );
     case 3:
       return (
-        <Fill bg={C.espresso}>
-          <div style={{position: 'absolute', left: 30, top: 36, fontFamily: FONT, fontWeight: 800, fontSize: 26, letterSpacing: '0.18em', color: C.sage}}>NEW</div>
-          <div style={{position: 'absolute', left: 30, bottom: 34, ...H, fontSize: 58, color: C.oat}}>
+        <Fill bg={C.cobalt}>
+          <div style={{position: 'absolute', left: 30, top: 36, fontFamily: FONT, fontWeight: 800, fontSize: 26, letterSpacing: '0.18em', color: C.butter}}>NEW</div>
+          <div style={{position: 'absolute', left: 30, bottom: 34, ...H, fontSize: 58, color: C.white}}>
             oat flat
             <br />
             white
@@ -217,18 +218,18 @@ export const AfterTile: React.FC<{i: number; reelT?: number}> = ({i, reelT = 40}
       );
     case 4:
       return (
-        <Fill bg={C.oat}>
+        <Fill bg={C.pink}>
           <Svg>
-            <ellipse cx={179} cy={214} rx={140} ry={50} fill={C.sage} />
-            <Croissant x={179} y={190} s={1.05} body="#D9A066" line={C.espresso} />
+            <ellipse cx={179} cy={214} rx={140} ry={50} fill={C.white} />
+            <Croissant x={179} y={190} s={1.05} body="#FFB547" line={C.espresso} />
           </Svg>
         </Fill>
       );
     case 5:
       return (
-        <Fill bg={C.sage}>
+        <Fill bg={C.butter}>
           <Svg>
-            <ToGo x={179} y={150} cup={C.oat} lid={C.espresso} sleeve={C.espresso} />
+            <ToGo x={179} y={150} cup={C.white} lid={C.cobalt} sleeve={C.cobalt} />
           </Svg>
           <div style={{position: 'absolute', left: 0, right: 0, bottom: 28, textAlign: 'center', fontFamily: FONT, fontWeight: 800, fontSize: 26, letterSpacing: '0.14em', color: C.espresso}}>ORDER AHEAD</div>
         </Fill>
@@ -236,23 +237,23 @@ export const AfterTile: React.FC<{i: number; reelT?: number}> = ({i, reelT = 40}
     case 6:
       return (
         <Fill bg={C.oat}>
-          <div style={{position: 'absolute', left: 30, top: 60, ...H, fontSize: 118, color: C.espresso}}>7AM</div>
-          <div style={{position: 'absolute', left: 32, top: 178, fontFamily: FONT, fontWeight: 800, fontSize: 52, letterSpacing: '0.12em', color: C.sage}}>CLUB</div>
+          <div style={{position: 'absolute', left: 30, top: 60, ...H, fontSize: 118, color: C.cobalt}}>7AM</div>
+          <div style={{position: 'absolute', left: 32, top: 178, fontFamily: FONT, fontWeight: 800, fontSize: 52, letterSpacing: '0.12em', color: C.pink}}>CLUB</div>
         </Fill>
       );
     case 7:
       return (
-        <Fill bg={C.espresso}>
+        <Fill bg={C.cobalt}>
           <Svg>
-            <Beans bg={C.espresso} bean={C.sage} line={C.espresso} />
+            <Beans bg={C.cobalt} bean={C.butter} line={C.cobalt} />
           </Svg>
         </Fill>
       );
     default:
       return (
-        <Fill bg={C.oat}>
+        <Fill bg={C.pink}>
           <Svg>
-            <Storefront awning={C.sage} wall="#E8DCC8" trim={C.espresso} sign="bean & bloom" signColor={C.oat} />
+            <Storefront awning={C.cobalt} wall={C.oat} trim={C.espresso} sign="bean & bloom" signColor={C.butter} />
           </Svg>
         </Fill>
       );

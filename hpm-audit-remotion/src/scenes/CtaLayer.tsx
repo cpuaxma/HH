@@ -1,4 +1,4 @@
-import {CircleUser} from 'lucide-react';
+import {CheckCheck, Flame, Send} from 'lucide-react';
 import React from 'react';
 import {AbsoluteFill, interpolate, useCurrentFrame} from 'remotion';
 import {COPY} from '../copy';
@@ -31,7 +31,9 @@ export const CtaLayer: React.FC = () => {
 
   const logoT = frame - T.logo;
   const logoScale = interpolate(logoT, [0, 6], [1.6, 1], {...clamp, easing: EASE_OUT});
-  const bubble = pop(frame, T.comment);
+  const bubble = pop(frame, T.dm);
+  const sent = progress(frame, T.dmSend, 10, EASE_OUT);
+  const fly = progress(frame, T.dmSend, 12, EASE_IN);
   const pill = pop(frame, T.pill);
   const pulse = frame >= T.pill + 20 ? 1 + 0.035 * Math.max(0, Math.sin(((frame - T.pulse) / 30) * Math.PI * 2)) + 0.05 * Math.max(0, kick(frame, T.pulse, 6, 0.4)) : 1;
 
@@ -59,42 +61,62 @@ export const CtaLayer: React.FC = () => {
 
           <SlamText lines={COPY.cta.lines} at={T.ctaSlams} exitAt={9999} variant="onRed" top={500} />
 
-          {frame >= T.comment && (
+          {/* DM: the viewer's message types out and sends */}
+          {frame >= T.dm && (
             <div
               style={{
                 position: 'absolute',
                 left: 64,
-                top: 870,
-                width: 700,
-                display: 'flex',
-                alignItems: 'center',
-                gap: 22,
+                top: 860,
+                width: 760,
                 background: C.cream,
                 borderRadius: 34,
-                padding: '22px 30px',
+                padding: '22px 26px 26px',
                 boxShadow: '0 20px 50px rgba(15,15,15,0.28)',
                 transform: `translateY(${(1 - bubble) * 260}px) scale(${mix(0.8, 1, bubble)})`,
                 opacity: Math.min(1, bubble * 2),
               }}
             >
-              <CircleUser size={92} strokeWidth={1.5} color={C.charcoal} />
-              <div>
-                <div style={{fontFamily: FONT_APP, fontWeight: 700, fontSize: 32, color: C.charcoal, opacity: 0.55}}>{COPY.cta.commenter}</div>
-                <TypeOn parts={[{text: COPY.cta.comment, from: T.comment + 6, to: T.comment + 24}]} cursorUntil={T.arrow + 20} style={{fontFamily: FONT, fontWeight: 900, fontSize: 76, lineHeight: '86px', color: C.charcoal, letterSpacing: '0.02em'}} />
+              <div style={{display: 'flex', alignItems: 'center', gap: 16, paddingBottom: 18, borderBottom: `2px solid ${C.gray}`}}>
+                <div style={{width: 64, height: 64, borderRadius: 32, background: C.red, display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
+                  <Flame size={36} color={C.cream} strokeWidth={2.4} />
+                </div>
+                <div>
+                  <div style={{fontFamily: FONT_APP, fontWeight: 700, fontSize: 34, color: C.charcoal}}>{COPY.cta.dmTo}</div>
+                  <div style={{fontFamily: FONT_APP, fontSize: 26, color: C.muted}}>Message</div>
+                </div>
               </div>
-              {/* bubble tail */}
-              <div style={{position: 'absolute', left: 54, bottom: -22, width: 44, height: 44, background: C.cream, transform: 'rotate(45deg)', borderRadius: 6}} />
+              <div style={{display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 18, marginTop: 20, transform: `translateY(${-14 * sent}px)`}}>
+                <div style={{background: C.charcoal, borderRadius: '32px 32px 8px 32px', padding: '10px 28px 14px'}}>
+                  <TypeOn
+                    parts={[{text: COPY.cta.dm, from: T.dmType[0], to: T.dmType[1]}]}
+                    cursorUntil={T.dmSend}
+                    cursorColor={C.cream}
+                    style={{fontFamily: FONT, fontWeight: 900, fontSize: 62, lineHeight: '78px', color: C.cream, whiteSpace: 'nowrap'}}
+                  />
+                </div>
+                <div style={{width: 96, height: 96, borderRadius: 48, background: C.red, display: 'flex', alignItems: 'center', justifyContent: 'center', transform: `scale(${1 + 0.18 * kick(frame, T.dmSend, 5)})`}}>
+                  <Send size={48} color={C.cream} strokeWidth={2.4} style={{transform: `translate(${fly * 260}px, ${-fly * 200}px) rotate(${fly * 20}deg)`, opacity: 1 - fly}} />
+                  {fly >= 1 && <Send size={48} color={C.cream} strokeWidth={2.4} style={{position: 'absolute', transform: `scale(${pop(frame, T.dmSend + 14)})`}} />}
+                </div>
+              </div>
+              {frame >= T.dmSend && (
+                <div style={{position: 'absolute', right: 140, bottom: 6, display: 'flex', alignItems: 'center', gap: 6, fontFamily: FONT_APP, fontSize: 26, color: C.muted, transform: `scale(${pop(frame, T.dmSend + 4)})`, transformOrigin: '100% 50%'}}>
+                  <CheckCheck size={28} color={C.cobalt} strokeWidth={2.6} />
+                  {COPY.cta.sent}
+                </div>
+              )}
             </div>
           )}
 
-          <RedLine type="arrow" from={[790, 960]} to={[930, 1330]} curve={-0.4} at={T.arrow} dur={16} width={11} head={50} color={C.cream} seed="cta" />
+          <RedLine type="arrow" from={[836, 1010]} to={[930, 1440]} curve={-0.35} at={T.arrow} dur={16} width={11} head={50} color={C.cream} seed="cta" />
 
           {frame >= T.pill && (
             <div
               style={{
                 position: 'absolute',
                 left: 64,
-                top: 1150,
+                top: 1190,
                 background: C.charcoal,
                 color: C.cream,
                 borderRadius: 30,
@@ -105,8 +127,8 @@ export const CtaLayer: React.FC = () => {
               }}
             >
               <div style={{fontFamily: FONT, fontWeight: 900, fontSize: 62, lineHeight: 1.05, letterSpacing: '-0.01em'}}>
-                {COPY.cta.pill[0].replace('AUDIT', '')}
-                <span style={{color: C.peach}}>AUDIT</span>
+                {COPY.cta.pill[0].replace('DM', '')}
+                <span style={{color: C.peach}}>DM</span>
               </div>
               <div style={{fontFamily: FONT, fontWeight: 600, fontSize: 42, lineHeight: 1.2, marginTop: 4}}>{COPY.cta.pill[1]}</div>
             </div>

@@ -3,7 +3,7 @@ import {Easing} from 'remotion';
 export const FPS = 60;
 export const WIDTH = 1080;
 export const HEIGHT = 1920;
-export const DURATION = 1800;
+export const DURATION = 2460; // 41 s = 82 beats
 
 // Beat grid. 120 BPM with the first downbeat on frame 0 = one beat every 30 frames.
 // Change BPM and every cue built with beat() moves with it.
@@ -17,10 +17,12 @@ export const C = {
   cream: '#FEF9EF',
   peach: '#FFD7C9',
   gray: '#E7E4DF',
-  // Fictional client, "after" palette
+  // Fictional client, "after" palette: loud on purpose, so the rebrand pops against the grey before
   espresso: '#2B1D16',
-  oat: '#F3EBDD',
-  sage: '#8FA58A',
+  oat: '#FFF4E2',
+  cobalt: '#2F4BFF',
+  butter: '#FFD23F',
+  pink: '#FF8FB8',
   // App chrome (generic profile UI)
   white: '#FFFFFF',
   ink: '#1C1C1C',
@@ -46,6 +48,6 @@ export const TEXT_MAX_X = WIDTH - SAFE.right; // 940
 export const TEXT_MAX_Y = HEIGHT - SAFE.bottom; // 1600
 
 // Kinetic headlines
-export const SLAM = {from: 1.4, frames: 6, exitFrames: 6, shakePx: 3, minSize: 120, maxSize: 170};
+export const SLAM = {from: 1.4, frames: 6, exitFrames: 8, shakePx: 3, minSize: 120, maxSize: 170};
 export const PUNCH = {amount: 0.08, attack: 4, release: 12};
 export const HEADLINE_TOP = 236;

@@ -19,8 +19,9 @@ export const COPY = {
     label: 'FIX 02 · GRID',
     lines: [{text: 'zero', key: ['zero']}, {text: 'brand.'}] as HeadlineLine[],
     swatches: [
-      {name: 'Espresso', hex: '#2B1D16'},
-      {name: 'Sage', hex: '#8FA58A'},
+      {name: 'Cobalt', hex: '#2F4BFF'},
+      {name: 'Butter', hex: '#FFD23F'},
+      {name: 'Pink', hex: '#FF8FB8'},
     ],
     font: '1 font',
   },
@@ -39,10 +40,11 @@ export const COPY = {
     recap: ['bio', 'grid', 'hook'],
   },
   cta: {
-    lines: [{text: 'want us to'}, {text: 'audit yours?', key: ['audit']}] as HeadlineLine[],
-    comment: 'AUDIT 🌶️',
-    commenter: 'you',
-    pill: ['Comment AUDIT', 'for a free page review'],
+    lines: [{text: 'want this'}, {text: 'for yours?', key: ['yours?']}] as HeadlineLine[],
+    dmTo: 'Hot Pepper Media',
+    dm: 'free call? 🌶️',
+    sent: 'Sent',
+    pill: ['Hit us a DM', 'get a free call'],
     slogan: 'MARKETING WITH A KICK.',
   },
   profile: {

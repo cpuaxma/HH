@@ -1,6 +1,6 @@
-# Hot Pepper Media — "3 Instagram fixes in 30 seconds"
+# Hot Pepper Media — "3 Instagram fixes"
 
-A 30-second, 1080×1920, 60 fps Remotion reel. A 3D phone shows the profile of a fictional café, Bean & Bloom (@beanandbloom). The camera dives into the screen and fixes three problems live (bio, grid, hook), then pulls back out for a before/after and a red "Comment AUDIT" CTA. Everything is generated in code: no footage, no images except the paper-grain tile.
+A 41-second, 1080×1920, 60 fps Remotion reel. A 3D phone shows the profile of a fictional café, Bean & Bloom (@beanandbloom). The camera dives into the screen and fixes three problems live (bio, grid, hook), then pulls back out for a before/after and a red CTA: "Hit us a DM, get a free call". Everything is generated in code: no footage, no images except the paper-grain tile.
 
 - `out/hpm-audit.mp4`: the render (H.264, CRF 18, silent, ready for music).
 - `out/sfx-cues.txt`: every timestamp that needs a sound, with frame and beat numbers.
@@ -17,6 +17,18 @@ npm run stills      # review stills (node scripts/stills.mjs <dir> [frames...])
 ```
 
 To render with a Chrome or Chromium you already have, add `--browser-executable=/path/to/chrome-headless-shell` to the render, or set `REMOTION_BROWSER` for `npm run stills`. In a container without a GPU, add `--gl=swangle`. The 3D phone renders in WebGL.
+
+## Pacing
+
+Every headline line slams on a beat, but each fix runs problem → fix → result, and the result holds for about 1.5 s before the next whip. Whips take 16–20 frames. `npm run check` fails any stretch over 1.5 s with nothing new, and lists the deliberate reading holds over 1 s.
+
+## Colours
+
+- **Before:** the café starts desaturated and grey, with crooked tiles and mismatched fonts.
+- **After:** the rebrand is deliberately loud: cobalt `#2F4BFF`, butter `#FFD23F` and pink `#FF8FB8` over espresso `#2B1D16` and oat `#FFF4E2`, in one font (Montserrat).
+- **The reveal moments:** a burst of the new palette fires when the grid snaps in and when the phone lands on the AFTER profile, and a butter/pink glow follows the AFTER phone.
+
+All palette values live in `src/theme.ts`.
 
 ## Beat grid
 
