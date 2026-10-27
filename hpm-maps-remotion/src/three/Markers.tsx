@@ -2,11 +2,10 @@ import {useMemo} from 'react';
 import {spring, useCurrentFrame, useVideoConfig} from 'remotion';
 import * as THREE from 'three';
 import {BRAND, BUSINESSES, TIMING, arrivalFrame} from '../data';
-import {finaleCenter} from '../lib/camera';
 import {getCity} from '../lib/city';
-import {makeRandom} from '../lib/random';
 import {PIN_BOX, PIN_TEXTURE, PIN_TEXTURE_CENTER, drawHaloCanvas, drawPinCanvas} from '../lib/pepper';
-import {distanceToRoute, insidePepper, routePoint} from '../lib/route';
+import {getFinalePins} from '../lib/finalePins';
+import {routePoint} from '../lib/route';
 import {easeOut, headS, ramp} from '../lib/timeline';
 import {ROUTE_TUBE} from './Route';
 
@@ -94,35 +93,7 @@ const Pin: React.FC<{position: [number, number, number]; px: number; pop: number
   );
 };
 
-type FinalePin = {x: number; y: number; z: number; start: number};
-
-const useFinalePins = (): FinalePin[] =>
-  useMemo(() => {
-    const city = getCity();
-    const c = finaleCenter();
-    const rnd = makeRandom(4242);
-    const featured = city.featured.map((f) => f.roof);
-    const candidates = city.roofs.filter(
-      (r) =>
-        Math.abs(r.x - c.x) < 300 &&
-        r.z - c.z > -225 &&
-        r.z - c.z < 430 &&
-        !featured.some((f) => Math.hypot(f.x - r.x, f.z - r.z) < 70),
-    );
-    const chosen: {x: number; y: number; z: number}[] = [];
-    for (let attempt = 0; attempt < 4000 && chosen.length < 44; attempt++) {
-      const r = rnd.pick(candidates);
-      // Keep the pepper outline clear so it reads from above.
-      if (distanceToRoute(r.x, r.z) < 40 || insidePepper(r.x, r.z)) continue;
-      if (chosen.some((p) => Math.hypot(p.x - r.x, p.z - r.z) < 62)) continue;
-      if (featured.some((p) => Math.hypot(p.x - r.x, p.z - r.z) < 62)) continue;
-      chosen.push(r);
-    }
-    const sorted = chosen
-      .map((p) => ({...p, d: Math.hypot(p.x - c.x, p.z - c.z)}))
-      .sort((a, b) => a.d - b.d);
-    return sorted.map((p, i) => ({x: p.x, y: p.y, z: p.z, start: TIMING.finalePinsStart + i * 1.45 + rnd.range(0, 3)}));
-  }, []);
+const useFinalePins = () => useMemo(getFinalePins, []);
 
 export const Markers: React.FC = () => {
   const frame = useCurrentFrame();

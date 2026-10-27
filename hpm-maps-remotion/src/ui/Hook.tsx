@@ -5,9 +5,12 @@ import {easeIn, easeInOut, easeOut, ramp} from '../lib/timeline';
 import {PIN_TIP, PepperPin} from './PepperPin';
 
 const PIN_H = 230;
-const DROP_START = 4;
-const DROP_LEN = 40;
+export const DROP_START = 4;
+export const DROP_LEN = 40;
 const RING_EVERY = 34;
+
+/** Frame each headline word starts animating in. */
+export const wordFrame = (i: number) => 26 + i * 5;
 
 /** 0–2s: off-white screen, the pepper pin drops in and pulses, the question builds word by word. */
 export const Hook: React.FC = () => {
@@ -107,7 +110,7 @@ export const Hook: React.FC = () => {
         }}
       >
         {words.map((w, i) => {
-          const start = 26 + i * 5;
+          const start = wordFrame(i);
           const p = ramp(frame, start, start + 16, easeOut);
           const out = ramp(frame, 118 + i * 2, 134 + i * 2, easeIn);
           const red = COPY.hookHighlight.includes(w);

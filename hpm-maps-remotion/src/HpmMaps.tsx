@@ -3,6 +3,7 @@ import {AbsoluteFill, useCurrentFrame, useVideoConfig} from 'remotion';
 import {CITY_COLORS, SAFE, TIMING} from './data';
 import './fonts';
 import {easeInOut, ramp} from './lib/timeline';
+import {SoundTrack} from './sound';
 import {Scene} from './three/Scene';
 import {EndCard, FinaleText} from './ui/Finale';
 import {Hook} from './ui/Hook';
@@ -12,6 +13,8 @@ import {PlaceCards} from './ui/PlaceCard';
 export type HpmMapsProps = {
   /** Draw Instagram's UI zones on top, for checking layouts. */
   showSafeZones?: boolean;
+  /** Include the sound effects (render with --muted for a silent file). */
+  sfx?: boolean;
 };
 
 const SafeZones: React.FC = () => {
@@ -25,7 +28,7 @@ const SafeZones: React.FC = () => {
   );
 };
 
-export const HpmMaps: React.FC<HpmMapsProps> = ({showSafeZones}) => {
+export const HpmMaps: React.FC<HpmMapsProps> = ({showSafeZones, sfx = true}) => {
   const frame = useCurrentFrame();
   const {width, height} = useVideoConfig();
   const blur = 22 * ramp(frame, TIMING.endCardStart, TIMING.endCardStart + 46, easeInOut);
@@ -56,6 +59,7 @@ export const HpmMaps: React.FC<HpmMapsProps> = ({showSafeZones}) => {
       <FinaleText />
       <EndCard />
       {showSafeZones ? <SafeZones /> : null}
+      {sfx ? <SoundTrack /> : null}
     </AbsoluteFill>
   );
 };

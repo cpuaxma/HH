@@ -12,7 +12,10 @@ npm run studio                     # preview and scrub in the browser
 npm run stills                     # QA stills (frames 60, 300, 480, 900, 1250, 1450) → out/stills
 npm run stills -- out/safe 0.5 300,1250 --safe   # same, with Instagram's UI zones drawn on top
 npm run preview                    # half-res draft → out/preview.mp4
-npm run render                     # final → out/hotpepper-reel.mp4 (H.264, CRF 16, yuv420p, preset slow)
+npm run render                     # final with sound effects → out/hotpepper-reel.mp4 (H.264, CRF 16, yuv420p, preset slow)
+npm run render:silent              # same, no audio track → out/hotpepper-reel-silent.mp4
+npm run sfx:wav                    # the sound effects alone → out/hotpepper-sfx.wav (renders in ~30s)
+npm run sfx:make                   # regenerate the effect sounds in public/sfx (needs numpy)
 npm run cover                      # PNG cover from the finale → out/hotpepper-cover.png
 ```
 
@@ -70,6 +73,29 @@ If you change the duration, keep `TIMING.durationInFrames` and the `stopSpacing`
   - **Post-processing:** depth of field only during close-ups, and a light bloom (threshold 1.0) that only the HDR route head and the pins reach.
   - The vignette is a CSS layer in `src/HpmMaps.tsx`.
 - `src/ui/*` holds the HTML overlays: the hook, the nav banner, the place card, the finale line and the end card. `src/lib/pepper.ts` is the pepper-pin artwork, shared by the SVG and the 3D sprite texture.
+
+## Sound effects
+
+Every effect is synthesised from sine waves and filtered noise by `scripts/make-sfx.py` (original, license-free, identical on every run) into `public/sfx/`. `src/sound.tsx` places them, and every cue comes from the same timings as the visuals, so retiming a scene moves its sounds too. They are soft and mid-range so they sit under the music you add in Instagram and still read on phone speakers.
+
+| Moment | Sound |
+|---|---|
+| Pin drops in | a soft thunk on each bounce, quieter each time |
+| Headline | a tiny tick per word |
+| Dive | air rushing past, settling as the camera levels out |
+| Route drawing | a faint pen-on-paper hum whose volume follows the head's speed |
+| Nav banner | a short swipe |
+| Pin on each business | a pop, a step higher at each stop |
+| Rating counting up | a tick per 0.1 step on a rising scale, then a ding when it lands |
+| Stat chip | a bloop |
+| Finale pins | tiny pips, one per pin |
+| Pepper completes | a rising swoosh into a click on the frame it closes, then a shimmer with the glow |
+| End card | a warm whomp for the logo, a tap for "DM US" |
+
+- **Overall level:** `SFX_MASTER` in `src/sound.tsx`. Each cue has its own volume in `getCues()`.
+- **Without effects:** `npm run render:silent`, or pass `sfx: false` as a prop.
+- **Adding the effects to an existing silent render** (no re-render of the picture): `npm run sfx:wav`, then
+  `ffmpeg -i out/hotpepper-reel-silent.mp4 -i out/hotpepper-sfx.wav -map 0:v -map 1:a -c:v copy -c:a aac -b:a 320k -shortest out/hotpepper-reel-sfx.mp4`
 
 ## Layout and safe zones
 
