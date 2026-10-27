@@ -118,7 +118,7 @@ export const Character: React.FC = () => {
 				position: 'absolute',
 				inset: 0,
 				transformOrigin: `${box.left + fx}px ${box.top + fy}px`,
-				transform: `translateY(${react.dy}px) scale(${1 - squash * 0.5}, ${1 + breath - squash})`,
+				transform: `translateY(${react.dy}px) rotate(${px * 0.5}deg) scale(${1 - squash * 0.5}, ${1 + breath - squash})`,
 			}}
 		>
 			{/* Left coat half, lining side (cookies) — sits behind the sleeve. */}

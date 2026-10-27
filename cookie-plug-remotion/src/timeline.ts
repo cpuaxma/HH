@@ -24,6 +24,8 @@ export const T = {
 	eyeDarts: [beat(5.5), beat(6), beat(6.5), beat(7)], // 177 192 207 222
 	glassesUp: beat(7.5) - 3, // 234
 	glint: [232, 258] as [number, number],
+	focusFace: [[144, 180], [224, 250]] as [[number, number], [number, number]], // camera leans in, then lets go
+	focusCookies: [[262, 304], [338, 368]] as [[number, number], [number, number]],
 
 	// 4 — Coat + cookies
 	coatYank: beat(8), // 252

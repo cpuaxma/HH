@@ -22,9 +22,15 @@ const HITS: [number, number, number][] = [
 export const Camera: React.FC<{children: React.ReactNode}> = ({children}) => {
 	const f = useTimelineFrame();
 	const push = tween(f, [0, T.pushEnd], [1, 1.045], Easing.inOut(Easing.sin));
+	// Slow leans so the quieter beats never sit still: in on his face for the shades bit,
+	// then over to the cookies, each released just before the next big hit.
+	const ease = Easing.inOut(Easing.cubic);
+	const onFace = tween(f, T.focusFace[0], [0, 1], ease) * (1 - tween(f, T.focusFace[1], [0, 1], ease));
+	const onCookies = tween(f, T.focusCookies[0], [0, 1], ease) * (1 - tween(f, T.focusCookies[1], [0, 1], ease));
+	const lean = 1 + 0.07 * onFace + 0.05 * onCookies;
 	let punch = 0;
-	let x = 0;
-	let y = 0;
+	let x = 55 * onCookies;
+	let y = 75 * onFace + 10 * onCookies;
 	let r = 0;
 	for (const [at, amount, shake] of HITS) {
 		const t = f - at;
@@ -37,7 +43,7 @@ export const Camera: React.FC<{children: React.ReactNode}> = ({children}) => {
 		<AbsoluteFill
 			style={{
 				transformOrigin: '540px 1000px',
-				transform: `translate(${x}px, ${y}px) rotate(${r}deg) scale(${push * (1 + punch)})`,
+				transform: `translate(${x}px, ${y}px) rotate(${r}deg) scale(${push * lean * (1 + punch)})`,
 			}}
 		>
 			{children}
