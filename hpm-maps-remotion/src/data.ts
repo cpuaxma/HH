@@ -101,6 +101,11 @@ export const COPY = {
   hookHighlight: ['your', 'marketing?'],
   cardCaption: 'Before → After Hot Pepper Media',
   disclaimer: 'Example results',
+  /** Place-card buttons: the red primary action and a quiet secondary one. */
+  cardPrimary: 'Get results like this',
+  cardSecondary: 'Directions',
+  /** Follows the business's `chip` stat on the card's result line. */
+  resultSuffix: 'since we took over',
   finaleLine1: 'Every type of business.',
   finaleLine2: 'One agency.',
   cta: 'DM US',
@@ -116,9 +121,24 @@ export const BRAND = {
   white: '#FFFFFF',
   navGreen: '#1E6B45',
   navGreenLight: '#2C8A5C',
-  /** Star colour (brand accents stay red/orange). */
-  star: '#FF7A1A',
-  starEmpty: '#E7E3DD',
+};
+
+/**
+ * The place card's colour system: neutral text in three steps, gold stars, and
+ * brand red only as an accent (primary button, small growth tags).
+ */
+export const CARD_COLORS = {
+  heading: '#111111',
+  text: '#333333',
+  meta: '#777777',
+  star: '#F5B800',
+  starEmpty: '#E6E6E6',
+  background: '#FFFFFF',
+  border: '#EAEAEA',
+  /** Soft red tint behind the small growth tags. */
+  accentTint: '#FDEDEA',
+  /** Emoji tile behind the business icon. */
+  tile: '#F6F5F3',
 };
 
 export const CITY_COLORS = {
