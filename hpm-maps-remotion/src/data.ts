@@ -133,7 +133,7 @@ export const CITY_COLORS = {
 export const CITY = {
   /** Change the seed for a different (but still deterministic) city. */
   seed: 20251027,
-  bounds: {minX: -560, maxX: 620, minZ: -470, maxZ: 640},
+  bounds: {minX: -600, maxX: 640, minZ: -470, maxZ: 900},
   floorHeight: 3.2,
   maxFloors: 12,
 };

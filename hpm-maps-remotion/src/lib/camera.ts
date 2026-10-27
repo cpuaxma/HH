@@ -12,8 +12,8 @@ export const CAMERA = {
   closeUp: {pitch: 42, dist: 205},
   /** Orbit around each pin during the close-up, degrees. */
   orbit: {from: -10, to: 5},
-  hook: {pitch: 89.5, dist: 2100},
-  finale: {pitch: 89.5, dist: 1450, creep: 0.05},
+  hook: {pitch: 89.5, dist: 1400},
+  finale: {pitch: 89.5, dist: 1560, creep: 0.04},
   /** Extra height mid-hop between stops (fraction of distance). */
   hop: 0.4,
   /** Maximum bank on turns, degrees. */
@@ -141,7 +141,7 @@ export const finaleCenter = () => {
     z0 = Math.min(z0, zs[i]);
     z1 = Math.max(z1, zs[i]);
   }
-  return {x: (x0 + x1) / 2, z: (z0 + z1) / 2 - 65};
+  return {x: (x0 + x1) / 2 - 30, z: (z0 + z1) / 2 - 60};
 };
 
 const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
