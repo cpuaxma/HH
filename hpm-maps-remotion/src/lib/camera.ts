@@ -13,7 +13,7 @@ export const CAMERA = {
   /** Orbit around each pin during the close-up, degrees. */
   orbit: {from: -10, to: 5},
   hook: {pitch: 89.5, dist: 1400},
-  finale: {pitch: 89.5, dist: 1450, creep: 0.04},
+  finale: {pitch: 89.5, dist: 1540, creep: 0.04},
   /** Extra height mid-hop between stops (fraction of distance). */
   hop: 0.4,
   /** Maximum bank on turns, degrees. */

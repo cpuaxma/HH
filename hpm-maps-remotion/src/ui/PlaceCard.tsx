@@ -1,9 +1,9 @@
 import {spring, useCurrentFrame, useVideoConfig} from 'remotion';
-import {BRAND, BUSINESSES, Business, COPY, SAFE, arrivalFrame} from '../data';
+import {BRAND, BUSINESSES, Business, COPY, SAFE, arrivalFrame, COLUMN} from '../data';
 import {EMOJI_FONT, FONT} from '../fonts';
 import {easeIn, easeInOut, easeOut, easeOutQuint, ramp} from '../lib/timeline';
 
-const W = 1080 - SAFE.left - SAFE.right - 20;
+const W = COLUMN.width;
 const BOTTOM = 1920 - SAFE.bottom - 24;
 
 /** Card timing, relative to the stop's arrival frame. */
@@ -22,8 +22,8 @@ export const CARD = {
 const STAR_PATH =
   'M12 2.6 L14.85 8.6 L21.4 9.35 L16.55 13.85 L17.85 20.35 L12 17.1 L6.15 20.35 L7.45 13.85 L2.6 9.35 L9.15 8.6 Z';
 
-const Star: React.FC<{fill: number; pop: number; id: string}> = ({fill, pop, id}) => (
-  <svg width={46} height={46} viewBox="0 0 24 24" style={{transform: `scale(${1 + pop * 0.22})`}}>
+const Star: React.FC<{fill: number; pop: number; id: string; size: number}> = ({fill, pop, id, size}) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" style={{transform: `scale(${1 + pop * 0.22})`}}>
     <defs>
       <clipPath id={id}>
         <rect x={0} y={0} width={24 * fill} height={24} />
@@ -39,6 +39,60 @@ const Star: React.FC<{fill: number; pop: number; id: string}> = ({fill, pop, id}
       clipPath={`url(#${id})`}
     />
   </svg>
+);
+
+const UpArrow: React.FC<{size: number; color: string}> = ({size, color}) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" style={{flexShrink: 0}}>
+    <path d="M12 4 L21 15 H15 V21 H9 V15 H3 Z" fill={color} />
+  </svg>
+);
+
+/** One big before→after stat: label, counting number, a visual, and the gain. */
+const Stat: React.FC<{
+  label: string;
+  value: string;
+  color: string;
+  visual: React.ReactNode;
+  gain: string;
+  was: string;
+  gainIn: number;
+}> = ({label, value, color, visual, gain, was, gainIn}) => (
+  <div style={{flex: 1, minWidth: 0}}>
+    <div style={{fontSize: 22, fontWeight: 800, letterSpacing: 2.5, color: BRAND.inkFaint}}>{label}</div>
+    <div
+      style={{
+        fontSize: 116,
+        fontWeight: 800,
+        letterSpacing: -4,
+        lineHeight: 1,
+        marginTop: 6,
+        fontVariantNumeric: 'tabular-nums',
+        color,
+        whiteSpace: 'nowrap',
+      }}
+    >
+      {value}
+    </div>
+    <div style={{height: 40, display: 'flex', alignItems: 'center', marginTop: 12}}>{visual}</div>
+    <div
+      style={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: 8,
+        marginTop: 14,
+        fontSize: 30,
+        fontWeight: 800,
+        color: BRAND.red,
+        whiteSpace: 'nowrap',
+        fontVariantNumeric: 'tabular-nums',
+        opacity: gainIn,
+      }}
+    >
+      <UpArrow size={26} color={BRAND.red} />
+      {gain}
+      <span style={{fontSize: 24, fontWeight: 600, color: BRAND.inkFaint, marginLeft: 6}}>was {was}</span>
+    </div>
+  </div>
 );
 
 /** The rating as it animates: stars fill to BEFORE, then everything climbs to AFTER. */
@@ -70,111 +124,141 @@ const Card: React.FC<{b: Business; index: number; rel: number}> = ({b, index, re
       }
     }
     const pop = full >= 0 && rel >= full ? Math.max(0, 1 - (rel - full) / 12) * Math.min(1, (rel - full + 1) / 3) : 0;
-    return <Star key={k} fill={fill} pop={pop} id={`s${index}-${k}`} />;
+    return <Star key={k} fill={fill} pop={pop} id={`s${index}-${k}`} size={52} />;
   });
 
   const chip = rel < CARD.chipAt ? 0 : spring({frame: rel - CARD.chipAt, fps, config: {damping: 11, stiffness: 190, mass: 0.6}});
   const footer = ramp(rel, 8, 22, easeOut);
   const done = ramp(rel, CARD.countTo - 6, CARD.countTo + 6, easeOut);
 
+  const ratingColor = done > 0 ? mixHex(BRAND.ink, BRAND.red, done) : BRAND.ink;
+  const gainIn = ramp(rel, CARD.countFrom + 14, CARD.countFrom + 26, easeOut);
+  const ratingGain = r.shown - b.rating.before;
+  const reviewGain = r.reviews - b.reviews.before;
+  // Growth bar: the grey part is where reviews started, the red part is the growth.
+  const barBefore = b.reviews.before / b.reviews.after;
+  const barNow = ramp(rel, CARD.starsFrom, CARD.starsTo, easeOut) * barBefore + (r.reviews - b.reviews.before) / b.reviews.after;
+
   return (
     <div
       style={{
         position: 'absolute',
-        left: SAFE.left,
+        left: COLUMN.x,
         width: W,
         bottom: 1920 - BOTTOM,
         background: '#fff',
         borderRadius: 24,
         boxShadow: '0 30px 70px rgba(40,25,10,0.18), 0 6px 18px rgba(40,25,10,0.08)',
-        padding: '34px 36px 26px',
+        padding: '30px 36px 24px',
         boxSizing: 'border-box',
         fontFamily: FONT,
         color: BRAND.ink,
-        transform: `translateY(${(1 - inP) * 620 + outP * 640}px)`,
+        transform: `translateY(${(1 - inP) * 700 + outP * 720}px)`,
         opacity: Math.min(1, inP * 2) * (1 - outP * 0.6),
       }}
     >
       {/* Name row */}
-      <div style={{display: 'flex', alignItems: 'center', gap: 26}}>
+      <div style={{display: 'flex', alignItems: 'center', gap: 22}}>
         <div
           style={{
-            width: 100,
-            height: 100,
-            borderRadius: 26,
+            width: 84,
+            height: 84,
+            borderRadius: 22,
             background: '#FFF0EA',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             fontFamily: EMOJI_FONT,
-            fontSize: 56,
+            fontSize: 48,
             flexShrink: 0,
           }}
         >
           {b.emoji}
         </div>
         <div style={{minWidth: 0}}>
-          <div style={{fontSize: 46, fontWeight: 700, letterSpacing: -1, lineHeight: 1.1, whiteSpace: 'nowrap'}}>
+          <div style={{fontSize: 42, fontWeight: 700, letterSpacing: -1, lineHeight: 1.1, whiteSpace: 'nowrap'}}>
             {b.name}
           </div>
-          <div style={{fontSize: 28, fontWeight: 600, color: BRAND.inkSoft, marginTop: 6, whiteSpace: 'nowrap'}}>
+          <div style={{fontSize: 26, fontWeight: 600, color: BRAND.inkSoft, marginTop: 4, whiteSpace: 'nowrap'}}>
             {b.category} · {b.area ?? b.street}
           </div>
         </div>
       </div>
 
-      <div style={{height: 1, background: '#EEE9E3', margin: '26px 0 22px'}} />
+      <div style={{height: 1, background: '#EEE9E3', margin: '24px 0 22px'}} />
 
-      {/* Rating row */}
-      <div style={{display: 'flex', alignItems: 'center', gap: 22}}>
-        <div
-          style={{
-            fontSize: 96,
-            fontWeight: 800,
-            letterSpacing: -3,
-            lineHeight: 1,
-            fontVariantNumeric: 'tabular-nums',
-            width: 160,
-            color: done > 0 ? mixHex(BRAND.ink, BRAND.red, done) : BRAND.ink,
-          }}
-        >
-          {r.shown.toFixed(1)}
-        </div>
-        <div>
-          <div style={{display: 'flex', gap: 4}}>{stars}</div>
-          <div style={{fontSize: 30, fontWeight: 700, color: BRAND.inkSoft, marginTop: 6, fontVariantNumeric: 'tabular-nums'}}>
-            {r.reviews.toLocaleString('en-US')} reviews
-          </div>
-        </div>
+      {/* The growth: rating and reviews, side by side */}
+      <div style={{display: 'flex', gap: 28}}>
+        <Stat
+          label="RATING"
+          value={r.shown.toFixed(1)}
+          color={ratingColor}
+          visual={<div style={{display: 'flex', gap: 3}}>{stars}</div>}
+          gain={`+${ratingGain.toFixed(1)}`}
+          was={b.rating.before.toFixed(1)}
+          gainIn={gainIn}
+        />
+        <div style={{width: 1, background: '#EEE9E3'}} />
+        <Stat
+          label="REVIEWS"
+          value={r.reviews.toLocaleString('en-US')}
+          color={ratingColor}
+          visual={
+            <div style={{position: 'relative', width: '100%', height: 18, borderRadius: 9, background: BRAND.starEmpty, overflow: 'hidden'}}>
+              <div
+                style={{
+                  position: 'absolute',
+                  left: 0,
+                  top: 0,
+                  bottom: 0,
+                  width: `${Math.min(1, barNow) * 100}%`,
+                  borderRadius: 9,
+                  background: `linear-gradient(90deg, ${BRAND.red}, ${BRAND.orange})`,
+                }}
+              />
+              <div
+                style={{
+                  position: 'absolute',
+                  left: 0,
+                  top: 0,
+                  bottom: 0,
+                  width: `${Math.min(barNow, barBefore) * 100}%`,
+                  background: '#C9C3BB',
+                  borderRadius: 9,
+                }}
+              />
+            </div>
+          }
+          gain={`+${reviewGain.toLocaleString('en-US')}`}
+          was={b.reviews.before.toLocaleString('en-US')}
+          gainIn={gainIn}
+        />
       </div>
 
-      {/* Chip + before line */}
-      <div style={{display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 20, marginTop: 24, height: 62}}>
+      {/* Chip */}
+      <div style={{display: 'flex', marginTop: 26, height: 70, alignItems: 'center'}}>
         <div
           style={{
             background: BRAND.red,
             color: '#fff',
             borderRadius: 999,
-            padding: '12px 26px 12px 20px',
-            fontSize: 30,
+            padding: '14px 32px 14px 24px',
+            fontSize: 36,
             fontWeight: 800,
             display: 'flex',
             alignItems: 'center',
-            gap: 10,
+            gap: 12,
             transform: `scale(${chip})`,
             transformOrigin: 'left center',
             boxShadow: '0 10px 24px rgba(230,57,34,0.35)',
             whiteSpace: 'nowrap',
           }}
         >
-          <svg width={26} height={26} viewBox="0 0 24 24">
+          <svg width={32} height={32} viewBox="0 0 24 24">
             <path d="M3 17 L9.5 10.5 L13.5 14.5 L21 7" stroke="#fff" strokeWidth={3} fill="none" strokeLinecap="round" strokeLinejoin="round" />
             <path d="M15 7 H21 V13" stroke="#fff" strokeWidth={3} fill="none" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
           {b.chip}
-        </div>
-        <div style={{fontSize: 24, fontWeight: 600, color: BRAND.inkFaint, opacity: footer, whiteSpace: 'nowrap'}}>
-          was {b.rating.before.toFixed(1)} · {b.reviews.before.toLocaleString('en-US')} reviews
         </div>
       </div>
 
@@ -184,7 +268,7 @@ const Card: React.FC<{b: Business; index: number; rel: number}> = ({b, index, re
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
-          marginTop: 24,
+          marginTop: 20,
           opacity: footer,
         }}
       >

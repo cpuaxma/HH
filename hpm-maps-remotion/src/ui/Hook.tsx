@@ -1,5 +1,5 @@
 import {AbsoluteFill, Easing, interpolate, useCurrentFrame} from 'remotion';
-import {BRAND, CITY_COLORS, COPY, FOCUS_SCREEN, SAFE} from '../data';
+import {BRAND, CITY_COLORS, COLUMN, COPY, FOCUS_SCREEN} from '../data';
 import {FONT} from '../fonts';
 import {easeIn, easeInOut, easeOut, ramp} from '../lib/timeline';
 import {PIN_TIP, PepperPin} from './PepperPin';
@@ -94,8 +94,8 @@ export const Hook: React.FC = () => {
       <div
         style={{
           position: 'absolute',
-          left: SAFE.left + 10,
-          width: 1080 - SAFE.left - SAFE.right - 20,
+          left: COLUMN.x,
+          width: COLUMN.width,
           top: FOCUS_SCREEN.y + 110,
           textAlign: 'center',
           fontFamily: FONT,

@@ -38,7 +38,8 @@ Everything you are likely to change is in **`src/data.ts`**.
   - Then come `finaleStart`, `finaleSettled`, `routeComplete` (the pepper closes and pulses once), `finalePinsStart` and `endCardStart`. `coverFrame` is the frame used for the cover PNG.
   - The place-card choreography relative to arrival (count-up window, chip pop, exit) is `CARD` in `src/ui/PlaceCard.tsx`.
 - **Camera:** `CAMERA` in `src/lib/camera.ts` sets the chase pitch and distance (55°, 300), the close-up (42°, 205), the orbit sweep (−10° → +5°), the finale height and the bank limit.
-- **Safe zones:** `SAFE` in `src/data.ts`. `FOCUS_SCREEN` is where the camera target lands on screen (the middle of the safe area).
+- **Layout:** `SAFE` in `src/data.ts` holds Instagram's covered edges. `COLUMN` is the centred column all text and cards use (equal 140 px margins, so it is centred and clear of Instagram's buttons). `FOCUS_SCREEN` is where the camera target lands on screen (centred horizontally).
+- **Place card:** the rating and the review count are the two big stats; each counts up and shows its gain ("▲ +1.2", "▲ +1,238") next to the old value, and the review bar fills from before to after.
 
 If you change the duration, keep `TIMING.durationInFrames` and the `stopSpacing` / `firstArrival` maths consistent. The finale needs about 180 frames, and the end card about 180.
 
@@ -77,5 +78,5 @@ Instagram covers the top 220 px, the bottom 400 px and the right 140 px.
 - **Nav banner:** y 242–414.
 - **Place card:** ends at y 1496.
 - **Finale card:** starts at y 250.
-- **Width:** text and cards stay within x 60–920.
-- **Camera target:** lands at (490, 860), the middle of the safe area, through `setViewOffset`.
+- **Width:** text and cards sit in a centred column, x 140–940.
+- **Camera target:** lands at (540, 760), centred between the banner and the card, through `setViewOffset`.

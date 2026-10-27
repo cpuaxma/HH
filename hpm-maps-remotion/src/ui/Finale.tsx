@@ -1,10 +1,10 @@
 import {AbsoluteFill, spring, useCurrentFrame, useVideoConfig} from 'remotion';
-import {BRAND, CITY_COLORS, COPY, FOCUS_SCREEN, SAFE, TIMING} from '../data';
+import {BRAND, CITY_COLORS, COPY, FOCUS_SCREEN, SAFE, TIMING, COLUMN} from '../data';
 import {FONT} from '../fonts';
 import {easeIn, easeInOut, easeOut, ramp} from '../lib/timeline';
 import {Logo} from './Logo';
 
-const W = 1080 - SAFE.left - SAFE.right - 20;
+const W = COLUMN.width;
 
 /** 19–22s: the line over the top-down city. */
 export const FinaleText: React.FC = () => {
@@ -23,7 +23,7 @@ export const FinaleText: React.FC = () => {
     <div
       style={{
         position: 'absolute',
-        left: SAFE.left,
+        left: COLUMN.x,
         top: SAFE.top + 30,
         width: W,
         padding: '34px 30px 38px',

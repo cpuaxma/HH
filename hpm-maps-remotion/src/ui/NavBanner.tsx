@@ -1,10 +1,10 @@
 import {useCurrentFrame} from 'remotion';
-import {BRAND, BUSINESSES, SAFE, arrivalFrame, travelStartFrame} from '../data';
+import {BRAND, BUSINESSES, SAFE, arrivalFrame, travelStartFrame, COLUMN} from '../data';
 import {FONT} from '../fonts';
 import {getCity} from '../lib/city';
 import {easeIn, easeOutQuint, headS, ramp} from '../lib/timeline';
 
-const W = 1080 - SAFE.left - SAFE.right - 20;
+const W = COLUMN.width;
 
 const Arrow: React.FC<{turn: 'left' | 'right' | 'straight'}> = ({turn}) => (
   <svg width={78} height={78} viewBox="0 0 64 64" style={{transform: turn === 'left' ? 'scaleX(-1)' : undefined}}>
@@ -67,7 +67,7 @@ export const NavBanner: React.FC = () => {
             key={i}
             style={{
               position: 'absolute',
-              left: SAFE.left,
+              left: COLUMN.x,
               top: SAFE.top + 22,
               width: W,
               height: 172,

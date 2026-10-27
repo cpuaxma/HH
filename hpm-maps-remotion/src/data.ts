@@ -187,5 +187,11 @@ export const travelStartFrame = (i: number) =>
 /** Instagram Reels UI covers these edges. Keep text and cards out of them. */
 export const SAFE = {top: 220, bottom: 400, right: 140, left: 60};
 
-/** Where the camera target sits on screen: the centre of the safe area. */
-export const FOCUS_SCREEN = {x: 490, y: 860};
+/**
+ * Text and cards sit in one centred column, with equal margins that also keep
+ * them clear of Instagram's buttons on the right.
+ */
+export const COLUMN = {x: SAFE.right, width: 1080 - 2 * SAFE.right};
+
+/** Where the camera target sits on screen: centred, between the nav banner and the place card. */
+export const FOCUS_SCREEN = {x: 540, y: 760};

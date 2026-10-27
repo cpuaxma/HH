@@ -48,7 +48,7 @@ export const HpmMaps: React.FC<HpmMapsProps> = ({showSafeZones}) => {
       {/* Very slight vignette */}
       <AbsoluteFill
         style={{
-          background: 'radial-gradient(ellipse 85% 70% at 46% 46%, rgba(0,0,0,0) 62%, rgba(70,45,25,0.11) 100%)',
+          background: 'radial-gradient(ellipse 85% 70% at 50% 46%, rgba(0,0,0,0) 62%, rgba(70,45,25,0.11) 100%)',
         }}
       />
       <NavBanner />
