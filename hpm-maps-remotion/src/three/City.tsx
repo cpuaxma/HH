@@ -236,7 +236,12 @@ export const City: React.FC = () => {
   const trees = useMemo(() => {
     const trunkGeo = new THREE.CylinderGeometry(0.2, 0.28, 1, 6);
     trunkGeo.translate(0, 0.5, 0);
+    // Low-poly look from baked per-face normals. (flatShading derives normals from
+    // screen-space derivatives, which turn into NaN on sub-pixel triangles seen from
+    // far away; bloom then smears that NaN across the frame.)
     const crownGeo = new THREE.IcosahedronGeometry(1, 1);
+    crownGeo.deleteAttribute('normal');
+    crownGeo.computeVertexNormals();
     const trunks = new THREE.InstancedMesh(
       trunkGeo,
       new THREE.MeshStandardMaterial({color: CITY_COLORS.trunk, roughness: 0.9}),
@@ -244,7 +249,7 @@ export const City: React.FC = () => {
     );
     const crowns = new THREE.InstancedMesh(
       crownGeo,
-      new THREE.MeshStandardMaterial({color: '#ffffff', roughness: 0.9, flatShading: true}),
+      new THREE.MeshStandardMaterial({color: '#ffffff', roughness: 0.9}),
       city.trees.length,
     );
     const light = new THREE.Color(CITY_COLORS.treeLight);
