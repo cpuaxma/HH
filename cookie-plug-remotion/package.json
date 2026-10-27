@@ -1,0 +1,30 @@
+{
+  "name": "cookie-plug-remotion",
+  "version": "1.0.0",
+  "private": true,
+  "description": "The Cookie Plug: 'Support your local cookie dealer' 10s vertical motion graphic (1080x1920, 60fps)",
+  "scripts": {
+    "studio": "remotion studio",
+    "trace": "python3 scripts/trace_layers.py",
+    "render": "remotion render CookieDealer out/cookie-dealer.mp4 --codec=h264 --crf=18",
+    "render:alpha": "remotion render CookieDealerAlpha out/cookie-dealer-alpha.mov --codec=prores --prores-profile=4444 --image-format=png --pixel-format=yuva444p10le",
+    "render:green": "remotion render CookieDealerGreen out/cookie-dealer-green.mp4 --codec=h264 --crf=18",
+    "render:all": "npm run render && npm run render:alpha && npm run render:green",
+    "frames": "node scripts/frames.mjs",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@fontsource/bodoni-moda": "5.2.5",
+    "@remotion/bundler": "4.0.537",
+    "@remotion/cli": "4.0.537",
+    "@remotion/motion-blur": "4.0.537",
+    "@remotion/renderer": "4.0.537",
+    "react": "19.2.0",
+    "react-dom": "19.2.0",
+    "remotion": "4.0.537"
+  },
+  "devDependencies": {
+    "@types/react": "19.2.2",
+    "typescript": "5.9.3"
+  }
+}
