@@ -3,8 +3,9 @@
  * the businesses, the copy, the brand colours, the city look and the timings.
  *
  * Map units are roughly metres. North is -z (the sea is to the north),
- * east is +x. `mapPosition` is snapped to the nearest street intersection,
- * and the route between stops is worked out automatically along the grid.
+ * east is +x. The route is the outline of the pepper from the logo, laid over
+ * the city as a curved boulevard: seen from above in the finale, it draws the
+ * pepper. Each business sits on it at `along` (0–1 of the way round).
  */
 
 export type Business = {
@@ -15,8 +16,13 @@ export type Business = {
   street: string;
   /** Optional neighbourhood shown after the street on the place card. */
   area?: string;
-  /** [x, z] on the stylised map. North (the sea) is negative z. */
-  mapPosition: [number, number];
+  /**
+   * Where the stop sits on the pepper route, 0–1 of the way round, clockwise
+   * from the base of the stem (0.1 ≈ the right side, 0.4 ≈ the bottom,
+   * 0.55 ≈ the tip, 0.75 ≈ the top edge). Keep them in order and leave the
+   * last ~20% (the hump, calyx and stem) for the finale to draw.
+   */
+  along: number;
   rating: {before: number; after: number};
   reviews: {before: number; after: number};
   /** Extra stat in the red pill chip. */
@@ -30,7 +36,7 @@ export const BUSINESSES: Business[] = [
     category: 'Restaurant',
     street: 'Hamra Street',
     area: 'Hamra',
-    mapPosition: [-180, -150],
+    along: 0.075,
     rating: {before: 3.6, after: 4.8},
     reviews: {before: 142, after: 1380},
     chip: '+320% reservations',
@@ -41,7 +47,7 @@ export const BUSINESSES: Business[] = [
     category: 'Gym',
     street: 'Bliss Street',
     area: 'Ras Beirut',
-    mapPosition: [-110, -360],
+    along: 0.24,
     rating: {before: 3.9, after: 4.9},
     reviews: {before: 88, after: 910},
     chip: '+2.4x memberships',
@@ -52,7 +58,7 @@ export const BUSINESSES: Business[] = [
     category: 'Dental clinic',
     street: 'Rue Gouraud',
     area: 'Gemmayze',
-    mapPosition: [110, -300],
+    along: 0.42,
     rating: {before: 4.0, after: 4.9},
     reviews: {before: 61, after: 640},
     chip: '+180% bookings',
@@ -63,7 +69,7 @@ export const BUSINESSES: Business[] = [
     category: 'Hair salon',
     street: 'Armenia Street',
     area: 'Mar Mikhael',
-    mapPosition: [270, -250],
+    along: 0.6,
     rating: {before: 3.7, after: 4.8},
     reviews: {before: 95, after: 1120},
     chip: '+5x DMs',
@@ -74,15 +80,20 @@ export const BUSINESSES: Business[] = [
     category: 'Real estate',
     street: 'Sassine Square',
     area: 'Achrafieh',
-    mapPosition: [170, -20],
+    along: 0.77,
     rating: {before: 3.5, after: 4.7},
     reviews: {before: 40, after: 470},
     chip: '+260% leads',
   },
 ];
 
-/** Where the route starts drawing (south of the first stop). */
-export const ROUTE_START: [number, number] = [-170, 160];
+/** Where the pepper route sits on the map and how big it is (map units ≈ metres). */
+export const PEPPER_ROUTE = {
+  center: [40, -150] as [number, number],
+  width: 560,
+  /** Width of the pepper-shaped boulevard the route drives along. */
+  boulevard: 13,
+};
 
 export const COPY = {
   hook: 'What happens when we run your marketing?',
@@ -92,8 +103,7 @@ export const COPY = {
   disclaimer: 'Example results',
   finaleLine1: 'Every type of business.',
   finaleLine2: 'One agency.',
-  wordmark: 'HOT PEPPER MEDIA',
-  cta: "DM us 'MAP' 🌶️",
+  cta: 'DM US',
 };
 
 export const BRAND = {
@@ -133,7 +143,7 @@ export const CITY_COLORS = {
 export const CITY = {
   /** Change the seed for a different (but still deterministic) city. */
   seed: 20251027,
-  bounds: {minX: -600, maxX: 640, minZ: -470, maxZ: 900},
+  bounds: {minX: -620, maxX: 780, minZ: -470, maxZ: 900},
   floorHeight: 3.2,
   maxFloors: 12,
 };
@@ -159,6 +169,8 @@ export const TIMING = {
   finaleStart: 1140,
   /** Camera reaches the top-down view. */
   finaleSettled: 1265,
+  /** The route head closes the pepper outline (then the route pulses once). */
+  routeComplete: 1282,
   /** First of the finale pins pops. */
   finalePinsStart: 1200,
   endCardStart: 1320,

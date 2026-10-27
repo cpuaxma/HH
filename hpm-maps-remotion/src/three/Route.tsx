@@ -4,7 +4,8 @@ import * as THREE from 'three';
 import {BRAND} from '../data';
 import {computeCamera} from '../lib/camera';
 import {ROUTE_STEP, getRoute} from '../lib/route';
-import {headS} from '../lib/timeline';
+import {completePulse, headS} from '../lib/timeline';
+import {TIMING} from '../data';
 
 const RADIAL = 12;
 const TUBE_RADIUS = 1.7;
@@ -34,17 +35,22 @@ class SampledCurve extends THREE.Curve<THREE.Vector3> {
 const gradientUniforms = () => ({
   uHead: {value: 0},
   uWidth: {value: 1},
+  uPulse: {value: 0},
   uRed: {value: new THREE.Color(BRAND.red)},
   uOrange: {value: new THREE.Color(BRAND.orange)},
 });
 
 const GRADIENT_GLSL = /* glsl */ `
   uniform float uHead;
+  uniform float uPulse;
   uniform vec3 uRed;
   uniform vec3 uOrange;
   vec3 routeColor(float arc) {
     float t = clamp(arc / max(uHead, 1.0), 0.0, 1.0);
-    return mix(uRed, uOrange, pow(t, 1.8));
+    vec3 c = mix(uRed, uOrange, pow(t, 1.8));
+    // Once the pepper is complete, a bright wave runs along it.
+    float wave = exp(-pow((t - uPulse * 1.2 + 0.1) * 6.0, 2.0)) * step(0.001, uPulse);
+    return c + vec3(0.9, 0.35, 0.12) * wave;
   }
 `;
 
@@ -193,8 +199,11 @@ export const RouteLine: React.FC = () => {
   }, [route]);
 
   const s = headS(frame);
-  const width = Math.pow(Math.max(1, computeCamera(frame).dist / 300), 0.75);
+  const width = Math.pow(Math.max(1, computeCamera(frame).dist / 300), 0.95);
+  const pulseT = frame >= TIMING.routeComplete && completePulse(frame) > 0 ? (frame - TIMING.routeComplete) / 40 : 0;
   useLayoutEffect(() => {
+    (tube.material as THREE.ShaderMaterial).uniforms.uPulse.value = pulseT;
+    (ribbon.material as THREE.ShaderMaterial).uniforms.uPulse.value = pulseT;
     const drawn = Math.floor(s / ROUTE_STEP);
     tube.geometry.setDrawRange(0, drawn * RADIAL * 6);
     ribbon.geometry.setDrawRange(0, drawn * 12);
@@ -204,7 +213,7 @@ export const RouteLine: React.FC = () => {
     (ribbon.material as THREE.ShaderMaterial).uniforms.uWidth.value = width;
     startCap.scale.setScalar(width);
     startCap.position.y = TUBE_Y * width;
-  }, [s, width, tube, ribbon, startCap]);
+  }, [s, width, pulseT, tube, ribbon, startCap]);
 
   return (
     <group>

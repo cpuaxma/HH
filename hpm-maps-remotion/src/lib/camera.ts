@@ -13,7 +13,7 @@ export const CAMERA = {
   /** Orbit around each pin during the close-up, degrees. */
   orbit: {from: -10, to: 5},
   hook: {pitch: 89.5, dist: 1400},
-  finale: {pitch: 89.5, dist: 1560, creep: 0.04},
+  finale: {pitch: 89.5, dist: 1450, creep: 0.04},
   /** Extra height mid-hop between stops (fraction of distance). */
   hop: 0.4,
   /** Maximum bank on turns, degrees. */
@@ -47,7 +47,8 @@ const getSmoothYaw = () => {
   let prev = 0;
   for (let i = 0; i < n; i++) {
     const f = i - PAD;
-    let y = yawOf(routeDirection(headS(f), 5));
+    // Heading stops following the head once the finale starts (it is drawing the stem).
+    let y = yawOf(routeDirection(headS(Math.min(f, TIMING.finaleStart)), 5));
     if (i > 0) {
       while (y - prev > Math.PI) y -= Math.PI * 2;
       while (y - prev < -Math.PI) y += Math.PI * 2;
@@ -55,8 +56,9 @@ const getSmoothYaw = () => {
     raw[i] = y;
     prev = y;
   }
-  const sigma = 13;
-  const R = 40;
+  // Wide window: the pepper's tip is a hairpin, and the camera should swing round it gently.
+  const sigma = 26;
+  const R = 80;
   const out = new Float64Array(n);
   for (let i = 0; i < n; i++) {
     let sum = 0;
@@ -141,7 +143,7 @@ export const finaleCenter = () => {
     z0 = Math.min(z0, zs[i]);
     z1 = Math.max(z1, zs[i]);
   }
-  return {x: (x0 + x1) / 2 - 30, z: (z0 + z1) / 2 - 60};
+  return {x: (x0 + x1) / 2, z: (z0 + z1) / 2 - 70};
 };
 
 const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
@@ -188,9 +190,9 @@ export const computeCamera = (f: number): CameraState => {
     tx = lerp(tx, c.x, fp);
     ty = lerp(ty, 0, fp);
     tz = lerp(tz, c.z, fp);
-    let goal = 0;
-    while (goal - yaw > Math.PI) goal -= Math.PI * 2;
-    while (goal - yaw < -Math.PI) goal += Math.PI * 2;
+    // North-up, unwrapped against a fixed reference so it can never flip mid-move.
+    const ref = yawAt(TIMING.finaleStart);
+    const goal = Math.round(ref / (Math.PI * 2)) * Math.PI * 2;
     yaw = lerp(yaw, goal, fp);
     pitch = lerp(pitch, CAMERA.finale.pitch * DEG, ramp(f, TIMING.finaleStart, TIMING.finaleSettled - 15, easeInOut));
     const creep = 1 + CAMERA.finale.creep * ramp(f, TIMING.finaleSettled - 30, TIMING.durationInFrames, easeOut);

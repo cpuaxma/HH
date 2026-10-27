@@ -2,7 +2,6 @@ import {useCurrentFrame} from 'remotion';
 import {BRAND, BUSINESSES, SAFE, arrivalFrame, travelStartFrame} from '../data';
 import {FONT} from '../fonts';
 import {getCity} from '../lib/city';
-import {getRoute} from '../lib/route';
 import {easeIn, easeOutQuint, headS, ramp} from '../lib/timeline';
 
 const W = 1080 - SAFE.left - SAFE.right - 20;
@@ -37,7 +36,7 @@ const formatDistance = (m: number) => {
 
 /** First frame at which the head is within 5 m of stop i. */
 const arrivedAt = (i: number) => {
-  const {stopS} = getRoute();
+  const {stopS} = getCity();
   for (let f = travelStartFrame(i); f <= arrivalFrame(i); f++) {
     if (stopS[i] - headS(f) < 5) return f;
   }
@@ -48,7 +47,7 @@ const arrivedAt = (i: number) => {
 export const NavBanner: React.FC = () => {
   const frame = useCurrentFrame();
   const city = getCity();
-  const {stopS} = getRoute();
+  const {stopS} = getCity();
 
   return (
     <>

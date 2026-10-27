@@ -1,53 +1,38 @@
-import {getCity} from './city';
+import {PEPPER_ROUTE} from '../data';
+import {PEPPER_OUTLINE} from './logoTrace';
 
 export type Route = {
-  /** Evenly spaced samples along the route (every STEP units). */
+  /** Evenly spaced samples along the route (every ROUTE_STEP units). */
   xs: Float64Array;
   zs: Float64Array;
   length: number;
-  /** Arc length at which the head stops for each business. */
-  stopS: number[];
 };
 
 export const ROUTE_STEP = 0.5;
-const FILLET = 16;
 
 let cached: Route | null = null;
 
+/**
+ * The route is the outline of the pepper from the logo, laid over the city
+ * (logo x → map x, logo y → map z, so north-up shows it the right way round).
+ * It runs clockwise from the base of the stem and ends where it started.
+ */
 export const getRoute = (): Route => {
   if (cached) return cached;
-  const city = getCity();
-  const w = city.waypoints;
-
-  // Polyline with rounded corners.
-  const pts: {x: number; z: number}[] = [w[0]];
-  for (let i = 1; i < w.length - 1; i++) {
-    const a = w[i - 1];
-    const b = w[i];
-    const c = w[i + 1];
-    const l1 = Math.hypot(b.x - a.x, b.z - a.z);
-    const l2 = Math.hypot(c.x - b.x, c.z - b.z);
-    const d1 = {x: (b.x - a.x) / l1, z: (b.z - a.z) / l1};
-    const d2 = {x: (c.x - b.x) / l2, z: (c.z - b.z) / l2};
-    if (Math.abs(d1.x * d2.z - d1.z * d2.x) < 1e-6) {
-      pts.push(b);
-      continue;
-    }
-    const r = Math.min(FILLET, l1 / 2, l2 / 2);
-    const p0 = {x: b.x - d1.x * r, z: b.z - d1.z * r};
-    const p2 = {x: b.x + d2.x * r, z: b.z + d2.z * r};
-    for (let k = 0; k <= 24; k++) {
-      const t = k / 24;
-      const u = 1 - t;
-      pts.push({
-        x: u * u * p0.x + 2 * u * t * b.x + t * t * p2.x,
-        z: u * u * p0.z + 2 * u * t * b.z + t * t * p2.z,
-      });
-    }
+  let x0 = Infinity;
+  let x1 = -Infinity;
+  let y0 = Infinity;
+  let y1 = -Infinity;
+  for (const [x, y] of PEPPER_OUTLINE) {
+    x0 = Math.min(x0, x);
+    x1 = Math.max(x1, x);
+    y0 = Math.min(y0, y);
+    y1 = Math.max(y1, y);
   }
-  pts.push(w[w.length - 1]);
+  const k = PEPPER_ROUTE.width / (x1 - x0);
+  const [cx, cz] = PEPPER_ROUTE.center;
+  const pts = PEPPER_OUTLINE.map(([x, y]) => ({x: cx + (x - (x0 + x1) / 2) * k, z: cz + (y - (y0 + y1) / 2) * k}));
 
-  // Cumulative length, then resample evenly.
   const cum = [0];
   for (let i = 1; i < pts.length; i++) {
     cum.push(cum[i - 1] + Math.hypot(pts[i].x - pts[i - 1].x, pts[i].z - pts[i - 1].z));
@@ -60,31 +45,11 @@ export const getRoute = (): Route => {
   for (let i = 0; i < n; i++) {
     const s = Math.min(length, i * ROUTE_STEP);
     while (j < cum.length - 2 && cum[j + 1] < s) j++;
-    const seg = cum[j + 1] - cum[j] || 1;
-    const t = (s - cum[j]) / seg;
+    const t = (s - cum[j]) / (cum[j + 1] - cum[j] || 1);
     xs[i] = pts[j].x + (pts[j + 1].x - pts[j].x) * t;
     zs[i] = pts[j].z + (pts[j + 1].z - pts[j].z) * t;
   }
-
-  // Each stop: the closest sample to its intersection, searching forward.
-  const stopS: number[] = [];
-  let from = 0;
-  for (const c of city.stopCorners) {
-    let best = from;
-    let bestD = Infinity;
-    for (let i = from; i < n; i++) {
-      const d = Math.hypot(xs[i] - c.x, zs[i] - c.z);
-      if (d < bestD) {
-        bestD = d;
-        best = i;
-      }
-      if (bestD < 0.3 && d > 30) break;
-    }
-    stopS.push(best * ROUTE_STEP);
-    from = best + 1;
-  }
-
-  cached = {xs, zs, length, stopS};
+  cached = {xs, zs, length};
   return cached;
 };
 
@@ -102,4 +67,47 @@ export const routeDirection = (s: number, window = 4) => {
   const b = routePoint(s + window);
   const len = Math.hypot(b.x - a.x, b.z - a.z) || 1;
   return {x: (b.x - a.x) / len, z: (b.z - a.z) / len};
+};
+
+let index: {cell: number; buckets: Map<string, [number, number][]>} | null = null;
+
+/** Distance from (x, z) to the route, for keeping buildings and trees off it. */
+export const distanceToRoute = (x: number, z: number) => {
+  if (!index) {
+    const r = getRoute();
+    const cell = 25;
+    const buckets = new Map<string, [number, number][]>();
+    for (let i = 0; i < r.xs.length; i += 2) {
+      const key = `${Math.floor(r.xs[i] / cell)},${Math.floor(r.zs[i] / cell)}`;
+      if (!buckets.has(key)) buckets.set(key, []);
+      buckets.get(key)!.push([r.xs[i], r.zs[i]]);
+    }
+    index = {cell, buckets};
+  }
+  const {cell, buckets} = index;
+  const ci = Math.floor(x / cell);
+  const cj = Math.floor(z / cell);
+  let best = Infinity;
+  for (let di = -2; di <= 2; di++) {
+    for (let dj = -2; dj <= 2; dj++) {
+      const b = buckets.get(`${ci + di},${cj + dj}`);
+      if (!b) continue;
+      for (const [px, pz] of b) best = Math.min(best, Math.hypot(px - x, pz - z));
+    }
+  }
+  return best;
+};
+
+/** Is (x, z) inside the pepper outline? (even-odd ray cast on the route samples) */
+export const insidePepper = (x: number, z: number) => {
+  const r = getRoute();
+  let inside = false;
+  for (let i = 0, j = r.xs.length - 1; i < r.xs.length; j = i, i += 4) {
+    const xi = r.xs[i];
+    const zi = r.zs[i];
+    const xj = r.xs[j];
+    const zj = r.zs[j];
+    if (zi > z !== zj > z && x < ((xj - xi) * (z - zi)) / (zj - zi) + xi) inside = !inside;
+  }
+  return inside;
 };

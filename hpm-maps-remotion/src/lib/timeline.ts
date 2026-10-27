@@ -1,5 +1,6 @@
 import {Easing, interpolate} from 'remotion';
 import {BUSINESSES, TIMING, arrivalFrame, departFrame, travelStartFrame} from '../data';
+import {getCity} from './city';
 import {getRoute} from './route';
 
 export const easeInOut = Easing.inOut(Easing.cubic);
@@ -16,7 +17,7 @@ export const ramp = (f: number, a: number, b: number, easing = easeInOut) =>
 
 /** Arc length of the route head at a (possibly fractional) frame. */
 export const headS = (f: number) => {
-  const {stopS} = getRoute();
+  const {stopS} = getCity();
   let s = 0;
   for (let i = 0; i < BUSINESSES.length; i++) {
     const from = i === 0 ? 0 : stopS[i - 1];
@@ -24,7 +25,16 @@ export const headS = (f: number) => {
     const b = arrivalFrame(i);
     if (f >= a) s = from + (stopS[i] - from) * ramp(f, a, b, easeInOut);
   }
+  // Finale: the head finishes the outline (hump, calyx, stem) as the camera rises.
+  const last = stopS[stopS.length - 1];
+  if (f >= TIMING.finaleStart) s = last + (getRoute().length - last) * ramp(f, TIMING.finaleStart, TIMING.routeComplete, easeInOut);
   return s;
+};
+
+/** 0→1→0 glow pulse along the whole route once the pepper is complete. */
+export const completePulse = (f: number) => {
+  const t = (f - TIMING.routeComplete) / 40;
+  return t <= 0 || t >= 1 ? 0 : Math.sin(Math.PI * t) ** 2;
 };
 
 /** Index of the stop whose block we are in (travelling into it or dwelling). */

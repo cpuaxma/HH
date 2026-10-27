@@ -2,7 +2,7 @@ import {AbsoluteFill, spring, useCurrentFrame, useVideoConfig} from 'remotion';
 import {BRAND, CITY_COLORS, COPY, FOCUS_SCREEN, SAFE, TIMING} from '../data';
 import {FONT} from '../fonts';
 import {easeIn, easeInOut, easeOut, ramp} from '../lib/timeline';
-import {PepperPin} from './PepperPin';
+import {Logo} from './Logo';
 
 const W = 1080 - SAFE.left - SAFE.right - 20;
 
@@ -47,18 +47,18 @@ export const FinaleText: React.FC = () => {
   );
 };
 
-/** 22–25s: soft blur and fade to off-white, the wordmark and the CTA. */
+/** 22–25s: soft blur and fade to off-white, the logo and the CTA. */
 export const EndCard: React.FC = () => {
   const frame = useCurrentFrame();
   const {fps} = useVideoConfig();
   const start = TIMING.endCardStart;
   if (frame < start) return null;
   const fade = ramp(frame, start, start + 46, easeInOut);
-  const pinPop = frame < start + 30 ? 0 : spring({frame: frame - start - 30, fps, config: {damping: 10, stiffness: 150, mass: 0.8}});
-  const word1 = ramp(frame, start + 38, start + 58, easeOut);
-  const word2 = ramp(frame, start + 46, start + 66, easeOut);
-  const cta = frame < start + 64 ? 0 : spring({frame: frame - start - 64, fps, config: {damping: 12, stiffness: 160, mass: 0.8}});
-  const ring = ramp(frame, start + 74, start + 120, easeOut);
+  const pepper = frame < start + 26 ? 0 : spring({frame: frame - start - 26, fps, config: {damping: 13, stiffness: 120, mass: 0.9}});
+  const letters = ramp(frame, start + 36, start + 70, easeInOut);
+  const cta = frame < start + 70 ? 0 : spring({frame: frame - start - 70, fps, config: {damping: 12, stiffness: 160, mass: 0.8}});
+  const ring = ramp(frame, start + 80, start + 126, easeOut);
+  const LOGO_W = 800;
 
   return (
     <AbsoluteFill>
@@ -66,48 +66,17 @@ export const EndCard: React.FC = () => {
       <div
         style={{
           position: 'absolute',
-          left: FOCUS_SCREEN.x - 400,
-          width: 800,
-          top: 620,
+          left: FOCUS_SCREEN.x - LOGO_W / 2,
+          width: LOGO_W,
+          top: 560,
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
           fontFamily: FONT,
         }}
       >
-        <div style={{transform: `scale(${pinPop})`, transformOrigin: '50% 100%', height: 170}}>
-          <PepperPin height={160} />
-        </div>
-        <div
-          style={{
-            marginTop: 26,
-            fontSize: 118,
-            fontWeight: 800,
-            letterSpacing: -4,
-            lineHeight: 0.95,
-            color: BRAND.red,
-            opacity: word1,
-            transform: `translateY(${(1 - word1) * 30}px)`,
-            whiteSpace: 'nowrap',
-          }}
-        >
-          {COPY.wordmark.split(' ').slice(0, -1).join(' ')}
-        </div>
-        <div
-          style={{
-            marginTop: 10,
-            fontSize: 50,
-            fontWeight: 800,
-            letterSpacing: 18,
-            paddingLeft: 18,
-            color: BRAND.ink,
-            opacity: word2,
-            transform: `translateY(${(1 - word2) * 24}px)`,
-          }}
-        >
-          {COPY.wordmark.split(' ').slice(-1)[0]}
-        </div>
-        <div style={{position: 'relative', marginTop: 70}}>
+        <Logo width={LOGO_W} pepper={pepper} letters={letters} red={BRAND.red} ink={BRAND.ink} />
+        <div style={{position: 'relative', marginTop: 80}}>
           <div
             style={{
               position: 'absolute',
@@ -122,10 +91,10 @@ export const EndCard: React.FC = () => {
             style={{
               background: `linear-gradient(135deg, ${BRAND.glow}, ${BRAND.red})`,
               color: '#fff',
-              fontSize: 50,
+              fontSize: 56,
               fontWeight: 800,
-              letterSpacing: -0.5,
-              padding: '26px 56px',
+              letterSpacing: 2,
+              padding: '26px 72px',
               borderRadius: 999,
               transform: `scale(${cta})`,
               boxShadow: '0 18px 40px rgba(230,57,34,0.35)',

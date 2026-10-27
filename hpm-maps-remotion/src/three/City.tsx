@@ -1,7 +1,8 @@
 import {useMemo} from 'react';
 import * as THREE from 'three';
-import {CITY_COLORS} from '../data';
+import {CITY_COLORS, PEPPER_ROUTE} from '../data';
 import {EDGE_LINE_WIDTH, Rect, Segment, getCity} from '../lib/city';
+import {getRoute, routeDirection, routePoint} from '../lib/route';
 
 type Quad = [number, number][]; // 4 corners in (x, z), counter-clockwise seen from above
 
@@ -125,9 +126,19 @@ export const City: React.FC = () => {
     ]);
     const blocks = flatGeometry(city.blocks.filter((b) => !city.parks.includes(b)).map(rectQuad));
     const parks = flatGeometry(city.parks.map(rectQuad));
-    const avenues = flatGeometry(
-      city.avenues.map((a) => segmentQuad({ax: a.ax, az: a.az, bx: a.bx, bz: a.bz}, a.width)),
-    );
+    // The pepper boulevard: short quads along the route, overlapping slightly so the curve stays seamless.
+    const route = getRoute();
+    const boulevard: Quad[] = [];
+    for (let s = 0; s < route.length; s += 3) {
+      const p = routePoint(s);
+      const d = routeDirection(s + 1.5, 2);
+      const q = routePoint(Math.min(route.length, s + 3.6));
+      boulevard.push(segmentQuad({ax: p.x - d.x * 0.3, az: p.z - d.z * 0.3, bx: q.x, bz: q.z}, PEPPER_ROUTE.boulevard));
+    }
+    const avenues = flatGeometry([
+      ...city.avenues.map((a) => segmentQuad({ax: a.ax, az: a.az, bx: a.bx, bz: a.bz}, a.width)),
+      ...boulevard,
+    ]);
     const lines = flatGeometry(city.edgeLines.map((s) => segmentQuad(s, EDGE_LINE_WIDTH)));
     const water = flatGeometry([rectQuad({x0: -6000, x1: 6000, z0: -6000, z1: city.shoreZ})]);
     const shore = flatGeometry([rectQuad({x0: -6000, x1: 6000, z0: city.shoreZ - 2.2, z1: city.shoreZ})]);
@@ -169,9 +180,11 @@ export const City: React.FC = () => {
     const mesh = new THREE.InstancedMesh(geo, buildingMaterial(), city.boxes.length);
     const m = new THREE.Matrix4();
     const palette = CITY_COLORS.buildings.map((c) => new THREE.Color(c));
+    const q = new THREE.Quaternion();
+    const up = new THREE.Vector3(0, 1, 0);
     city.boxes.forEach((b, i) => {
-      m.makeScale(b.sx, b.h, b.sz);
-      m.setPosition(b.cx, b.y0, b.cz);
+      q.setFromAxisAngle(up, b.rot ?? 0);
+      m.compose(new THREE.Vector3(b.cx, b.y0, b.cz), q, new THREE.Vector3(b.sx, b.h, b.sz));
       mesh.setMatrixAt(i, m);
       mesh.setColorAt(i, b.color === 0xffffff ? new THREE.Color('#ffffff') : palette[b.color]);
     });
@@ -195,17 +208,23 @@ export const City: React.FC = () => {
     const mesh = new THREE.InstancedMesh(geo, mat, city.featured.length * 4);
     const m = new THREE.Matrix4();
     let k = 0;
+    const q = new THREE.Quaternion();
+    const up = new THREE.Vector3(0, 1, 0);
     for (const f of city.featured) {
       const {cx, cz, sx, sz, h} = f.box;
+      const rot = f.box.rot ?? 0;
+      q.setFromAxisAngle(up, rot);
+      // Bars in the building's own frame, then turned with it.
       const bars: [number, number, number, number][] = [
-        [cx, cz - sz / 2 + t / 2, sx, t],
-        [cx, cz + sz / 2 - t / 2, sx, t],
-        [cx - sx / 2 + t / 2, cz, t, sz - 2 * t],
-        [cx + sx / 2 - t / 2, cz, t, sz - 2 * t],
+        [0, -sz / 2 + t / 2, sx, t],
+        [0, sz / 2 - t / 2, sx, t],
+        [-sx / 2 + t / 2, 0, t, sz - 2 * t],
+        [sx / 2 - t / 2, 0, t, sz - 2 * t],
       ];
-      for (const [x, z, w, d] of bars) {
-        m.makeScale(w + 0.06, hgt, d + 0.06);
-        m.setPosition(x, h - 0.02, z);
+      for (const [lx, lz, w, d] of bars) {
+        const x = cx + lx * Math.cos(rot) + lz * Math.sin(rot);
+        const z = cz - lx * Math.sin(rot) + lz * Math.cos(rot);
+        m.compose(new THREE.Vector3(x, h - 0.02, z), q, new THREE.Vector3(w + 0.06, hgt, d + 0.06));
         mesh.setMatrixAt(k++, m);
       }
     }

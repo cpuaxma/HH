@@ -6,7 +6,7 @@ import {finaleCenter} from '../lib/camera';
 import {getCity} from '../lib/city';
 import {makeRandom} from '../lib/random';
 import {PIN_BOX, PIN_TEXTURE, PIN_TEXTURE_CENTER, drawHaloCanvas, drawPinCanvas} from '../lib/pepper';
-import {routePoint} from '../lib/route';
+import {distanceToRoute, insidePepper, routePoint} from '../lib/route';
 import {easeOut, headS, ramp} from '../lib/timeline';
 import {ROUTE_TUBE} from './Route';
 
@@ -110,8 +110,10 @@ const useFinalePins = (): FinalePin[] =>
         !featured.some((f) => Math.hypot(f.x - r.x, f.z - r.z) < 70),
     );
     const chosen: {x: number; y: number; z: number}[] = [];
-    for (let attempt = 0; attempt < 4000 && chosen.length < 48; attempt++) {
+    for (let attempt = 0; attempt < 4000 && chosen.length < 44; attempt++) {
       const r = rnd.pick(candidates);
+      // Keep the pepper outline clear so it reads from above.
+      if (distanceToRoute(r.x, r.z) < 40 || insidePepper(r.x, r.z)) continue;
       if (chosen.some((p) => Math.hypot(p.x - r.x, p.z - r.z) < 62)) continue;
       if (featured.some((p) => Math.hypot(p.x - r.x, p.z - r.z) < 62)) continue;
       chosen.push(r);

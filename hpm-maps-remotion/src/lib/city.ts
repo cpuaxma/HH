@@ -1,8 +1,10 @@
-import {BUSINESSES, CITY, ROUTE_START} from '../data';
+import {BUSINESSES, CITY, PEPPER_ROUTE} from '../data';
 import {makeRandom} from './random';
+import {distanceToRoute, getRoute, routeDirection, routePoint} from './route';
 
 export type Rect = {x0: number; z0: number; x1: number; z1: number};
-export type Box = {cx: number; cz: number; sx: number; sz: number; y0: number; h: number; color: number};
+/** A building box. `rot` turns it about its centre (radians), for buildings that face the curved boulevard. */
+export type Box = {cx: number; cz: number; sx: number; sz: number; y0: number; h: number; color: number; rot?: number};
 export type Tree = {x: number; z: number; r: number; trunk: number; color: number};
 export type Segment = {ax: number; az: number; bx: number; bz: number};
 export type Road = {pos: number; width: number};
@@ -10,7 +12,7 @@ export type Road = {pos: number; width: number};
 export type Avenue = {ax: number; az: number; bx: number; bz: number; width: number};
 
 export type Featured = {
-  /** The intersection the route stops at. */
+  /** The point on the route where the head stops. */
   corner: {x: number; z: number};
   /** Footprint and height of the highlighted building. */
   box: Box;
@@ -31,12 +33,10 @@ export type City = {
   /** Roofs (x, y, z) used for the finale pin cascade. */
   roofs: {x: number; y: number; z: number}[];
   shoreZ: number;
-  routeStart: {x: number; z: number};
-  stopCorners: {x: number; z: number}[];
-  /** Route polyline through intersections: start, then each L-turn corner and stop. */
-  waypoints: {x: number; z: number}[];
-  /** For each stop: the manoeuvre at the last corner and the length of the final leg. */
-  approach: {turn: 'left' | 'right' | 'straight'; finalLeg: number}[];
+  /** Arc length along the route of each stop. */
+  stopS: number[];
+  /** For each stop: how the route bends on the way in, for the nav banner. */
+  approach: {turn: 'left' | 'right' | 'straight'}[];
 };
 
 const SIDEWALK = 4;
@@ -64,9 +64,6 @@ const rectHitsAvenue = (r: Rect, a: Avenue, margin: number) => {
   return !(Math.min(...d) > half || Math.max(...d) < -half);
 };
 
-const rectsOverlap = (a: Rect, b: Rect, margin = 0) =>
-  a.x0 < b.x1 + margin && a.x1 > b.x0 - margin && a.z0 < b.z1 + margin && a.z1 > b.z0 - margin;
-
 /** Clip the segment p→q to a rectangle (Liang–Barsky). Returns [t0, t1] or null. */
 const clipToRect = (s: Segment, r: Rect): [number, number] | null => {
   const dx = s.bx - s.ax;
@@ -93,6 +90,27 @@ const clipToRect = (s: Segment, r: Rect): [number, number] | null => {
 };
 
 /** Cut away the parts of a segment that run across an avenue. */
+/** Cut away the parts of a segment that run across the pepper boulevard. */
+const cutByRoute = (s: Segment, half: number): Segment[] => {
+  const len = Math.hypot(s.bx - s.ax, s.bz - s.az);
+  const n = Math.max(1, Math.ceil(len));
+  const out: Segment[] = [];
+  let start: number | null = null;
+  for (let k = 0; k <= n; k++) {
+    const t = k / n;
+    const inside = distanceToRoute(s.ax + (s.bx - s.ax) * t, s.az + (s.bz - s.az) * t) < half;
+    if (!inside && start === null) start = t;
+    if ((inside || k === n) && start !== null) {
+      const end = inside ? (k - 1) / n : t;
+      if ((end - start) * len > 0.5) {
+        out.push({ax: s.ax + (s.bx - s.ax) * start, az: s.az + (s.bz - s.az) * start, bx: s.ax + (s.bx - s.ax) * end, bz: s.az + (s.bz - s.az) * end});
+      }
+      start = null;
+    }
+  }
+  return out;
+};
+
 const cutByAvenues = (s: Segment, avenues: Avenue[]): Segment[] => {
   let pieces: [number, number][] = [[0, 1]];
   for (const a of avenues) {
@@ -138,29 +156,6 @@ const makeRoads = (min: number, max: number, rnd: ReturnType<typeof makeRandom>)
   return roads;
 };
 
-/** Direction of the last leg of the L-shaped path the route takes into a stop. */
-export type Leg = {dx: number; dz: number};
-
-/** Picks the L-shaped path from p to q that keeps going straight / never reverses. */
-export const lPath = (
-  p: {x: number; z: number},
-  q: {x: number; z: number},
-  incoming: Leg | null,
-): {x: number; z: number}[] => {
-  const xFirst = {x: q.x, z: p.z};
-  const zFirst = {x: p.x, z: q.z};
-  const score = (corner: {x: number; z: number}) => {
-    const lx = corner.x - p.x;
-    const lz = corner.z - p.z;
-    const len = Math.hypot(lx, lz);
-    if (len < 1e-6 || !incoming) return 0;
-    const dot = (lx * incoming.dx + lz * incoming.dz) / len;
-    return dot < -0.5 ? -10 : dot;
-  };
-  const corner = score(xFirst) >= score(zFirst) ? xFirst : zFirst;
-  return [corner, q];
-};
-
 let cached: City | null = null;
 
 export const getCity = (): City => {
@@ -178,9 +173,6 @@ export const getCity = (): City => {
     {ax: minX - 40, az: -40, bx: 120, bz: maxZ + 40, width: 12},
   ];
 
-  const routeStart = {x: snap(xRoads, ROUTE_START[0]), z: snap(zRoads, ROUTE_START[1])};
-  const stopCorners = BUSINESSES.map((b) => ({x: snap(xRoads, b.mapPosition[0]), z: snap(zRoads, b.mapPosition[1])}));
-
   // Blocks between roads.
   const blocks: Rect[] = [];
   for (let i = 0; i < xRoads.length - 1; i++) {
@@ -195,63 +187,54 @@ export const getCity = (): City => {
   }
   const blockAt = (x: number, z: number) => blocks.find((b) => x > b.x0 && x < b.x1 && z > b.z0 && z < b.z1);
 
-  // Featured buildings: on the block ahead and to the right of the arrival direction.
+  // Featured buildings: just inside the pepper (right of travel, which runs
+  // clockwise), turned to face the boulevard. Each stop slides along the route
+  // until its building clears the grid streets and avenues.
+  const route = getRoute();
+  const BLVD = PEPPER_ROUTE.boulevard;
+  const SIZE = 22;
   const featured: Featured[] = [];
-  const waypoints = [routeStart];
+  const stopS: number[] = [];
   const approach: City['approach'] = [];
-  let prev = routeStart;
-  let incoming: Leg | null = {dx: 0, dz: -1};
-  stopCorners.forEach((q, i) => {
-    const [corner] = lPath(prev, q, incoming);
-    let dx = q.x - corner.x;
-    let dz = q.z - corner.z;
-    const finalLeg = Math.hypot(dx, dz);
-    const firstLeg = Math.hypot(corner.x - prev.x, corner.z - prev.z);
-    if (finalLeg < 1e-6) {
-      dx = corner.x - prev.x;
-      dz = corner.z - prev.z;
+  const clearOfStreets = (x: number, z: number, r: number) =>
+    xRoads.every((rd) => Math.abs(x - rd.pos) > rd.width / 2 + r) &&
+    zRoads.every((rd) => Math.abs(z - rd.pos) > rd.width / 2 + r) &&
+    avenues.every((av) => Math.abs(avenueDistance(av, x, z)) > av.width / 2 + r);
+  BUSINESSES.forEach((b, i) => {
+    const s0 = b.along * route.length;
+    const offset = BLVD / 2 + SIDEWALK + SIZE / 2;
+    const place = (s: number) => {
+      const p = routePoint(s);
+      const d = routeDirection(s, 10);
+      return {s, p, d, x: p.x - d.z * offset, z: p.z + d.x * offset};
+    };
+    let spot = place(s0);
+    for (let k = 1; k <= 40; k++) {
+      const c = place(s0 + (k % 2 ? 1 : -1) * Math.ceil(k / 2) * 4);
+      const ok = clearOfStreets(c.x, c.z, SIZE * 0.72) && distanceToRoute(c.x, c.z) > offset - 2;
+      if (ok) {
+        spot = c;
+        break;
+      }
     }
-    const len = Math.hypot(dx, dz);
-    const d = {dx: dx / len, dz: dz / len};
-    // The manoeuvre is the last change of direction on the way in, which can be
-    // back at the previous stop when one leg of the L has zero length.
-    const dirs: Leg[] = incoming ? [incoming] : [];
-    if (firstLeg > 1e-6) dirs.push({dx: (corner.x - prev.x) / firstLeg, dz: (corner.z - prev.z) / firstLeg});
-    if (finalLeg > 1e-6) dirs.push(d);
-    let turn: 'left' | 'right' | 'straight' = 'straight';
-    for (let k = 1; k < dirs.length; k++) {
-      const cross = dirs[k - 1].dx * dirs[k].dz - dirs[k - 1].dz * dirs[k].dx;
-      if (Math.abs(cross) > 0.5) turn = cross > 0 ? 'right' : 'left';
-    }
-    if (finalLeg > 1e-6 && firstLeg > 1e-6) waypoints.push(corner);
-    approach.push({turn, finalLeg: finalLeg > 1e-6 ? finalLeg : len});
-    waypoints.push(q);
-    const right = {dx: -d.dz, dz: d.dx};
-    const probe = {x: q.x + (d.dx + right.dx) * 20, z: q.z + (d.dz + right.dz) * 20};
-    const block = blockAt(probe.x, probe.z);
-    if (!block) throw new Error(`No block next to stop ${i}`);
-    const size = 22;
     const floors = 6 + (i % 3);
     const h = floors * CITY.floorHeight + 0.6;
-    // Corner of the block nearest the intersection.
-    const cxEdge = Math.abs(block.x0 - q.x) < Math.abs(block.x1 - q.x) ? block.x0 + SIDEWALK : block.x1 - SIDEWALK;
-    const czEdge = Math.abs(block.z0 - q.z) < Math.abs(block.z1 - q.z) ? block.z0 + SIDEWALK : block.z1 - SIDEWALK;
-    const cx = cxEdge + Math.sign(probe.x - q.x) * (size / 2);
-    const cz = czEdge + Math.sign(probe.z - q.z) * (size / 2);
     featured.push({
-      corner: q,
-      box: {cx, cz, sx: size, sz: size, y0: 0, h, color: 0xffffff},
-      roof: {x: cx, y: h, z: cz},
+      corner: spot.p,
+      box: {cx: spot.x, cz: spot.z, sx: SIZE, sz: SIZE, y0: 0, h, color: 0xffffff, rot: Math.atan2(spot.d.x, spot.d.z)},
+      roof: {x: spot.x, y: h, z: spot.z},
     });
-    incoming = d;
-    prev = q;
+    stopS.push(spot.s);
+    // How the route bends over the last stretch into the stop.
+    const before = routeDirection(spot.s - 150, 10);
+    const cross = before.x * spot.d.z - before.z * spot.d.x;
+    const dot = before.x * spot.d.x + before.z * spot.d.z;
+    const bend = Math.atan2(cross, dot);
+    approach.push({turn: Math.abs(bend) < 0.5 ? 'straight' : bend > 0 ? 'right' : 'left'});
   });
-  const featuredRects: Rect[] = featured.map((f) => ({
-    x0: f.box.cx - f.box.sx / 2,
-    x1: f.box.cx + f.box.sx / 2,
-    z0: f.box.cz - f.box.sz / 2,
-    z1: f.box.cz + f.box.sz / 2,
-  }));
+  const nearFeatured = (x: number, z: number, r: number) =>
+    featured.some((f) => Math.hypot(f.box.cx - x, f.box.cz - z) < SIZE * 0.72 + r);
+
 
   // Parks: a campus green near Bliss Street and a square in the middle of town.
   const parkSeeds: [number, number][] = [
@@ -262,7 +245,7 @@ export const getCity = (): City => {
   const parks: Rect[] = [];
   for (const [x, z] of parkSeeds) {
     const b = blockAt(snap(xRoads, x) + 30, snap(zRoads, z) + 30);
-    if (b && !featuredRects.some((f) => rectsOverlap(f, b, 2))) parks.push(b);
+    if (b && !nearFeatured((b.x0 + b.x1) / 2, (b.z0 + b.z1) / 2, Math.hypot(b.x1 - b.x0, b.z1 - b.z0) / 2)) parks.push(b);
   }
 
   const boxes: Box[] = [];
@@ -300,7 +283,11 @@ export const getCity = (): City => {
             z0: iz0 + b * (ld + gap),
             z1: iz0 + b * (ld + gap) + ld,
           };
-          if (featuredRects.some((f) => rectsOverlap(f, lot, 1.5))) continue;
+          const lcx = (lot.x0 + lot.x1) / 2;
+          const lcz = (lot.z0 + lot.z1) / 2;
+          const half = Math.hypot(lot.x1 - lot.x0, lot.z1 - lot.z0) / 2;
+          if (nearFeatured(lcx, lcz, half + 1.5)) continue;
+          if (distanceToRoute(lcx, lcz) < BLVD / 2 + 2.5 + half * 0.85) continue;
           if (inAvenue(lot, 3)) continue;
           const inset = () => rnd.range(0, 1.6);
           const x0 = lot.x0 + inset();
@@ -353,7 +340,8 @@ export const getCity = (): City => {
         const z = az + (bz - az) * u;
         const spot: Rect = {x0: x - 2, x1: x + 2, z0: z - 2, z1: z + 2};
         if (inAvenue(spot, 0)) continue;
-        if (featuredRects.some((f) => rectsOverlap(f, spot, 0.5))) continue;
+        if (nearFeatured(x, z, 2.5)) continue;
+        if (distanceToRoute(x, z) < BLVD / 2 + 1.8) continue;
         trees.push({x, z, r: rnd.range(1.5, 2.2), trunk: rnd.range(1.8, 2.6), color: treeColor()});
       }
     }
@@ -367,6 +355,7 @@ export const getCity = (): City => {
         if (Math.abs(x - (block.x0 + block.x1) / 2) < 3 || Math.abs(z - (block.z0 + block.z1) / 2) < 3) continue;
         if (placed.some((p) => Math.hypot(p.x - x, p.z - z) < 5.2)) continue;
         if (inAvenue({x0: x - 2, x1: x + 2, z0: z - 2, z1: z + 2}, 0)) continue;
+        if (distanceToRoute(x, z) < BLVD / 2 + 2 || nearFeatured(x, z, 3)) continue;
         placed.push({x, z});
         trees.push({x, z, r: rnd.range(1.9, 3.0), trunk: rnd.range(2, 3), color: treeColor()});
       }
@@ -382,7 +371,23 @@ export const getCity = (): City => {
       {ax: b.x1, az: b.z1, bx: b.x0, bz: b.z1},
       {ax: b.x0, az: b.z1, bx: b.x0, bz: b.z0},
     ];
-    for (const s of ring) edgeLines.push(...cutByAvenues(s, avenues));
+    for (const seg of ring) for (const piece of cutByAvenues(seg, avenues)) edgeLines.push(...cutByRoute(piece, BLVD / 2));
+  }
+  // Curb lines of the pepper boulevard, kept to the inside of blocks.
+  for (const side of [-1, 1]) {
+    const step = 4;
+    for (let s = 0; s < route.length - step; s += step) {
+      const p = routePoint(s);
+      const q = routePoint(s + step);
+      const d = routeDirection(s + step / 2, 3);
+      const o = (side * BLVD) / 2;
+      const seg: Segment = {ax: p.x - d.z * o, az: p.z + d.x * o, bx: q.x - d.z * o, bz: q.z + d.x * o};
+      const mx = (seg.ax + seg.bx) / 2;
+      const mz = (seg.az + seg.bz) / 2;
+      // Skip where it would run over a street or into the other side of the stem.
+      if (!blockAt(mx, mz) || distanceToRoute(mx, mz) < BLVD / 2 - 0.6) continue;
+      edgeLines.push(seg);
+    }
   }
   // Avenue curb lines, kept to the inside of blocks.
   for (const a of avenues) {
@@ -421,9 +426,7 @@ export const getCity = (): City => {
     featured,
     roofs,
     shoreZ,
-    routeStart,
-    stopCorners,
-    waypoints,
+    stopS,
     approach,
   };
   return cached;
