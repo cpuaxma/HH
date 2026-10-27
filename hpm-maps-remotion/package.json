@@ -1,0 +1,33 @@
+{
+  "name": "hpm-maps-remotion",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Hot Pepper Media: a 25-second 1080x1920 maps-app style 3D reel (Remotion + React Three Fiber)",
+  "scripts": {
+    "studio": "remotion studio",
+    "stills": "node scripts/stills.mjs",
+    "preview": "remotion render HpmMaps out/preview.mp4 --scale=0.5 --crf=26 --x264-preset=veryfast --concurrency=1",
+    "render": "remotion render HpmMaps out/hotpepper-reel.mp4 --concurrency=1",
+    "cover": "remotion still HpmMaps out/hotpepper-cover.png --frame=1305",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@react-three/fiber": "9.4.0",
+    "@react-three/postprocessing": "3.0.4",
+    "@remotion/bundler": "4.0.537",
+    "@remotion/cli": "4.0.537",
+    "@remotion/google-fonts": "4.0.537",
+    "@remotion/renderer": "4.0.537",
+    "@remotion/three": "4.0.537",
+    "postprocessing": "6.37.8",
+    "react": "19.2.0",
+    "react-dom": "19.2.0",
+    "remotion": "4.0.537",
+    "three": "0.180.0"
+  },
+  "devDependencies": {
+    "@types/react": "19.2.2",
+    "@types/three": "0.180.0",
+    "typescript": "5.9.3"
+  }
+}
