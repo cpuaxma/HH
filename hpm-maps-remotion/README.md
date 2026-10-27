@@ -42,7 +42,7 @@ Everything you are likely to change is in **`src/data.ts`**.
   - The place-card choreography relative to arrival (count-up window, chip pop, exit) is `CARD` in `src/ui/PlaceCard.tsx`.
 - **Camera:** `CAMERA` in `src/lib/camera.ts` sets the chase pitch and distance (55°, 300), the close-up (42°, 205), the orbit sweep (−10° → +5°), the finale height and the bank limit.
 - **Layout:** `SAFE` in `src/data.ts` holds Instagram's covered edges. `COLUMN` is the centred column all text and cards use (equal 140 px margins, so it is centred and clear of Instagram's buttons). `FOCUS_SCREEN` is where the camera target lands on screen (centred horizontally).
-- **Place card:** the hierarchy runs business name → gold stars and rating → review count → result line → buttons. Its colours are `CARD_COLORS` (near-black heading, charcoal text, grey metadata, gold stars, light borders). Brand red is only an accent: the primary button and the small "▲ +1.2" / "▲ +1,238" growth tags. Button labels and the result-line wording are `COPY.cardPrimary`, `COPY.cardSecondary` and `COPY.resultSuffix`; the bold stat on the result line is each business's `chip`.
+- **Place card:** the rating and the review count are the two big stats; each counts up and shows its gain ("▲ +1.2", "▲ +1,238") next to the old value, and the review bar fills from before to after. Its colours are `CARD_COLORS`: near-black name and numbers, grey labels and metadata, gold stars and growth bar. Brand red is only an accent: the stat chip and the small up-arrows.
 
 If you change the duration, keep `TIMING.durationInFrames` and the `stopSpacing` / `firstArrival` maths consistent. The finale needs about 180 frames, and the end card about 180.
 
