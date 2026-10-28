@@ -4,9 +4,10 @@
 // Kept soft and sparse so it sits under the music added in Instagram.
 import {Audio} from '@remotion/media';
 import {Easing, Sequence, staticFile} from 'remotion';
-import {BUSINESSES, COPY, TIMING, arrivalFrame, travelStartFrame} from './data';
+import {BUSINESSES, COPY, TIMING, VOICEOVER, arrivalFrame, travelStartFrame} from './data';
 import {getFinalePins} from './lib/finalePins';
 import {makeRandom} from './lib/random';
+import {VO_FRAMES} from './voLengths';
 import {headS} from './lib/timeline';
 import {DROP_LEN, DROP_START, wordFrame} from './ui/Hook';
 import {CARD, ratingAt} from './ui/PlaceCard';
@@ -59,10 +60,22 @@ export const getCues = (): SoundCue[] => {
   return cues;
 };
 
+/** 1 normally, VOICEOVER.duckTo while a voiceover line plays (with short ramps). */
+export const duck = (frame: number) => {
+  let g = 1;
+  for (const l of VOICEOVER.lines) {
+    const a = l.at - 4;
+    const b = l.at + (VO_FRAMES[l.file] ?? 60) + 6;
+    const t = frame < a - 6 || frame > b + 6 ? 0 : frame < a ? (frame - (a - 6)) / 6 : frame > b ? 1 - (frame - b) / 6 : 1;
+    g = Math.min(g, 1 - (1 - VOICEOVER.duckTo) * t);
+  }
+  return g;
+};
+
 /** The pen-on-paper hum follows how fast the route head is drawing. */
 const humVolume = (frame: number) => {
   const speed = Math.abs(headS(frame + 1) - headS(frame));
-  return SFX_MASTER * 0.42 * Easing.out(Easing.quad)(Math.min(1, speed / 10));
+  return SFX_MASTER * 0.42 * Easing.out(Easing.quad)(Math.min(1, speed / 10)) * duck(frame);
 };
 
 export const SoundTrack: React.FC = () => {
@@ -71,7 +84,7 @@ export const SoundTrack: React.FC = () => {
     <>
       {cues.map((c, i) => (
         <Sequence key={i} from={c.at} layout="none" name={`sfx ${c.sfx}`}>
-          <Audio src={staticFile(`sfx/${c.sfx}.wav`)} volume={c.volume * SFX_MASTER} />
+          <Audio src={staticFile(`sfx/${c.sfx}.wav`)} volume={c.volume * SFX_MASTER * duck(c.at)} />
         </Sequence>
       ))}
       <Sequence
@@ -82,6 +95,11 @@ export const SoundTrack: React.FC = () => {
       >
         <Audio src={staticFile('sfx/hum.wav')} loop volume={(f) => humVolume(TIMING.routeStart + f)} />
       </Sequence>
+      {VOICEOVER.lines.map((l) => (
+        <Sequence key={l.file} from={l.at} layout="none" name={`vo ${l.file}`}>
+          <Audio src={staticFile(`vo/${l.file}.wav`)} volume={VOICEOVER.volume} />
+        </Sequence>
+      ))}
     </>
   );
 };

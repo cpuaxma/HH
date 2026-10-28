@@ -106,6 +106,24 @@ export const COPY = {
   cta: 'DM US',
 };
 
+/**
+ * Voiceover: three short lines, voiced by scripts/make-voiceover.py into public/vo/.
+ * `at` is the frame each line starts. If you change a line's text, keep LINES in
+ * the script in sync and run it again.
+ */
+export const VOICEOVER = {
+  /** Supertonic 3 voice (0–4 female, 5–9 male). */
+  voice: 3,
+  volume: 1,
+  /** Sound effects dip to this level while a line plays. */
+  duckTo: 0.45,
+  lines: [
+    {file: 'start', text: 'Okay... watch this.', at: 18},
+    {file: 'middle', text: 'And another one!', at: 684},
+    {file: 'end', text: 'Your turn.', at: 1380},
+  ],
+};
+
 export const BRAND = {
   red: '#E63922',
   orange: '#FF7A1A',

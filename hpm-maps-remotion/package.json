@@ -10,6 +10,7 @@
     "render": "remotion render HpmMaps out/hotpepper-reel.mp4 --concurrency=1 --crf=16 --x264-preset=slow --pixel-format=yuv420p",
     "sfx:make": "python3 scripts/make-sfx.py",
     "sfx:wav": "remotion render HpmMapsSfx out/hotpepper-sfx.wav --codec=wav",
+    "audio:wav": "remotion render HpmMapsSfx out/hotpepper-audio.wav --codec=wav",
     "render:silent": "remotion render HpmMaps out/hotpepper-reel-silent.mp4 --concurrency=1 --crf=16 --x264-preset=slow --pixel-format=yuv420p --muted",
     "cover": "remotion still HpmMaps out/hotpepper-cover.png --frame=1305",
     "typecheck": "tsc --noEmit"

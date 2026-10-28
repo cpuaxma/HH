@@ -16,6 +16,7 @@ npm run render                     # final with sound effects → out/hotpepper-
 npm run render:silent              # same, no audio track → out/hotpepper-reel-silent.mp4
 npm run sfx:wav                    # the sound effects alone → out/hotpepper-sfx.wav (renders in ~30s)
 npm run sfx:make                   # regenerate the effect sounds in public/sfx (needs numpy)
+npm run audio:wav                  # effects + voiceover alone → out/hotpepper-audio.wav
 npm run cover                      # PNG cover from the finale → out/hotpepper-cover.png
 ```
 
@@ -96,6 +97,22 @@ Every effect is synthesised from sine waves and filtered noise by `scripts/make-
 - **Without effects:** `npm run render:silent`, or pass `sfx: false` as a prop.
 - **Adding the effects to an existing silent render** (no re-render of the picture): `npm run sfx:wav`, then
   `ffmpeg -i out/hotpepper-reel-silent.mp4 -i out/hotpepper-sfx.wav -map 0:v -map 1:a -c:v copy -c:a aac -b:a 320k -shortest out/hotpepper-reel-sfx.mp4`
+
+## Voiceover
+
+Three short lines, timed to beats: "Okay… watch this." as the pin lands, "And another one!" as the third card's numbers climb, and "Your turn." just before the DM US button. The effects dip under the voice (`VOICEOVER.duckTo`).
+
+- **Lines and timing:** `VOICEOVER` in `src/data.ts` (`at` is the start frame of each line).
+- **Voice:** Supertonic 3 by Supertone (model licence OpenRAIL-M, which allows commercial use), run locally through sherpa-onnx. Voices 0–4 are female, 5–9 male; the reel uses voice 3.
+- **Regenerating** (after changing the text, also update `LINES` in the script):
+  ```
+  pip install sherpa-onnx soundfile librosa numpy
+  # download and unpack into MODELS_DIR from github.com/k2-fsa/sherpa-onnx/releases:
+  #   tts-models/sherpa-onnx-supertonic-3-tts-int8-2026-05-11.tar.bz2
+  #   asr-models/sherpa-onnx-whisper-small.en.tar.bz2
+  python3 scripts/make-voiceover.py MODELS_DIR 3      # → public/vo/*.wav and src/voLengths.ts
+  ```
+  The script renders a few takes of each line, has Whisper check every word, keeps the liveliest take, gives it a light polish (warmth, presence, gentle compression, a very short room) and levels it to lead the mix.
 
 ## Layout and safe zones
 
