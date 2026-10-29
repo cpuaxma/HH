@@ -10,7 +10,7 @@ import {dash, ease, exitProgress, exitStyle, hexA} from '../motion';
 const SHIELD = {cx: 540, cy: 1110};
 const SHIELD_D =
   'M540 930 C 600 968 660 980 712 980 L 712 1080 C 712 1188 640 1258 540 1300 C 440 1258 368 1188 368 1080 L 368 980 C 420 980 480 968 540 930 Z';
-const SPECS = makeParticles(64, {cx: SHIELD.cx, cy: SHIELD.cy + 10, rx: 110, ry: 120}, 90, 70);
+export const SPECS = makeParticles(64, {cx: SHIELD.cx, cy: SHIELD.cy + 10, rx: 110, ry: 120}, 90, 70);
 const FLOW = 60;
 
 export const Fear: React.FC<{dur: number}> = ({dur}) => {

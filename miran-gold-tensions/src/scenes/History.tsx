@@ -75,7 +75,7 @@ const MintedCoin: React.FC = () => (
   </svg>
 );
 
-const OBJECTS = [
+export const OBJECTS = [
   {x: 800, at: 50, C: AncientCoin},
   {x: 540, at: 100, C: MintedCoin},
   {x: 280, at: 150, C: null},

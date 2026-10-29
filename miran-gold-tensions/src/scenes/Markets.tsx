@@ -43,7 +43,7 @@ const redPath = (frame: number) => {
 };
 
 // Arrows fly in from the left, top and bottom edges toward the bar.
-const ARROWS = [
+export const ARROWS = [
   {from: [-120, 760], at: 60},
   {from: [-140, 1160], at: 74},
   {from: [120, 600], at: 88},
@@ -51,7 +51,10 @@ const ARROWS = [
   {from: [380, 1540], at: 116},
   {from: [-130, 960], at: 130},
 ] as const;
-const ARROW_DUR = 22;
+export const ARROW_DUR = 22;
+
+/** The illustrative ticker value at a scene-local frame (rolls from FROM to TO over frames 40–120). */
+export const tickerValue = (f: number) => S4_TICKER_FROM + (S4_TICKER_TO - S4_TICKER_FROM) * ease(f, 40, 80);
 
 const Arrows: React.FC = () => {
   const frame = useCurrentFrame();
@@ -86,7 +89,6 @@ export const Markets: React.FC<{dur: number}> = ({dur}) => {
   const gold = ease(frame, 40, 90);
   const red = ease(frame, 14, 40);
   const bar = hero(frame, 30);
-  const tick = (f: number) => S4_TICKER_FROM + (S4_TICKER_TO - S4_TICKER_FROM) * ease(f, 40, 80);
   const tickerIn = enter(frame, 26, 30);
   // The bar pulses softly as each arrow lands.
   const pulse = ARROWS.reduce((m, a) => {
@@ -115,7 +117,7 @@ export const Markets: React.FC<{dur: number}> = ({dur}) => {
           }}
         >
           <span style={{color: COLORS.up, fontSize: 30, lineHeight: 1}}>▲</span>
-          <Odometer value={tick(frame)} prev={tick(frame - 1)} digits={4} size={56} />
+          <Odometer value={tickerValue(frame)} prev={tickerValue(frame - 1)} digits={4} size={56} />
           <span style={{fontFamily: FONT.family, fontWeight: FONT.body, fontSize: 22, color: hexA(COLORS.text, 0.4), lineHeight: 1.5}}>
             {ILLUSTRATIVE}
           </span>

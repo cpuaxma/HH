@@ -54,7 +54,7 @@ const Bank: React.FC = () => (
 );
 
 // Right to left, matching the sentence: حكومة ← شركة ← بنك.
-const ICONS = [
+export const ICONS = [
   {C: Government, cx: 810, cy: 870, breakAt: 150},
   {C: Company, cx: 540, cy: 820, breakAt: 185},
   {C: Bank, cx: 270, cy: 870, breakAt: 220},

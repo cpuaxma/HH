@@ -15,6 +15,11 @@ const SPIKE = 'M 360 284 L 392 210 L 418 110 L 444 196 L 470 232';
 const AFTER = 'M 470 232 C 540 240 600 228 660 226 C 700 225 735 220 760 216';
 const FULL = `${BEFORE} ${SPIKE.replace('M 360 284 ', '')} ${AFTER.replace('M 470 232 ', '')}`;
 const PEAK: [number, number] = [418, 110];
+// Where the peak sits along FULL (by arc length), and the frames the chart draws over.
+export const SPIKE_PEAK_AT = 0.544;
+export const LINE_DRAW = {start: 40, dur: 110};
+export const NEWS_TAG_AT = 90;
+export const SETTLE_AT = 140;
 const SETTLE_Y = 228;
 
 export const Tip: React.FC<{dur: number}> = ({dur}) => {
@@ -22,11 +27,11 @@ export const Tip: React.FC<{dur: number}> = ({dur}) => {
   const out = exitProgress(frame, dur, 26);
   const pill = enter(frame, 0, 28);
   const card = enter(frame, 20, 40);
-  const line = ease(frame, 40, 110);
+  const line = ease(frame, LINE_DRAW.start, LINE_DRAW.dur);
   const traceHead = ease(frame, 82, 34);
   const traceTail = ease(frame, 94, 34);
-  const tag = enter(frame, 90, 22);
-  const settle = ease(frame, 140, 34);
+  const tag = enter(frame, NEWS_TAG_AT, 22);
+  const settle = ease(frame, SETTLE_AT, 34);
   const j = jitter(61, frame, 2.2 * tag);
 
   return (

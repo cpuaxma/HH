@@ -9,6 +9,7 @@ import {Hook} from './scenes/Hook';
 import {Independent} from './scenes/Independent';
 import {Markets} from './scenes/Markets';
 import {Tip} from './scenes/Tip';
+import {SoundTrack} from './sound';
 import {BRAND} from './strings';
 import {COLORS, EASE, FONT, GOLD_GRADIENT, SCENES} from './theme';
 
@@ -52,5 +53,6 @@ export const Reel: React.FC = () => (
     <Wordmark />
     <Vignette />
     <Grain />
+    <SoundTrack />
   </AbsoluteFill>
 );
