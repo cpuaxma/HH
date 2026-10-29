@@ -393,15 +393,15 @@ def main():
     s = glide(t, f, ((1, 1.0), (2, 0.2))) * env(t, 0.004, 0.055)
     write('pill', reverb(pan(lowpass(s, 3000), 0), 0.3), peak=0.5, ms_in=4)
 
-    # News spike: a quick smooth rise to the peak, then a gentle slide back down (the retrace).
+    # News dump: a quick smooth drop to the low (at 0.18s), then a gentle glide back up (the recovery).
     d = 1.0
     t = t_axis(d)
-    up = 0.18
-    f = np.where(t < up, 330 * 3 ** (t / up), 990 * (520 / 990) ** np.clip((t - up) / 0.45, 0, 1))
-    amp = np.where(t < up, np.sin(np.pi / 2 * t / up) ** 2, np.exp(-(t - up) / 0.3))
+    down = 0.18
+    f = np.where(t < down, 880 * (330 / 880) ** (t / down), 330 * (700 / 330) ** np.clip((t - down) / 0.45, 0, 1))
+    amp = np.where(t < down, np.sin(np.pi / 2 * t / down) ** 2, np.exp(-(t - down) / 0.35))
     s = glide(t, f, ((1, 1.0), (2, 0.18))) * amp
-    air = whoosh(d, 900, 3000, q=1.6, peak_at=0.2, power=1.6) * 0.3
-    write('spike', reverb(pan(lowpass(s, 3500) * 0.6 + air, 0.1), 0.35), peak=0.42, ms_in=8)
+    air = whoosh(d, 2600, 800, q=1.6, peak_at=0.2, power=1.6) * 0.3
+    write('dump', reverb(pan(lowpass(s, 3500) * 0.6 + air, 0.1), 0.35), peak=0.42, ms_in=8)
 
     # The red "news" tag: a soft, slightly sour two-note alert (minor second), muted.
     t = t_axis(0.6)
@@ -412,7 +412,7 @@ def main():
     b[s0:] = glide(t[: len(t) - s0], 587.33 * vib[: len(t) - s0], ((1, 1.0), (2, 0.1))) * env(t[: len(t) - s0], 0.005, 0.09)
     write('news', reverb(pan(lowpass(a + b, 2200), 0.2), 0.35), peak=0.4, ms_in=5)
 
-    # Light streak tracing the spike: a fine high shimmer.
+    # Light streak tracing the dump: a fine high shimmer.
     d = 0.8
     t = t_axis(d)
     sh = whoosh(d, 3000, 6500, q=2.6, peak_at=0.45, power=1.8) * 0.5

@@ -9,18 +9,18 @@ import {COLORS, FONT, GOLD_GRADIENT, SAFE} from '../theme';
 import {ease, enter, exitProgress, exitStyle, hexA, jitter} from '../motion';
 
 const CARD = {left: SAFE.side, top: 720, width: 800, height: 420};
-// Calm rise → sharp news spike → partial retrace → calm again.
-const BEFORE = 'M 40 330 C 110 318 170 306 240 300 C 300 295 330 290 360 284';
-const SPIKE = 'M 360 284 L 392 210 L 418 110 L 444 196 L 470 232';
-const AFTER = 'M 470 232 C 540 240 600 228 660 226 C 700 225 735 220 760 216';
-const FULL = `${BEFORE} ${SPIKE.replace('M 360 284 ', '')} ${AFTER.replace('M 470 232 ', '')}`;
-const PEAK: [number, number] = [418, 110];
-// Where the peak sits along FULL (by arc length), and the frames the chart draws over.
-export const SPIKE_PEAK_AT = 0.544;
+// Calm rise → sharp news dump → pumps back up → calm again (the panic doesn't last).
+const BEFORE = 'M 40 200 C 110 194 170 188 240 184 C 300 181 330 178 360 176';
+const DUMP = 'M 360 176 L 392 250 L 418 350 L 444 262 L 470 222';
+const AFTER = 'M 470 222 C 540 214 600 220 660 212 C 700 208 735 206 760 204';
+const FULL = `${BEFORE} ${DUMP.replace('M 360 176 ', '')} ${AFTER.replace('M 470 222 ', '')}`;
+const LOW: [number, number] = [418, 350];
+// Where the low sits along FULL (by arc length), and the frames the chart draws over.
+export const NEWS_LOW_AT = 0.54;
 export const LINE_DRAW = {start: 40, dur: 110};
 export const NEWS_TAG_AT = 90;
 export const SETTLE_AT = 140;
-const SETTLE_Y = 228;
+const SETTLE_Y = 208;
 
 export const Tip: React.FC<{dur: number}> = ({dur}) => {
   const frame = useCurrentFrame();
@@ -71,7 +71,7 @@ export const Tip: React.FC<{dur: number}> = ({dur}) => {
             {[0, 1, 2, 3].map((i) => (
               <line key={i} x1={40} y1={110 + i * 75} x2={760} y2={110 + i * 75} stroke={COLORS.text} strokeOpacity={0.05} strokeWidth={1} />
             ))}
-            {/* where the price settles after the spike */}
+            {/* where the price settles after the dump */}
             <line
               x1={430}
               y1={SETTLE_Y}
@@ -84,16 +84,16 @@ export const Tip: React.FC<{dur: number}> = ({dur}) => {
               style={{clipPath: `inset(0 ${(1 - settle) * 100}% 0 0)`}}
             />
             <ChartLine d={FULL} progress={line} color={COLORS.goldA} width={4} glow={4} />
-            <LightStreak id="tip-spike" d={SPIKE} head={traceHead} tail={traceTail} width={4} from={[360, 284]} to={PEAK} />
-            <circle cx={PEAK[0]} cy={PEAK[1]} r={6} fill={COLORS.red} opacity={tag * j.flicker} style={{filter: `drop-shadow(0 0 6px ${COLORS.red})`}} />
+            <LightStreak id="tip-dump" d={DUMP} head={traceHead} tail={traceTail} width={4} from={[360, 176]} to={LOW} />
+            <circle cx={LOW[0]} cy={LOW[1]} r={6} fill={COLORS.red} opacity={tag * j.flicker} style={{filter: `drop-shadow(0 0 6px ${COLORS.red})`}} />
           </svg>
           {/* "news" tag: red, so it's restless */}
           <div
             dir="rtl"
             style={{
               position: 'absolute',
-              left: PEAK[0] + 22,
-              top: PEAK[1] - 52,
+              left: LOW[0] + 26,
+              top: LOW[1] - 30,
               padding: '0 16px',
               borderRadius: 999,
               border: `1.5px solid ${COLORS.red}`,

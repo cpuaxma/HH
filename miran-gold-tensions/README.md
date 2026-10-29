@@ -11,6 +11,7 @@ npx remotion render GoldTensionsAR out/gold-tensions-ar.mp4 --codec=h264 --crf=1
 
 Codec, CRF and pixel format are also set in `remotion.config.ts`, so `npm run render` gives the same result.
 
+- **Phone/social copy:** `npm run export:phone` re-encodes the render to `out/gold-tensions-ar-phone.mp4` (about 10 Mbps, ~40 MB). The crf 18 master is over 100 MB, which many phones and apps refuse to save or upload.
 - **Preview stills:** `npx remotion still GoldTensionsAR out/still.png --frame=325`
 - **Live preview:** `npm run studio`
 

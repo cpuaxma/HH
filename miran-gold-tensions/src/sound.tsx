@@ -9,7 +9,7 @@ import {SPECS} from './scenes/Fear';
 import {ICONS} from './scenes/Independent';
 import {ARROWS, tickerValue} from './scenes/Markets';
 import {OBJECTS} from './scenes/History';
-import {LINE_DRAW, NEWS_TAG_AT, SETTLE_AT, SPIKE_PEAK_AT} from './scenes/Tip';
+import {LINE_DRAW, NEWS_LOW_AT, NEWS_TAG_AT, SETTLE_AT} from './scenes/Tip';
 import {SCENES, VIDEO} from './theme';
 import {frameAt} from './motion';
 
@@ -72,11 +72,11 @@ export const getCues = (): SoundCue[] => {
   const landing = ['coin-ancient', 'coin-minted', 'bar-land'];
   OBJECTS.forEach((o, i) => cues.push(cue(history + o.at + 12, landing[i], [0.45, 0.42, 0.55][i])));
 
-  // 6 · Tip: pill and card, the news spike (its peak on the frame the line reaches it),
+  // 6 · Tip: pill and card, the news dump (its low on the frame the line reaches it),
   // the red tag, the light streak tracing it, and a calm chime as the price settles.
   cues.push(cue(tip + 2, 'pill', 0.35));
   cues.push(cue(tip + 20, 'glass', 0.35));
-  cues.push(cue(tip + frameAt(SPIKE_PEAK_AT, LINE_DRAW.start, LINE_DRAW.dur) - 0.18 * SEC, 'spike', 0.42));
+  cues.push(cue(tip + frameAt(NEWS_LOW_AT, LINE_DRAW.start, LINE_DRAW.dur) - 0.18 * SEC, 'dump', 0.42));
   cues.push(cue(tip + NEWS_TAG_AT, 'news', 0.32));
   cues.push(cue(tip + 82, 'trace', 0.35));
   cues.push(cue(tip + SETTLE_AT + 6, 'settle', 0.26));
