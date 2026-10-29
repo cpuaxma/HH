@@ -1,6 +1,6 @@
 import React from 'react';
 import {AbsoluteFill, interpolate, useCurrentFrame} from 'remotion';
-import {COLORS, EASE, LAYOUT, SAFE, VIDEO} from '../theme';
+import {COLORS, EASE, LAYOUT, SAFE, VIDEO, sceneLength} from '../theme';
 import {S1_HOOK} from '../strings';
 import {ArabicText} from '../components/ArabicText';
 import {Headline} from '../components/Layout';
@@ -10,7 +10,7 @@ import {HeroLayer} from '../components/Hero';
 import {smoothPath, Pt} from '../components/ChartLine';
 import {ease, exitProgress, exitStyle, hero, heroStyle, hexA, jitter, rand} from '../motion';
 
-const DUR = 180;
+const DUR = sceneLength('hook');
 
 // Abstract warning dots: deterministic positions, kept off the headline, the hero and the safe zones.
 const DOTS = (() => {

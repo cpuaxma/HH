@@ -1,6 +1,6 @@
 import React from 'react';
 import {AbsoluteFill, interpolate, useCurrentFrame} from 'remotion';
-import {COLORS, EASE, FONT, LAYOUT} from '../theme';
+import {COLORS, EASE, FONT, LAYOUT, sceneLength} from '../theme';
 import {S4_FED, S4_GAUGE, S4_INFLATION, S4_RATE} from '../strings';
 import {ArabicText, Label} from '../components/ArabicText';
 import {At, Headline} from '../components/Layout';
@@ -11,11 +11,11 @@ import {BankIcon} from '../components/BankIcon';
 import {HeroLayer} from '../components/Hero';
 import {ease, enter, exitProgress, exitStyle, hero, heroStyle, hexA} from '../motion';
 
-const DUR = 310;
+const DUR = sceneLength('inflation');
 const GAUGE = {x: 720, y: 1070, h: 430};
 const FED = {x: 360, y: 960};
 const ARROW = {x: 360, y: 1130};
-const T = {text: 8, gauge: 15, fill: 42, label: 40, streak: 100, fed: 124, arrow: 138};
+const T = {text: 8, gauge: 15, fill: 42, label: 40, streak: 150, fed: 172, arrow: 196};
 
 export const Inflation: React.FC = () => {
   const frame = useCurrentFrame();

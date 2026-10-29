@@ -1,7 +1,7 @@
 import React from 'react';
 import {AbsoluteFill, interpolate, useCurrentFrame} from 'remotion';
 import {getLength, getPointAtLength} from '@remotion/paths';
-import {COLORS, EASE, FONT, LAYOUT} from '../theme';
+import {COLORS, EASE, FONT, LAYOUT, sceneLength} from '../theme';
 import {S2_DROP, S2_DROP_PCT, S2_NOTE, S2_NOW, S2_PEAK, S2_TICKER} from '../strings';
 import {ArabicText} from '../components/ArabicText';
 import {At, Headline} from '../components/Layout';
@@ -11,7 +11,7 @@ import {Pill} from '../components/Pill';
 import {Pt, smoothPath} from '../components/ChartLine';
 import {ease, enter, exitProgress, exitStyle, hero, hexA} from '../motion';
 
-const DUR = 310;
+const DUR = sceneLength('drop');
 const CARD = {x: 140, y: 800, w: 800, h: 560};
 const CHART = {x: 200, y: 900, w: 680, h: 380};
 const P_MAX = 5900;
@@ -29,15 +29,16 @@ const NOW_PT = PTS[PTS.length - 1];
 const BRACKET_X = CHART.x + CHART.w + 28;
 
 // Beats (local frames)
-const T = {card: 2, climb: 30, peak: 130, descent: 130, now: 200, bracket: 205, pct: 226};
+// Synced to the voiceover: peak as it says «خمسة آلاف وستّمئة», now at «أربعة آلاف», −٢٨٪ at «ثمانية وعشرين».
+const T = {card: 2, climb: 40, peak: 170, descent: 250, now: 350, bracket: 362, pct: 470};
 
 export const Drop: React.FC = () => {
   const frame = useCurrentFrame();
   const exit = exitProgress(frame, DUR);
 
   const cardIn = enter(frame, T.card, 36);
-  const climb = ease(frame, T.climb, 100, EASE.inOut);
-  const descent = ease(frame, T.descent, 70, EASE.inOut);
+  const climb = ease(frame, T.climb, T.peak - T.climb, EASE.inOut);
+  const descent = ease(frame, T.descent, T.now - T.descent, EASE.inOut);
   const peakPill = hero(frame, T.peak + 4);
   const nowPill = hero(frame, T.now);
   const bracket = ease(frame, T.bracket, 22);

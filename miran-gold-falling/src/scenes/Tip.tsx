@@ -1,6 +1,6 @@
 import React from 'react';
 import {AbsoluteFill, interpolate, useCurrentFrame} from 'remotion';
-import {Accent, COLORS, EASE, LAYOUT} from '../theme';
+import {Accent, COLORS, EASE, LAYOUT, sceneLength} from '../theme';
 import {S7_CARDS, S7_PILL, S7_TIP} from '../strings';
 import {ArabicText, Label} from '../components/ArabicText';
 import {At, Headline} from '../components/Layout';
@@ -14,14 +14,14 @@ import {GoldBar} from '../components/GoldBar';
 import {HeroLayer} from '../components/Hero';
 import {ease, enter, exitProgress, exitStyle, hero, heroStyle} from '../motion';
 
-const DUR = 310;
+const DUR = sceneLength('tip');
 const CARD = {w: 220, h: 236, y: 1020};
 const XS = [790, 540, 290]; // right to left: النفط، التضخم، الفيدرالي
 const TONES: Accent[] = ['amber', 'red', 'white'];
 const BOTTOM = CARD.y + CARD.h / 2;
 const RAIL = BOTTOM + 52;
 const BAR = {x: 540, y: RAIL + 96, w: 150};
-const T = {pill: 4, text: 14, cards: [76, 88, 100], streak: 120, stubs: 128, stem: 158, bar: 170};
+const T = {pill: 4, text: 14, cards: [150, 176, 202], streak: 236, stubs: 244, stem: 274, bar: 286};
 
 const RAIL_D = `M${XS[0]},${BOTTOM + 4} V${RAIL - 18} Q${XS[0]},${RAIL} ${XS[0] - 18},${RAIL} H${XS[2] + 18} Q${XS[2]},${RAIL} ${XS[2]},${RAIL - 18} V${BOTTOM + 4}`;
 const STUB_D = `M${XS[1]},${BOTTOM + 4} V${RAIL}`;

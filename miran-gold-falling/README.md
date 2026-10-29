@@ -1,6 +1,6 @@
 # Miran Gold reel: لماذا ينخفض الذهب رغم الأزمات؟
 
-A 38-second vertical Arabic reel built in Remotion (1080×1920, 60fps, 2280 frames). It has no audio.
+A 47-second vertical Arabic reel built in Remotion (1080×1920, 60fps, 2800 frames). It has no audio; the voiceover script is in `voiceover-script-ar.md`, and each scene is timed so its line fits.
 
 ## Render
 
@@ -12,7 +12,7 @@ npx remotion render GoldFallingCrisisAR out/gold-falling-crisis-ar.mp4 --codec=h
 `npm run render` does the same thing.
 
 - **Phone/social copy:** `npm run export:phone` re-encodes the render to `out/gold-falling-crisis-ar-phone.mp4` (about 14 Mbps, ~68 MB, visually the same as the master). The crf 18 master is over 100 MB, which many phones refuse to save.
-- **Preview stills:** `npx remotion still GoldFallingCrisisAR out/still.png --frame=1225`
+- **Preview stills:** `npx remotion still GoldFallingCrisisAR out/still.png --frame=1600`
 - **Live preview:** `npm run studio`
 
 Remotion downloads its own headless Chrome the first time. To use a browser you already have, set `REMOTION_BROWSER=/path/to/chrome-headless-shell`. IBM Plex Sans Arabic comes bundled through @fontsource, so a render never fetches fonts.
@@ -29,4 +29,4 @@ Remotion downloads its own headless Chrome the first time. To use a browser you 
 
 - Text animates one word at a time, never one letter at a time, so Arabic letters stay joined. Each line is kept on a single line and is scaled down if it would overflow the 800px safe column.
 - Hero objects use `<CameraMotionBlur>` only while they are entering, so still frames cost nothing extra. The particles and flying coins use `<Trail>`.
-- The chain (النفط ← التضخم ← الفائدة ← الدولار ← الذهب) is drawn above the scenes from frame 470 to frame 1395, so it carries across scenes 3–5.
+- The chain (النفط ← التضخم ← الفائدة ← الدولار ← الذهب) is drawn above the scenes from scene 3 to the start of scene 6, so it carries across scenes 3–5.

@@ -1,14 +1,14 @@
 import React from 'react';
 import {AbsoluteFill, interpolate, useCurrentFrame} from 'remotion';
 import {Trail} from '@remotion/motion-blur';
-import {COLORS, EASE, FONT, LAYOUT} from '../theme';
+import {COLORS, EASE, FONT, LAYOUT, sceneLength} from '../theme';
 import {S6_CASH, S6_PANIC} from '../strings';
 import {ArabicText, Label} from '../components/ArabicText';
 import {At, Headline} from '../components/Layout';
 import {HeroLayer} from '../components/Hero';
 import {ease, enter, exitProgress, exitStyle, hero, heroStyle, hexA, jitter} from '../motion';
 
-const DUR = 310;
+const DUR = sceneLength('panic');
 const STACK = {x: 790, base: 1350, rx: 74, ry: 19, thick: 21, count: 12};
 const CASH = {x: 470, y: 1150, w: 310, h: 168};
 const T = {text: 10, cards: 20, stack: 25, cash: 40, coins: [70, 96, 122, 148], travel: 40};

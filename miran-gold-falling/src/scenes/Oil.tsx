@@ -1,7 +1,7 @@
 import React from 'react';
 import {AbsoluteFill, interpolate, useCurrentFrame} from 'remotion';
 import {getLength, getPointAtLength} from '@remotion/paths';
-import {COLORS, EASE, FONT, LAYOUT} from '../theme';
+import {COLORS, EASE, FONT, LAYOUT, sceneLength} from '../theme';
 import {S3_OIL, S3_UNIT} from '../strings';
 import {ArabicText, Label} from '../components/ArabicText';
 import {At, Headline} from '../components/Layout';
@@ -12,7 +12,7 @@ import {HeroLayer} from '../components/Hero';
 import {Pt, smoothPath, toBox} from '../components/ChartLine';
 import {ease, enter, exitProgress, exitStyle, hero, heroStyle, hexA} from '../motion';
 
-const DUR = 310;
+const DUR = sceneLength('oil');
 const BARREL = {x: 712, y: 1090, w: 230};
 const BOX = {x: 170, y: 1010, w: 360, h: 260};
 const LINE: Pt[] = toBox(

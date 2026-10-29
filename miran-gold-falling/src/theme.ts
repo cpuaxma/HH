@@ -1,6 +1,6 @@
 import {Easing} from 'remotion';
 
-export const VIDEO = {width: 1080, height: 1920, fps: 60, durationInFrames: 2280};
+export const VIDEO = {width: 1080, height: 1920, fps: 60, durationInFrames: 2800};
 
 export const COLORS = {
   bgTop: '#0A0E18',
@@ -72,22 +72,27 @@ export const LAYOUT = {
   disclaimerBottom: VIDEO.height - SAFE.bottom - 36,
 };
 
-// Scene frame ranges at 60fps (overlaps are intentional)
+// Scene frame ranges at 60fps (overlaps are intentional). Each scene is long enough for its
+// voiceover line (voiceover-script-ar.md) to be read in full while its text is on screen.
 export const SCENES = {
-  hook: [0, 180],
-  drop: [170, 480],
-  oil: [470, 780],
-  inflation: [770, 1080],
-  dollar: [1070, 1380],
-  panic: [1370, 1680],
-  tip: [1670, 1980],
-  cta: [1970, 2280],
+  hook: [0, 210],
+  drop: [200, 800],
+  oil: [790, 1060],
+  inflation: [1050, 1430],
+  dollar: [1420, 1830],
+  panic: [1820, 2090],
+  tip: [2080, 2560],
+  cta: [2550, 2800],
 } as const;
 
+export type SceneKey = keyof typeof SCENES;
+export const sceneLength = (k: SceneKey) => SCENES[k][1] - SCENES[k][0];
+
 // The chain (absolute frames): each node pops at its frame; the link before it draws in just ahead.
+// Nodes land as the voiceover names them.
 export const CHAIN = {
-  start: 470,
-  fadeOut: [1370, 1395] as const,
-  nodes: [600, 872, 932, 1180, 1220],
-  goldDownArrow: 1236,
+  start: SCENES.oil[0],
+  fadeOut: [SCENES.panic[0], SCENES.panic[0] + 25] as const,
+  nodes: [SCENES.oil[0] + 130, SCENES.inflation[0] + 90, SCENES.inflation[0] + 200, SCENES.dollar[0] + 100, SCENES.dollar[0] + 196],
+  goldDownArrow: SCENES.dollar[0] + 212,
 };
