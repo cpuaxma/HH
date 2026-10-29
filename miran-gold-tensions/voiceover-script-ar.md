@@ -1,6 +1,6 @@
 # نص التعليق الصوتي (عربي): لماذا يرتفع الذهب وقت التوترات؟
 
-The Arabic voiceover for `out/gold-tensions-ar.mp4` (33 seconds), written for an AI voice. Each line matches the text on screen.
+The Arabic voiceover for `out/gold-tensions-ar.mp4` (36 seconds), written for an AI voice. Each line matches the text on screen.
 
 It's written to be read cleanly by text-to-speech:
 

@@ -1,6 +1,6 @@
 import {Easing} from 'remotion';
 
-export const VIDEO = {width: 1080, height: 1920, fps: 60, durationInFrames: 1980};
+export const VIDEO = {width: 1080, height: 1920, fps: 60, durationInFrames: 2160};
 
 export const COLORS = {
   bgTop: '#0A0E18',
@@ -64,5 +64,5 @@ export const SCENES = {
   markets: [830, 1140],
   history: [1130, 1440],
   tip: [1430, 1740],
-  cta: [1730, 1980],
+  cta: [1730, 2160], // the outro holds ~5s once everything has settled
 } as const;

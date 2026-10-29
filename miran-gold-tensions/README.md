@@ -1,6 +1,6 @@
 # Miran Gold reel: لماذا يرتفع الذهب وقت التوترات؟
 
-A 33-second vertical Arabic reel built in Remotion (1080×1920, 60fps, 1980 frames).
+A 36-second vertical Arabic reel built in Remotion (1080×1920, 60fps, 2160 frames).
 
 ## Render
 

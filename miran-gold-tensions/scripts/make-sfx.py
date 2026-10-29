@@ -20,7 +20,7 @@ import numpy as np
 
 SR = 48000
 FPS = 60
-DURATION = 1980 / FPS  # full reel, for the ambient bed
+DURATION = 2160 / FPS  # full reel, for the ambient bed
 OUT = os.path.join(os.path.dirname(__file__), '..', 'public', 'sfx')
 rng = np.random.default_rng(20261029)
 
