@@ -11,6 +11,7 @@ npx remotion render GoldFallingCrisisAR out/gold-falling-crisis-ar.mp4 --codec=h
 
 `npm run render` does the same thing.
 
+- **Phone/social copy:** `npm run export:phone` re-encodes the render to `out/gold-falling-crisis-ar-phone.mp4` (about 8 Mbps, ~38 MB). The crf 18 master is over 100 MB, which many phones refuse to save.
 - **Preview stills:** `npx remotion still GoldFallingCrisisAR out/still.png --frame=1225`
 - **Live preview:** `npm run studio`
 

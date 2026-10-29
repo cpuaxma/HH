@@ -6,7 +6,8 @@
     "studio": "remotion studio",
     "render": "remotion render GoldFallingCrisisAR out/gold-falling-crisis-ar.mp4 --codec=h264 --crf=18",
     "still": "remotion still GoldFallingCrisisAR",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "export:phone": "ffmpeg -y -loglevel error -i out/gold-falling-crisis-ar.mp4 -c:v libx264 -preset slow -crf 20 -maxrate 8M -bufsize 16M -profile:v high -level:v 4.2 -pix_fmt yuv420p -color_primaries bt709 -color_trc bt709 -colorspace bt709 -tag:v avc1 -movflags +faststart -an out/gold-falling-crisis-ar-phone.mp4"
   },
   "dependencies": {
     "@fontsource/ibm-plex-sans-arabic": "^5.3.0",
