@@ -29,8 +29,8 @@ const NOW_PT = PTS[PTS.length - 1];
 const BRACKET_X = CHART.x + CHART.w + 28;
 
 // Beats (local frames)
-// Synced to the voiceover: peak as it says «خمسة آلاف وستّمئة», now at «أربعة آلاف», −٢٨٪ at «ثمانية وعشرين».
-const T = {card: 2, climb: 40, peak: 170, descent: 250, now: 350, bracket: 362, pct: 470};
+// The peak lands as the voiceover says «خمسة آلاف وستّمئة».
+const T = {card: 2, climb: 30, peak: 150, descent: 160, now: 220, bracket: 226, pct: 244};
 
 export const Drop: React.FC = () => {
   const frame = useCurrentFrame();

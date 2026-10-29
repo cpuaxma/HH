@@ -15,7 +15,7 @@ const DUR = sceneLength('inflation');
 const GAUGE = {x: 720, y: 1070, h: 430};
 const FED = {x: 360, y: 960};
 const ARROW = {x: 360, y: 1130};
-const T = {text: 8, gauge: 15, fill: 42, label: 40, streak: 150, fed: 172, arrow: 196};
+const T = {text: 8, gauge: 15, fill: 42, label: 40, streak: 100, fed: 124, arrow: 138};
 
 export const Inflation: React.FC = () => {
   const frame = useCurrentFrame();

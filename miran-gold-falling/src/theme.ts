@@ -1,6 +1,6 @@
 import {Easing} from 'remotion';
 
-export const VIDEO = {width: 1080, height: 1920, fps: 60, durationInFrames: 2800};
+export const VIDEO = {width: 1080, height: 1920, fps: 60, durationInFrames: 2530};
 
 export const COLORS = {
   bgTop: '#0A0E18',
@@ -72,27 +72,27 @@ export const LAYOUT = {
   disclaimerBottom: VIDEO.height - SAFE.bottom - 36,
 };
 
-// Scene frame ranges at 60fps (overlaps are intentional). Each scene is long enough for its
-// voiceover line (voiceover-script-ar.md) to be read in full while its text is on screen.
+// Scene frame ranges at 60fps (overlaps are intentional). Each scene is long enough for the
+// voiceover to read its headline (voiceover-script-ar.md) while the headline is on screen.
+// The CTA holds ~5.8s once settled, leaving room for outro music.
 export const SCENES = {
   hook: [0, 210],
-  drop: [200, 800],
-  oil: [790, 1060],
-  inflation: [1050, 1430],
-  dollar: [1420, 1830],
-  panic: [1820, 2090],
-  tip: [2080, 2560],
-  cta: [2550, 2800],
+  drop: [200, 550],
+  oil: [540, 850],
+  inflation: [840, 1150],
+  dollar: [1140, 1450],
+  panic: [1440, 1750],
+  tip: [1740, 2050],
+  cta: [2040, 2530],
 } as const;
 
 export type SceneKey = keyof typeof SCENES;
 export const sceneLength = (k: SceneKey) => SCENES[k][1] - SCENES[k][0];
 
 // The chain (absolute frames): each node pops at its frame; the link before it draws in just ahead.
-// Nodes land as the voiceover names them.
 export const CHAIN = {
   start: SCENES.oil[0],
   fadeOut: [SCENES.panic[0], SCENES.panic[0] + 25] as const,
-  nodes: [SCENES.oil[0] + 130, SCENES.inflation[0] + 90, SCENES.inflation[0] + 200, SCENES.dollar[0] + 100, SCENES.dollar[0] + 196],
-  goldDownArrow: SCENES.dollar[0] + 212,
+  nodes: [SCENES.oil[0] + 130, SCENES.inflation[0] + 102, SCENES.inflation[0] + 162, SCENES.dollar[0] + 110, SCENES.dollar[0] + 150],
+  goldDownArrow: SCENES.dollar[0] + 166,
 };

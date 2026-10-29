@@ -16,8 +16,8 @@ const ORIGIN = {x: 140, y: 820}; // scale box top-left on screen
 const COIN = 132;
 const BAR_W = 176;
 const TILT = -11;
-const T = {text: 8, scale: 14, coin: 40, bar: 50, tip: 80, particles: 210};
-const N_PARTICLES = 14;
+const T = {text: 8, scale: 14, coin: 40, bar: 50, tip: 80, particles: 92};
+const N_PARTICLES = 16;
 
 const quad = (a: {x: number; y: number}, c: {x: number; y: number}, b: {x: number; y: number}, t: number) => ({
   x: (1 - t) * (1 - t) * a.x + 2 * (1 - t) * t * c.x + t * t * b.x,

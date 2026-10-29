@@ -1,6 +1,6 @@
 # Miran Gold reel: لماذا ينخفض الذهب رغم الأزمات؟
 
-A 47-second vertical Arabic reel built in Remotion (1080×1920, 60fps, 2800 frames). It has no audio; the voiceover script is in `voiceover-script-ar.md`, and each scene is timed so its line fits.
+A 42-second vertical Arabic reel built in Remotion (1080×1920, 60fps, 2530 frames). It has no audio. The voiceover script is in `voiceover-script-ar.md` and reads each headline as it appears. The outro holds for about 5 seconds for music.
 
 ## Render
 
@@ -12,7 +12,7 @@ npx remotion render GoldFallingCrisisAR out/gold-falling-crisis-ar.mp4 --codec=h
 `npm run render` does the same thing.
 
 - **Phone/social copy:** `npm run export:phone` re-encodes the render to `out/gold-falling-crisis-ar-phone.mp4` (about 14 Mbps, ~68 MB, visually the same as the master). The crf 18 master is over 100 MB, which many phones refuse to save.
-- **Preview stills:** `npx remotion still GoldFallingCrisisAR out/still.png --frame=1600`
+- **Preview stills:** `npx remotion still GoldFallingCrisisAR out/still.png --frame=1300`
 - **Live preview:** `npm run studio`
 
 Remotion downloads its own headless Chrome the first time. To use a browser you already have, set `REMOTION_BROWSER=/path/to/chrome-headless-shell`. IBM Plex Sans Arabic comes bundled through @fontsource, so a render never fetches fonts.
