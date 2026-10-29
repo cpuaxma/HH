@@ -1,0 +1,25 @@
+{
+  "name": "miran-gold-falling",
+  "private": true,
+  "version": "1.0.0",
+  "scripts": {
+    "studio": "remotion studio",
+    "render": "remotion render GoldFallingCrisisAR out/gold-falling-crisis-ar.mp4 --codec=h264 --crf=18",
+    "still": "remotion still GoldFallingCrisisAR",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@fontsource/ibm-plex-sans-arabic": "^5.3.0",
+    "@remotion/cli": "4.0.539",
+    "@remotion/layout-utils": "4.0.539",
+    "@remotion/motion-blur": "4.0.539",
+    "@remotion/paths": "^4.0.539",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "remotion": "4.0.539"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.12",
+    "typescript": "^5.6.3"
+  }
+}
