@@ -8,6 +8,8 @@ A 30-second vertical reel (1080×1920, 60fps, 1800 frames) announcing the Avanti
 4. **Benefits (21–26s):** the camera pulls back and three quick cards stack in.
 5. **End card (26–30s):** a soft blur and fade to off-white. The traced Avantis logo builds layer by layer (shield, laurels, wordmark, tagline), followed by the launch line and the CTA. The last second holds.
 
+**Rendered files:** `deliverables/avantis-dipifr-reel.mp4` (H.264, CRF 16, yuv420p, 30.0s, no audio) and `deliverables/avantis-dipifr-cover.png` (1080×1920). Re-renders go to `out/`.
+
 The continents are rough outlines drawn by hand in `src/lib/land.ts`; the reel uses no map data or map APIs.
 
 ```
