@@ -146,10 +146,10 @@ export const TIMING = {
   hookOut: 158,
 
   /** Global: title, then one route leg per `legLength` frames, hub to hub. */
-  globalTitleIn: 205,
+  globalTitleIn: 186,
   routeStart: 215,
-  legLength: 62,
-  globalOut: 478,
+  legLength: 56,
+  globalOut: 488,
 
   /** Course: the camera dives in, then the journey runs hub to hub. */
   diveStart: 470,
@@ -166,9 +166,9 @@ export const TIMING = {
   travel: {base: 25, perDegree: 1.3, minDwell: 72},
 
   /** Benefits. */
-  pullOutStart: 1215,
-  pullOutEnd: 1335,
-  benefitsIn: 1275,
+  pullOutStart: 1232,
+  pullOutEnd: 1345,
+  benefitsIn: 1280,
   benefitGap: 25,
   benefitsOut: 1532,
 
