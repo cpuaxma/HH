@@ -108,7 +108,7 @@ export const Benefits: React.FC = () => {
               </div>
               <div style={{minWidth: 0}}>
                 <div style={{fontFamily: SERIF, textWrap: 'balance', fontSize: 40, lineHeight: 1.08, color: C.heading}}>{b.title}</div>
-                <div style={{fontSize: 25, fontWeight: 500, lineHeight: 1.35, color: C.text, marginTop: 6}}>{b.text}</div>
+                <div style={{fontSize: 25, fontWeight: 500, lineHeight: 1.35, color: C.text, marginTop: 6, textWrap: 'balance'}}>{b.text}</div>
               </div>
             </div>
           );

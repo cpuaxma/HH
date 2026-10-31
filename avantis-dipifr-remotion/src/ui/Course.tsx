@@ -121,7 +121,7 @@ const ModuleCard: React.FC<{index: number; rel: number}> = ({index, rel}) => {
       </div>
       <div style={{height: 1, background: C.divider, margin: '26px 0 22px'}} />
       <div style={{fontSize: 20, fontWeight: 700, letterSpacing: 2.5, color: C.meta, ...reveal(12)}}>WHAT YOU&apos;LL LEARN</div>
-      <div style={{fontSize: 31, fontWeight: 500, lineHeight: 1.36, color: C.text, marginTop: 8, ...reveal(15)}}>{m.learn}</div>
+      <div style={{fontSize: 31, fontWeight: 500, lineHeight: 1.36, color: C.text, marginTop: 8, textWrap: 'pretty', ...reveal(15)}}>{m.learn}</div>
       {/* Progress through the course */}
       <div style={{display: 'flex', gap: 10, marginTop: 26}}>
         {MODULES.map((_, k) => {

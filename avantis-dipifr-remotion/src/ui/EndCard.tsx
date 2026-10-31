@@ -47,7 +47,7 @@ export const EndCard: React.FC = () => {
           style={{
             fontFamily: SERIF,
             textWrap: 'balance',
-            fontSize: 60,
+            fontSize: 56,
             lineHeight: 1.1,
             color: CARD_COLORS.heading,
             textAlign: 'center',
