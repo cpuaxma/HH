@@ -1,6 +1,8 @@
 import {Easing, interpolate} from 'remotion';
 
 export const easeInOut = Easing.inOut(Easing.cubic);
+/** Cubic-bezier in/out: the same feel as easeInOut, but its acceleration never jumps (used for the camera). */
+export const easeCamera = Easing.bezier(0.65, 0, 0.35, 1);
 export const easeOut = Easing.out(Easing.cubic);
 export const easeOutQuint = Easing.out(Easing.poly(5));
 export const easeIn = Easing.in(Easing.cubic);

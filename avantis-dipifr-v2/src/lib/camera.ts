@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import {TIMING} from '../data';
 import {impacts} from './choreo';
-import {easeInOut, lerp, ramp, shakeAt} from './timeline';
+import {easeCamera, lerp, ramp, shakeAt} from './timeline';
 
 export const W = 1080;
 export const H = 1920;
@@ -29,11 +29,11 @@ export const SHOTS = {
 
 /** The camera path without shake: smooth by construction (only eased blends and slow sines). */
 export const basePath = (f: number): Shot => {
-  let s = mix(SHOTS.answerFrom, SHOTS.answer, ramp(f, TIMING.answerStart - 12, TIMING.breakStart, easeInOut));
-  s = mix(s, SHOTS.course, ramp(f, TIMING.breakStart - 10, TIMING.courseStart + 40, easeInOut));
-  s = mix(s, SHOTS.courseEnd, ramp(f, TIMING.courseStart + 40, TIMING.morphStart - 20, easeInOut));
-  s = mix(s, SHOTS.seal, ramp(f, TIMING.morphStart - 20, TIMING.sealStamp + 10, easeInOut));
-  s = mix(s, SHOTS.rest, ramp(f, TIMING.benefitsStart - 10, TIMING.benefitsStart + 60, easeInOut));
+  let s = mix(SHOTS.answerFrom, SHOTS.answer, ramp(f, TIMING.answerStart - 12, TIMING.breakStart, easeCamera));
+  s = mix(s, SHOTS.course, ramp(f, TIMING.breakStart - 10, TIMING.courseStart + 40, easeCamera));
+  s = mix(s, SHOTS.courseEnd, ramp(f, TIMING.courseStart + 40, TIMING.morphStart - 20, easeCamera));
+  s = mix(s, SHOTS.seal, ramp(f, TIMING.morphStart - 20, TIMING.sealStamp + 10, easeCamera));
+  s = mix(s, SHOTS.rest, ramp(f, TIMING.benefitsStart - 10, TIMING.benefitsStart + 60, easeCamera));
   // Hand-held drift: slow layered sines.
   const d = (p: number, ph: number) => Math.sin((2 * Math.PI * f) / p + ph);
   return {
