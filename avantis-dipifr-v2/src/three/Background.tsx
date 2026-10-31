@@ -44,7 +44,7 @@ export const Background: React.FC<{glowBoost?: number}> = ({glowBoost = 0}) => {
           float d1 = length(p - g1);
           float d2 = length(p - g2);
           col += uGlow * (0.30 + uBoost) * exp(-d1 * d1 * 9.0);
-          col += uGold * 0.045 * exp(-d2 * d2 * 12.0);
+          col += uGlow * 0.10 * exp(-d2 * d2 * 10.0);
           // Static grain, a touch of dither against banding.
           col += (hash(floor(gl_FragCoord.xy)) - 0.5) * 0.012;
           gl_FragColor = vec4(col, 1.0);

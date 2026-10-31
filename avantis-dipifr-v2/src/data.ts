@@ -12,7 +12,7 @@
  * The scroll-stopper, one word or short phrase per slam. Each entry lands on its
  * own frame (`at`, frames from the start; 30 frames = one beat at 120 BPM).
  * `br` starts a new line after the word. `accent` draws it in gold with an
- * underline swipe. The first word is already on screen at frame 0.
+ * underline swipe. Words with `at: 0` are already on screen in the first frame.
  *
  * Alternatives from the brief, ready to swap in:
  *   "One qualification." / "Every border."
@@ -20,8 +20,8 @@
  */
 export const HOOK: {text: string; at: number; br?: boolean; accent?: boolean}[] = [
   {text: 'Does', at: 0},
-  {text: 'your', at: 10, br: true},
-  {text: 'CV', at: 20},
+  {text: 'your', at: 0, br: true},
+  {text: 'CV', at: 15},
   {text: 'speak', at: 30, br: true},
   {text: 'IFRS?', at: 60, accent: true},
 ];

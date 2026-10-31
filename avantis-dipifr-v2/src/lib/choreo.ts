@@ -45,7 +45,7 @@ export const groupPose = (f: number): Pose & {visible: boolean} => {
   const after = ramp(f, TIMING.sealStamp, TIMING.sealStamp + 30);
   pose.rot[1] += 0.06 * Math.sin((f - TIMING.sealStamp) / 30) * after;
   // ...then flies up and away on the beat the benefits start.
-  const out = ramp(f, TIMING.benefitsStart - 6, TIMING.benefitsStart + 26, easeIn);
+  const out = ramp(f, TIMING.benefitsStart - 24, TIMING.benefitsStart, easeIn);
   pose.pos = [pose.pos[0], pose.pos[1] + out * 13, pose.pos[2] - out * 4];
   pose.rot = [pose.rot[0] - out * 0.5, pose.rot[1], pose.rot[2]];
   return {...pose, visible: f >= inStart && out < 1};

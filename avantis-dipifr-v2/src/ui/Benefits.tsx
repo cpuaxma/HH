@@ -36,14 +36,19 @@ const ICONS: Record<BenefitIcon, React.ReactNode> = {
 export const Benefits: React.FC = () => {
   const frame = useCurrentFrame();
   const L = TIMING.benefitLength;
-  const i = Math.floor((frame - TIMING.benefitsStart) / L);
-  if (i < 0 || i >= BENEFITS.length) return null;
+  // Each later beat starts a few frames before its beat, so its build lands on the beat and no frame is empty.
+  const LEAD = 6;
+  const startOf = (k: number) => TIMING.benefitsStart + k * L - (k > 0 ? LEAD : 0);
+  if (frame < startOf(0) || frame > TIMING.endStart + 16) return null;
+  let i = 0;
+  while (i < BENEFITS.length - 1 && frame >= startOf(i + 1)) i++;
   const b = BENEFITS[i];
-  const t0 = TIMING.benefitsStart + i * L;
-  const r = frame - t0;
-  // Enter from the right on the beat, leave to the left just before the next one.
+  const r = frame - startOf(i);
+  // Enter from the right, leave to the left just before the next beat (the last one leaves with the end card's sweep).
   const inP = ramp(r, 0, 14, easeOut);
-  const out = ramp(r, L - 14, L, easeIn);
+  const last = i === BENEFITS.length - 1;
+  const span = last ? 0 : startOf(i + 1) - startOf(i);
+  const out = last ? ramp(frame, TIMING.endStart - 4, TIMING.endStart + 14, easeIn) : ramp(r, span - 12, span, easeIn);
   const icon = springAt(r, 2, 26, 0.5);
   const ring = ramp(r, 4, 40, easeOut);
   const lines = b.words.split('|').map((s) => s.trim());

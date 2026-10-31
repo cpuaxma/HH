@@ -13,7 +13,7 @@ export const CARD = {in: -6, inLen: 22, out: 96, outLen: 18};
 export const CourseHud: React.FC = () => {
   const frame = useCurrentFrame();
   const a = TIMING.courseStart - 6;
-  const end = TIMING.benefitsStart - 8;
+  const end = TIMING.benefitsStart - 24;
   if (frame < a || frame > end + 24) return null;
   const inP = ramp(frame, a, a + 22, easeOutQuint);
   const out = ramp(frame, end, end + 20, easeIn);

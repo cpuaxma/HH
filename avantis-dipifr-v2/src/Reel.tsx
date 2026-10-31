@@ -27,7 +27,7 @@ export const SafeZones: React.FC = () => {
 };
 
 export const Vignette: React.FC = () => (
-  <AbsoluteFill style={{background: 'radial-gradient(ellipse 90% 75% at 50% 48%, rgba(0,0,0,0) 55%, rgba(2,8,24,0.45) 100%)', pointerEvents: 'none'}} />
+  <AbsoluteFill style={{background: 'radial-gradient(ellipse 90% 75% at 50% 48%, rgba(0,0,0,0) 55%, rgba(3,10,32,0.5) 100%)', pointerEvents: 'none'}} />
 );
 
 export const Reel: React.FC<ReelProps> = ({showSafeZones}) => {
