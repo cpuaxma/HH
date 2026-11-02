@@ -37,4 +37,4 @@ The chart's shape is in `src/silverChart.ts`.
 - `src/theme.ts`: colors, easing, safe zones, scene frame ranges, the camera glide length and the station order.
 - `src/scenes/*`: one component per scene (`Hook`, `Drop`, `Versus`, `Pressure`, `Industry`, `Market`, `Tip`, `Cta`).
 - `src/components/*`: shared pieces. Reused from the gold reel: `ArabicText`, `LightStreak`, `GlassCard`, `Gauge`, `Pill`, `Grain`, `BackgroundGlow`. New here: `World`, `Hud`, `LiquidColumn`, `SilverBar2D`, `IndustryIcon`, `StoryStrip`, `Wipe` and `three/*`.
-- `public/logo.png`: the logo used in the CTA.
+- `public/logo.png`: the logo, shown small at the bottom centre for the whole reel (it fades out under the CTA light-sweep) and large in the CTA.

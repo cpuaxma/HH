@@ -1,7 +1,8 @@
 import React from 'react';
-import {AbsoluteFill, interpolate, Sequence, useCurrentFrame} from 'remotion';
+import {AbsoluteFill, Img, interpolate, Sequence, staticFile, useCurrentFrame} from 'remotion';
 import {BRAND} from './strings';
-import {COLORS, EASE, FONT, GLIDE, GOLD_GRADIENT, LAYOUT, SceneKey, SCENES, STATIONS} from './theme';
+import {COLORS, EASE, FONT, GLIDE, GOLD_GRADIENT, LAYOUT, SAFE, SceneKey, SCENES, STATIONS, VIDEO} from './theme';
+import {enter, hexA} from './motion';
 import {BackgroundGlow, Vignette} from './components/BackgroundGlow';
 import {Grain} from './components/Grain';
 import {Dust, Floor} from './components/World';
@@ -37,6 +38,37 @@ const Wordmark: React.FC = () => {
       }}
     >
       <span style={{backgroundImage: GOLD_GRADIENT, WebkitBackgroundClip: 'text', backgroundClip: 'text', color: 'transparent'}}>{BRAND}</span>
+    </div>
+  );
+};
+
+const BOTTOM_LOGO = 96;
+
+/**
+ * Small Miran Gold logo at the bottom centre, just above the platform-UI safe zone. It stays
+ * for the whole reel and fades out under the CTA's light-sweep, where the large logo takes over.
+ */
+const BottomLogo: React.FC = () => {
+  const frame = useCurrentFrame();
+  const appear = enter(frame, 8, 40);
+  const out = interpolate(frame, [SCENES.cta[0] + 76, SCENES.cta[0] + 90], [0, 1], {extrapolateLeft: 'clamp', extrapolateRight: 'clamp', easing: EASE.exit});
+  if (out >= 1) return null;
+  return (
+    <div
+      style={{
+        position: 'absolute',
+        left: (VIDEO.width - BOTTOM_LOGO) / 2,
+        top: VIDEO.height - SAFE.bottom - 24 - BOTTOM_LOGO,
+        width: BOTTOM_LOGO,
+        height: BOTTOM_LOGO,
+        borderRadius: '50%',
+        opacity: 0.9 * appear * (1 - out),
+        transform: `scale(${0.85 + 0.15 * appear})`,
+        filter: out > 0.01 ? `blur(${out * 8}px)` : undefined,
+        boxShadow: `0 0 32px ${hexA(COLORS.goldA, 0.22)}`,
+      }}
+    >
+      <Img src={staticFile('logo.png')} style={{width: BOTTOM_LOGO, height: BOTTOM_LOGO, borderRadius: '50%'}} />
     </div>
   );
 };
@@ -90,6 +122,7 @@ export const Reel: React.FC = () => (
     <Hud />
     <Wordmark />
     <Vignette />
+    <BottomLogo />
     <Grain />
   </AbsoluteFill>
 );
