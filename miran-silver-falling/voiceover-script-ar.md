@@ -1,50 +1,36 @@
 # نص التعليق الصوتي (عربي): لماذا انهارت الفضة؟
 
-The Arabic voiceover for `out/silver-falling-ar.mp4` (about 42 seconds), written for an AI voice.
+The Arabic voiceover for `out/silver-falling-ar.mp4` (42.2 seconds), written for an AI voice. This is the **longer version**: the voice talks through almost the whole video instead of only reading the headlines.
 
-**The voice reads each scene's headline (the big text) word for word**, so it matches what the viewer is reading at that moment. The smaller second lines stay on screen as supporting text and aren't read aloud.
+Each line has two parts:
 
-The only changes from the screen text are the ones speech needs:
+1. **It starts with the scene's headline (the big text), word for word**, so the voice matches what the viewer is reading.
+2. **It then adds a short follow-on** that matches the smaller second line or what the animation is doing at that moment:
+   - «ثم انهارت» lands just after the chart has crashed.
+   - «والتباطؤ يُضعفه» is said as the red slowdown wave sweeps across the circuit board.
+   - «وتتوالى أوامر البيع» is said as the «بيع» dominoes fall.
+   - «راقب…» is said as the three tip cards light up.
 
-- Numbers are written as words: ٦٠٪ → «ستين بالمئة», ١٢١ → «مئة وواحد وعشرين».
-- «…» becomes a comma.
-- The small «نصيحة» pill is read at the start of line 7.
-
-Some animation beats are timed to the voice:
-- **Scene 2:** the chart peaks as the voice says the price.
-- **Scene 4:** each weight drops as its word is said.
-- **Scene 6:** the sell order hits the pools on «بيع».
-
-After the last line, the logo screen holds for about 3 seconds with no voice, leaving room for outro music.
-
-## How it avoids the "robotic Arabic" sound
-
-- **No symbols or Latin text.** AI voices read «٪», «…» and «XAG/USD» unpredictably. Commas and full stops mark the pauses.
-- **Numbers as words.** As digits, AI voices often read them in English or one digit at a time.
-- **Light tashkeel only.** Diacritics are added only where the AI could misread a word:
-  - «الفِضّة» is marked so it isn't read with the wrong vowel.
-  - «الذَّهَب» is marked so it isn't read as «الذَّهاب» (going).
-  - «قُرب» is marked so it isn't read as the verb «قرّب».
-  - «سجّلت», «قمّة» and «يحرّكه» carry a shadda.
-  - «جُولد» is marked so it is read "gold/jold", not "jawlad".
-  - Full tashkeel on every word makes AI voices sound like formal recitation, so it's left out.
+The video is unchanged. Each line was sized to its scene's window on the rendered timeline: from when its headline appears to when the next one appears. The estimates assume a typical AI voice pace (about 6–6.5 syllables a second).
 
 ## Script
 
-| # | Place at | Must end by | Voiceover (= the headline on screen) |
-|---|---|---|---|
-| 1 | 0:00.0 | 0:03.6 | الفِضّة خسرت نحو ستين بالمئة من قمتها، فلماذا؟ |
-| 2 | 0:03.6 | 0:09.2 | سجّلت الفِضّة قمّة قُرب مئة وواحد وعشرين دولاراً في يناير. |
-| 3 | 0:09.3 | 0:14.0 | الذَّهَب هبط نحو ثمانية وعشرين بالمئة، والفِضّة نحو ستين بالمئة. |
-| 4 | 0:14.1 | 0:19.0 | نفس ضغوط الذَّهَب، تضخم، وفائدة، ودولار أقوى. |
-| 5 | 0:19.1 | 0:24.0 | لكن أكثر من نصف الطلب على الفِضّة صناعي. |
-| 6 | 0:24.1 | 0:28.8 | سوق الفِضّة صغير، فأي بيع يحرّكه بقوة. |
-| 7 | 0:28.9 | 0:35.6 | نصيحة. الفِضّة أكثر تقلباً من الذَّهَب. |
-| 8 | 0:35.7 | 0:39.0 | انضم إلى مجتمع ميران جُولد. الرابط في البايو. |
+| # | Place at | Max length | Voiceover | Estimated |
+|---|---|---|---|---|
+| 1 | 0:00.0 | 3.5 s | الفِضّة خسرت نحو ستين بالمئة من قمتها، فلماذا؟ | ~3.4 s |
+| 2 | 0:03.6 | 5.6 s | سجّلت الفِضّة قمّة قُرب مئة وواحد وعشرين دولاراً في يناير، **ثم انهارت.** | ~5.1 s |
+| 3 | 0:09.3 | 4.8 s | الذَّهَب هبط نحو ثمانية وعشرين بالمئة، والفِضّة نحو ستين بالمئة. | ~4.7 s |
+| 4 | 0:14.2 | 4.8 s | نفس ضغوط الذَّهَب، تضخم وفائدة ودولار أقوى، **تسحب الأموال من الفِضّة.** | ~4.7 s |
+| 5 | 0:19.1 | 4.9 s | لكن أكثر من نصف الطلب على الفِضّة صناعي، **والتباطؤ يُضعفه.** | ~4.5 s |
+| 6 | 0:24.1 | 4.9 s | سوق الفِضّة صغير، فأي بيع يحرّكه بقوة، **وتتوالى أوامر البيع.** | ~4.8 s |
+| 7 | 0:29.1 | 6.5 s | نصيحة. الفِضّة أكثر تقلّباً من الذَّهَب. **راقب التضخم والفائدة والطلب الصناعي.** | ~6.1 s |
+| 8 | 0:35.7 | 4.5 s | انضم إلى مجتمع ميران جُولد. الرابط في البايو. | ~3.3 s |
 
-**Outro music:** start it under line 8 or right after it. The final frame holds until 0:42.2. Between about 0:32 and 0:35.7 there is no headline on screen while the camera pulls back to show the whole story, which suits a music swell.
+Bold = the follow-on added after the headline. The rest of each line is the headline.
 
-The disclaimer «محتوى تعليمي فقط وليس نصيحة مالية.», the price HUD and the chart labels stay on screen only.
+- **Line 7** runs into the camera pull-back. The tip scene is still on screen, shrinking into the story strip, so it still matches.
+- **After line 8** the logo screen holds until 0:42.2, about 2 seconds of outro music on its own. The music can also play softly under the voice before that.
+- **Not read aloud:** the disclaimer «محتوى تعليمي فقط وليس نصيحة مالية.», the price HUD and the chart labels stay on screen only.
 
 ## Text to paste (one clip per line)
 
@@ -52,32 +38,45 @@ The disclaimer «محتوى تعليمي فقط وليس نصيحة مالية.�
 الفِضّة خسرت نحو ستين بالمئة من قمتها، فلماذا؟
 ```
 ```
-سجّلت الفِضّة قمّة قُرب مئة وواحد وعشرين دولاراً في يناير.
+سجّلت الفِضّة قمّة قُرب مئة وواحد وعشرين دولاراً في يناير، ثم انهارت.
 ```
 ```
 الذَّهَب هبط نحو ثمانية وعشرين بالمئة، والفِضّة نحو ستين بالمئة.
 ```
 ```
-نفس ضغوط الذَّهَب، تضخم، وفائدة، ودولار أقوى.
+نفس ضغوط الذَّهَب، تضخم وفائدة ودولار أقوى، تسحب الأموال من الفِضّة.
 ```
 ```
-لكن أكثر من نصف الطلب على الفِضّة صناعي.
+لكن أكثر من نصف الطلب على الفِضّة صناعي، والتباطؤ يُضعفه.
 ```
 ```
-سوق الفِضّة صغير، فأي بيع يحرّكه بقوة.
+سوق الفِضّة صغير، فأي بيع يحرّكه بقوة، وتتوالى أوامر البيع.
 ```
 ```
-نصيحة. الفِضّة أكثر تقلباً من الذَّهَب.
+نصيحة. الفِضّة أكثر تقلّباً من الذَّهَب. راقب التضخم والفائدة والطلب الصناعي.
 ```
 ```
 انضم إلى مجتمع ميران جُولد. الرابط في البايو.
 ```
 
-## Tips
+## Making it fit exactly
 
-- **Make each line its own clip** and drop it at its "Place at" time. Each clip starts just as its headline appears, so the voice and the words on screen line up.
-- **Line 1 is the tightest.** If it runs past 0:03.6, set that clip's speed to 1.05–1.1.
-- **Pick a native Arabic voice**, not an English voice in "multilingual" mode, and use the same voice as the gold reel so the series sounds consistent.
-- **Settings (ElevenLabs or similar):** stability around 40–50%, style low, speed 1.0.
-- **If one word sounds wrong,** add a diacritic to only that word and regenerate that line.
-- **Music levels:** keep any music about 15–18 dB below the voice while it's speaking. In the pull-back and the outro it can come up.
+- **Make each line its own clip** and drop it at its "Place at" time. Each clip starts as its headline appears.
+- **Check each clip's length against "Max length".** Voices differ in pace, so a clip may come out a little long. In that order, either:
+  1. Set that clip's speed to 1.05–1.1. This is barely noticeable and usually enough.
+  2. Remove the bold follow-on from that line. The headline alone always fits.
+- **If a clip comes out short,** leave the gap. A short pause before the next headline reads naturally.
+- **Lines 3 and 6 are the fullest**, so check those first.
+
+## Keeping it natural (not "robotic Arabic")
+
+- **Numbers are written as words.** As digits, AI voices often read them in English or one digit at a time.
+- **No symbols.** There is no «٪», «…», «:» or Latin text. Commas and full stops make the pauses.
+- **Light tashkeel only.** Diacritics are added only where the AI could misread a word:
+  - «الفِضّة» and «الذَّهَب» are marked so the AI uses the right vowels.
+  - «قُرب» is marked so it isn't read as the verb «قرّب».
+  - «يُضعفه» is marked so the AI reads it as "weakens it".
+  - «سجّلت», «قمّة», «يحرّكه» and «تقلّباً» carry a shadda.
+  - «جُولد» is marked so it is read "gold/jold".
+- **Voice:** use a native Arabic voice, the same one as the gold reel. Stability around 40–50%, style low, speed 1.0 unless a clip needs the small speed-up above.
+- **Music:** keep it about 15–18 dB below the voice while it's speaking. In the last 2 seconds it can come up to full level.
