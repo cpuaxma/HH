@@ -5,7 +5,6 @@ import * as THREE from 'three';
 import {FormatId, LAYOUT} from '../data';
 import {computeCamera} from '../lib/camera';
 import {SCREEN, V3} from '../lib/story';
-import {DBG} from '../debug';
 
 /** Screen canvas size: 400 × 890 design points at 3×, matching the screen's 0.702 × 1.562 aspect. */
 export const TEX = {w: 1200, h: 2670, scale: 3};
@@ -39,11 +38,11 @@ export const useScreenTexture = (
     const canvas = document.createElement('canvas');
     canvas.width = TEX.w;
     canvas.height = TEX.h;
-    const ctx = canvas.getContext('2d', {willReadFrequently: DBG.has('cpuCanvas')})!;
+    const ctx = canvas.getContext('2d')!;
     const small = document.createElement('canvas');
     small.width = TEX.w / 2;
     small.height = TEX.h / 2;
-    const sctx = small.getContext('2d', {willReadFrequently: DBG.has('cpuCanvas')})!;
+    const sctx = small.getContext('2d')!;
     const hi = new THREE.CanvasTexture(canvas);
     hi.colorSpace = THREE.SRGBColorSpace;
     hi.generateMipmaps = false;

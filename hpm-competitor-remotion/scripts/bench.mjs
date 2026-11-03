@@ -20,6 +20,6 @@ await renderFrames({
   frameRange: [Number(first), Number(last)], imageFormat: 'png', timeoutInMilliseconds: 240000,
   onStart: () => undefined,
   onFrameUpdate: (n, frame) => { const now = Date.now(); console.log(`frame ${frame} done ${(now - last_t)}ms`); last_t = now; },
-  onBrowserLog: (l) => { if (l.text.startsWith('[pipe]')) console.log('  ' + l.text); },
+  onBrowserLog: (l) => { if (l.text.startsWith('[mb]')) console.log('  ' + l.text); },
 });
 console.log(`total ${((Date.now() - t0) / 1000).toFixed(1)}s, frames in ${outputDir}`);

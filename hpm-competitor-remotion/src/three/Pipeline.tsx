@@ -29,7 +29,6 @@ import {useCurrentFrame, useDelayRender} from 'remotion';
 import * as THREE from 'three';
 import {FormatId, TIMING} from '../data';
 import {applyCamera} from '../lib/projection';
-import {DBG} from '../debug';
 import {impact} from '../lib/story';
 
 /** Frames where HDR elements need bloom. */
@@ -211,7 +210,7 @@ export const Pipeline: React.FC<{children: React.ReactNode; fmt: FormatId}> = ({
 
   const pipe = useMemo(() => {
     gl.autoClear = false;
-    const composer = new EffectComposer(gl, {frameBufferType: DBG.has('ldr') ? THREE.UnsignedByteType : THREE.HalfFloatType, multisampling: 0});
+    const composer = new EffectComposer(gl, {frameBufferType: THREE.HalfFloatType, multisampling: 0});
     const accum = new AccumulatePass(scene, camera);
     const smaaEffect = new SMAAEffect({preset: SMAAPreset.HIGH});
     const smaa = new EffectPass(camera, smaaEffect);
@@ -223,14 +222,11 @@ export const Pipeline: React.FC<{children: React.ReactNode; fmt: FormatId}> = ({
     const bloomPass = new EffectPass(camera, bloom);
     const finalPass = new EffectPass(camera, new ToneMappingEffect({mode: ToneMappingMode.NEUTRAL}), grade);
     composer.addPass(accum);
-    if (DBG.has('noPost')) { accum.renderToScreen = true; }
     // Depth of field first (it samples the depth attached to the first buffer), then SMAA.
-    if (!DBG.has('noPost')) {
     composer.addPass(dofPass);
     composer.addPass(smaa);
     composer.addPass(bloomPass);
     composer.addPass(finalPass);
-    }
     composer.setSize(size.width, size.height, false);
     accum.setSize(size.width, size.height);
     return {composer, accum, dof, dofPass, grade, smaaEffect, bloomPass};
@@ -297,7 +293,6 @@ export const Pipeline: React.FC<{children: React.ReactNode; fmt: FormatId}> = ({
     const times = samples === 1 ? [t0] : Array.from({length: samples}, (_, i) => t0 + MOTION_BLUR.shutter * ((i + 0.5) / samples - 0.5));
 
     const c = applyAll(t0);
-    if (DBG.has('empty')) scene.children.forEach((o) => (o.visible = false));
     pipe.accum.times = times;
     pipe.accum.centre = t0;
     pipe.accum.apply = applyAll;
@@ -309,13 +304,8 @@ export const Pipeline: React.FC<{children: React.ReactNode; fmt: FormatId}> = ({
     // Bloom only runs while something is bright enough to bloom (the streak, the impact, the pulses).
     pipe.bloomPass.enabled = bloomNeeded(t0);
     (pipe.grade.uniforms.get('impact') as THREE.Uniform).value = impact(t0);
-    const tr = performance.now();
     pipe.composer.render();
-    const px = new Uint8Array(4);
-    const glc = gl.getContext();
-    glc.readPixels(0, 0, 1, 1, glc.RGBA, glc.UNSIGNED_BYTE, px);
-    console.log(`[pipe] frame ${t0} samples ${samples} render ${(performance.now() - tr).toFixed(0)}ms`);
-    (window as unknown as {__mbSamples?: number}).__mbSamples = samples;
+    if (samples > 1) console.log(`[mb] frame ${t0} samples ${samples}`);
   }, [frame, fmt, pipe, scene, camera, registry, size.width, size.height, smaaReady]);
 
   return <RegistryContext.Provider value={registry}>{createPortal(children, scene)}</RegistryContext.Provider>;

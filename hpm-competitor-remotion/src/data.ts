@@ -347,12 +347,12 @@ export const STUDIO = {
 
 export const VOICEOVER = {
   /** Set to false for an effects-only mix. */
-  enabled: false,
+  enabled: true,
   volume: 1,
   /** Effects dip to this level under the voice. */
   duckTo: 0.45,
   lines: [
     {file: 'hook', text: 'Your competitor just posted.', at: 10},
-    {file: 'turn', text: 'Your turn.', at: 872},
+    {file: 'turn', text: 'Your turn.', at: 876},
   ],
 };

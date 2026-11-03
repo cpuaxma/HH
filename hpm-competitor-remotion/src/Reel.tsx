@@ -6,7 +6,6 @@ import {Overlays, endFade} from './ui/Overlays';
 import {SoundTrack} from './sound';
 import {fontsReady} from './fonts';
 import {Pipeline} from './three/Pipeline';
-import {DBG} from './debug';
 import {Scene} from './three/Scene';
 
 export type ReelProps = {
@@ -57,7 +56,7 @@ export const Reel: React.FC<ReelProps> = ({showSafeZones, sfx = true}) => {
         </ThreeCanvas>
         </AbsoluteFill>
       ) : null}
-      {ready && !DBG.has('noOverlay') ? <Overlays showSafeZones={showSafeZones} /> : null}
+      {ready ? <Overlays showSafeZones={showSafeZones} /> : null}
       {sfx ? <SoundTrack /> : null}
     </AbsoluteFill>
   );
