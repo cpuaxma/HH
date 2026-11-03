@@ -4,7 +4,19 @@
   "private": true,
   "description": "Hot Pepper Media: \"Your competitor just posted.\" 20-second 1080x1920 3D reel (Remotion + React Three Fiber)",
   "scripts": {
-    "studio": "remotion studio"
+    "studio": "remotion studio",
+    "stills": "node scripts/stills.mjs",
+    "stills:feed": "node scripts/stills.mjs out/stills-feed 0.5 90,250,380,490,680,745,812,940,1180 --feed",
+    "check:camera": "esbuild scripts/check-camera.ts --bundle --platform=node --outfile=scripts/tmp/check-camera.cjs --log-level=error && node scripts/tmp/check-camera.cjs vertical && node scripts/tmp/check-camera.cjs feed",
+    "preview": "remotion render HpmCompetitor out/preview.mp4 --scale=0.5 --crf=24 --x264-preset=veryfast --concurrency=1",
+    "render": "remotion render HpmCompetitor out/hotpepper-competitor.mp4 --concurrency=1 --crf=16 --x264-preset=slow --pixel-format=yuv420p --audio-codec=aac --audio-bitrate=320k",
+    "render:4x5": "remotion render HpmCompetitor4x5 out/hotpepper-competitor-4x5.mp4 --concurrency=1 --crf=16 --x264-preset=slow --pixel-format=yuv420p --audio-codec=aac --audio-bitrate=320k",
+    "render:silent": "remotion render HpmCompetitor out/hotpepper-competitor-silent.mp4 --concurrency=1 --crf=16 --x264-preset=slow --pixel-format=yuv420p --muted",
+    "sfx:make": "python3 scripts/make-sfx.py",
+    "sfx:wav": "remotion render HpmCompetitorSfx out/hotpepper-competitor-sfx.wav --codec=wav",
+    "cover": "remotion still HpmCompetitor out/hotpepper-competitor-cover.png --frame=960",
+    "scan": "python3 scripts/scan-frames.py",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@react-three/fiber": "9.4.0",

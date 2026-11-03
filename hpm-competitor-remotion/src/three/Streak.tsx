@@ -59,7 +59,7 @@ export const Streak: React.FC = () => {
   const light = useRef<THREE.PointLight>(null);
   const geo = useMemo(pepperGeometry, []);
   const headMat = useMemo(
-    () => new THREE.MeshStandardMaterial({color: BRAND.red, emissive: BRAND.glow, emissiveIntensity: 0.95, roughness: 0.3, metalness: 0}),
+    () => new THREE.MeshStandardMaterial({color: BRAND.red, emissive: BRAND.glow, emissiveIntensity: 0.6, roughness: 0.3, metalness: 0}),
     [],
   );
   const trailGeo = useMemo(() => {
@@ -74,7 +74,7 @@ export const Streak: React.FC = () => {
   const trailMat = useMemo(
     () =>
       new THREE.ShaderMaterial({
-        uniforms: {color: {value: new THREE.Color(BRAND.red).multiplyScalar(1.15)}, core: {value: new THREE.Color(BRAND.orange).multiplyScalar(1.3)}},
+        uniforms: {color: {value: new THREE.Color(BRAND.red)}, core: {value: new THREE.Color(BRAND.orange)}},
         vertexShader: /* glsl */ `
           attribute float fade; varying float vFade; varying float vSide;
           void main() { vFade = fade; vSide = float(gl_VertexID % 2) * 2.0 - 1.0;
@@ -82,11 +82,11 @@ export const Streak: React.FC = () => {
         fragmentShader: /* glsl */ `
           uniform vec3 color; uniform vec3 core; varying float vFade; varying float vSide;
           void main() { float edge = 1.0 - abs(vSide); float a = vFade * smoothstep(0.0, 0.9, edge);
-            vec3 c = mix(color, core, pow(edge, 3.0) * vFade);
-            gl_FragColor = vec4(c * a, a); }`,
+            vec3 c = mix(color, core, pow(edge, 4.0) * vFade * 0.6);
+            gl_FragColor = vec4(c, a); }`,
         transparent: true,
         depthWrite: false,
-        blending: THREE.AdditiveBlending,
+        blending: THREE.NormalBlending,
         side: THREE.DoubleSide,
       }),
     [],

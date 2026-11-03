@@ -37,6 +37,9 @@ export const springAt = (t: number, {freq = 2.2, damping = 0.5}: {freq?: number;
   return 1 - Math.exp(-z * w * s) * (Math.cos(wd * s) + ((z * w) / wd) * Math.sin(wd * s));
 };
 
+/** Steeper C2-smooth in-out (smootherstep of smootherstep): no jump in acceleration anywhere. */
+export const smoothSteep = (x: number) => smootherstep(smootherstep(x));
+
 /** Monotone cubic (Fritsch–Carlson) through [x, y] keyframes, clamped at the ends. */
 export const keyframes = (pts: [number, number][]) => {
   const n = pts.length;

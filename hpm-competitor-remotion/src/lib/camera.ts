@@ -6,7 +6,11 @@
 // through the blend and the easing has zero slope at both ends, the camera velocity
 // stays continuous through every whip, crane and push (scripts/check-camera.ts checks this).
 import {FormatId, LAYOUT, TIMING} from '../data';
-import {easeInOut, easeInOutQuint, easeInOutSine, glide, lerp, ramp, whip} from './ease';
+import {lerp, ramp, smootherstep, smoothSteep, whip} from './ease';
+import {Easing} from 'remotion';
+
+/** A push that starts from rest and glides in (zero velocity at both ends). */
+const pushIn = Easing.bezier(0.42, 0, 0.12, 1);
 import {BASE, V3} from './story';
 
 export type Orbit = {
@@ -49,7 +53,7 @@ export const phonePoint = (which: 'you' | 'competitor', local: V3, t: number): V
 const fy = (fmt: FormatId, wide: boolean) => (wide ? LAYOUT[fmt].focusY : LAYOUT[fmt].macroFocusY) / LAYOUT[fmt].height;
 const ds = (fmt: FormatId) => LAYOUT[fmt].distScale;
 /** Slow eased drift between two values over a window (defined, and smooth, outside it too). */
-const drift = (t: number, a: number, b: number, from: number, to: number) => lerp(from, to, easeInOutSine(Math.min(1, Math.max(0, (t - a) / (b - a)))));
+const drift = (t: number, a: number, b: number, from: number, to: number) => lerp(from, to, smootherstep((t - a) / (b - a)));
 
 export const SHOTS: Record<string, Shot> = {
   // 1. Hook: wide two-shot, slow push with a slight arc towards the competitor.
@@ -112,7 +116,7 @@ export const SHOTS: Record<string, Shot> = {
   profilePush: {
     name: 'Push-in on the profile',
     at: (t, fmt) => {
-      const p = ramp(t, 548, 700, glide);
+      const p = ramp(t, 536, 700, pushIn);
       return {
         target: phonePoint('competitor', [lerp(0, -0.06, p), lerp(0.1, 0.225, p), 0.04], t),
         az: lerp(-3, -8, p),
@@ -145,10 +149,10 @@ export const SHOTS: Record<string, Shot> = {
 export const EDIT: {shot: keyof typeof SHOTS; until: number; blend: number; ease: (x: number) => number}[] = [
   {shot: 'wide', until: 166, blend: 34, ease: whip},
   {shot: 'compMacro', until: 300, blend: 26, ease: whip},
-  {shot: 'youMacro', until: 420, blend: 38, ease: easeInOutQuint},
-  {shot: 'overhead', until: 532, blend: 44, ease: easeInOut},
+  {shot: 'youMacro', until: 420, blend: 38, ease: smoothSteep},
+  {shot: 'overhead', until: 532, blend: 44, ease: smootherstep},
   {shot: 'profilePush', until: 718, blend: 42, ease: whip},
-  {shot: 'hero', until: Infinity, blend: 0, ease: easeInOut},
+  {shot: 'hero', until: Infinity, blend: 0, ease: smootherstep},
 ];
 
 const blendOrbit = (a: Orbit, b: Orbit, k: number): Orbit => ({
@@ -198,7 +202,7 @@ export const computeCamera = (t: number, fmt: FormatId): CameraState => {
   // Hand-held drift: layered slow sines (tiny), plus the impact shake on the landing.
   const hand = (k: number) => Math.sin(t * 0.021 + k) * 0.6 + Math.sin(t * 0.047 + 2 * k) * 0.3 + Math.sin(t * 0.093 + 3 * k) * 0.1;
   const since = t - TIMING.impactAt;
-  const shake = since > -1 && since < 40 ? Math.exp(-Math.max(0, since) / 9) * smoothIn(since + 1) : 0;
+  const shake = since > -1 && since < 48 ? Math.exp(-Math.max(0, since) / 9) * smoothIn(since + 1) * (1 - smootherstep((since - 20) / 28)) : 0;
   const az = (o.az + 0.22 * hand(0.3) + shake * 0.35 * Math.sin(since * 1.9)) * D2R;
   const el = (o.el + 0.16 * hand(1.7) + shake * 0.45 * Math.sin(since * 2.3 + 1)) * D2R;
   const roll = (o.roll + 0.12 * hand(4.1) + shake * 0.9 * Math.sin(since * 1.6 + 2)) * D2R;
