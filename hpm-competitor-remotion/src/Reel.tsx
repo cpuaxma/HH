@@ -47,7 +47,8 @@ export const Reel: React.FC<ReelProps> = ({showSafeZones, sfx = true}) => {
           width={width}
           height={height}
           flat
-          dpr={1}
+          // Follow the render scale (a half-res preview renders the 3D at half res); never above 1.
+          dpr={typeof window === 'undefined' ? 1 : Math.min(1, window.devicePixelRatio || 1)}
           gl={{antialias: false, preserveDrawingBuffer: true, powerPreference: 'high-performance', stencil: false}}
         >
           <Pipeline fmt={fmt}>

@@ -29,19 +29,14 @@ import {useCurrentFrame, useDelayRender} from 'remotion';
 import * as THREE from 'three';
 import {FormatId, TIMING} from '../data';
 import {applyCamera} from '../lib/projection';
+import {MOTION_BLUR_RULE as MOTION_BLUR} from './motionBlurRule';
 import {impact} from '../lib/story';
 
 /** Frames where HDR elements need bloom. */
 const bloomNeeded = (t: number) =>
   (t >= TIMING.streakStart - 2 && t <= TIMING.streakEnd + 12) || (t >= TIMING.impactAt - 2 && t <= TIMING.impactAt + 24);
 
-export const MOTION_BLUR = {
-  /** Shutter in frames (0.5 = 180° shutter). */
-  shutter: 0.5,
-  /** One sample per this many pixels of on-screen travel during the shutter. */
-  pxPerSample: 2.2,
-  maxSamples: 16,
-};
+export {MOTION_BLUR_RULE as MOTION_BLUR} from './motionBlurRule';
 
 type Animator = (t: number) => void;
 type Probe = {object: THREE.Object3D; points: THREE.Vector3[]};
@@ -228,7 +223,7 @@ export const Pipeline: React.FC<{children: React.ReactNode; fmt: FormatId}> = ({
     composer.addPass(bloomPass);
     composer.addPass(finalPass);
     composer.setSize(size.width, size.height, false);
-    accum.setSize(size.width, size.height);
+    accum.setSize(size.width * gl.getPixelRatio(), size.height * gl.getPixelRatio());
     return {composer, accum, dof, dofPass, grade, smaaEffect, bloomPass};
   }, [gl, scene, camera, size.width, size.height]);
 
@@ -289,7 +284,7 @@ export const Pipeline: React.FC<{children: React.ReactNode; fmt: FormatId}> = ({
       const on = (p: THREE.Vector2) => p.x > -200 && p.x < size.width + 200 && p.y > -200 && p.y < size.height + 200;
       if (on(pa) || on(pb)) travel = Math.max(travel, pa.distanceTo(pb));
     }
-    const samples = Math.max(1, Math.min(MOTION_BLUR.maxSamples, Math.ceil(travel / MOTION_BLUR.pxPerSample)));
+    const samples = MOTION_BLUR.samples(travel);
     const times = samples === 1 ? [t0] : Array.from({length: samples}, (_, i) => t0 + MOTION_BLUR.shutter * ((i + 0.5) / samples - 0.5));
 
     const c = applyAll(t0);

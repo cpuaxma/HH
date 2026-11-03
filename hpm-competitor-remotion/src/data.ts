@@ -267,7 +267,7 @@ export const competitorNotifFrames = (): number[] => {
   const out: number[] = [];
   let t = -40;
   let gap = 34;
-  while (t < TIMING.flipSceneStart) {
+  while (t < TIMING.profileAt - 4) {
     out.push(Math.round(t));
     t += gap;
     gap = Math.max(7, gap * 0.88);
