@@ -81,7 +81,7 @@ export const SHOTS: Record<string, Shot> = {
       hfov: 26,
       roll: drift(t, 170, 320, 2.2, 0.8),
       focus: fy(fmt, false),
-      dof: 1,
+      dof: 0,
     }),
   },
   // 3. The gap, you: straight-on macro, almost still (nothing is happening).
@@ -95,7 +95,7 @@ export const SHOTS: Record<string, Shot> = {
       hfov: 26,
       roll: 0,
       focus: fy(fmt, false) + 0.05,
-      dof: 0.7,
+      dof: 0,
     }),
   },
   // 4. The gap, both: overhead crane, the warm pool under theirs, nothing under yours.
@@ -121,7 +121,7 @@ export const SHOTS: Record<string, Shot> = {
         target: phonePoint('competitor', [lerp(0, -0.06, p), lerp(0.1, 0.225, p), 0.04], t),
         az: lerp(-3, -8, p),
         el: lerp(4, 6, p),
-        dist: Math.exp(lerp(Math.log(3.9), Math.log(1.62), p)) * ds(fmt),
+        dist: Math.exp(lerp(Math.log(3.9), Math.log(2.0), p)) * ds(fmt),
         hfov: lerp(22, 20, p),
         roll: lerp(0, -1.2, p),
         focus: fy(fmt, false) - 0.02,

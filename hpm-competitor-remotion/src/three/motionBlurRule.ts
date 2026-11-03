@@ -5,7 +5,7 @@ export const MOTION_BLUR_RULE = {
   /** One sample per this many pixels of on-screen travel during the shutter. */
   pxPerSample: 2.5,
   /** Below this travel (px) a frame is treated as still: one sharp sample. */
-  stillBelow: 4,
+  stillBelow: 6,
   maxSamples: 16,
   samples(travel: number) {
     if (travel < this.stillBelow) return 1;

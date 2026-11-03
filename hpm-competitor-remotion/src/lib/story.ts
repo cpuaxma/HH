@@ -84,10 +84,15 @@ export const youPose = (t: number): PhonePose => {
   };
 };
 
+/** The buzz is damped while the camera is right on the competitor's screen (keeps the text readable). */
+const buzzScale = (t: number) => 1 - 0.92 * ramp(t, 166, 196, easeInOut) * (1 - ramp(t, 296, 320, easeInOut));
+
 export const competitorPose = (t: number): PhonePose => {
   const [x, y, z] = BASE.competitor.pos;
   const bob = 0.016 * Math.sin((2 * Math.PI * t) / 150 + 0.4);
-  const b = buzz(t);
+  const k = buzzScale(t);
+  const raw = buzz(t);
+  const b = {x: raw.x * k, r: raw.r * k};
   const pulse = syncPulse(t);
   return {
     pos: [x + 0.0055 * b.x, y + bob, z],

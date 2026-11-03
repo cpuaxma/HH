@@ -300,7 +300,7 @@ const competitorPost = (ctx: CanvasRenderingContext2D, t: number) => {
     const w = measure(ctx, label, 700, 15) + 56;
     ctx.save();
     ctx.globalAlpha = 1 - fOut;
-    ctx.translate(W / 2, 790);
+    ctx.translate(W / 2, 742);
     ctx.scale(0.6 + 0.4 * fa, 0.6 + 0.4 * fa);
     ctx.globalAlpha *= clamp01(fa * 1.4);
     softShadow(ctx, -w / 2 + 6, -18, w - 12, 38, 0.4, 7);
