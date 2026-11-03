@@ -5,6 +5,16 @@
   "description": "Hot Pepper Media: \"The Scroll Test\", a 25-second 1080x1920 3D product-ad reel (Remotion + React Three Fiber)",
   "scripts": {
     "studio": "remotion studio",
+    "stills": "node scripts/stills.mjs",
+    "preview": "remotion render ScrollTest out/preview.mp4 --scale=0.5 --crf=24 --x264-preset=veryfast --concurrency=1",
+    "render": "remotion render ScrollTest out/hotpepper-scroll-test.mp4 --concurrency=1 --crf=16 --x264-preset=slow --pixel-format=yuv420p",
+    "render:silent": "remotion render ScrollTest out/hotpepper-scroll-test-silent.mp4 --concurrency=1 --crf=16 --x264-preset=slow --pixel-format=yuv420p --muted",
+    "sfx:make": "python3 scripts/make-sfx.py",
+    "sfx:wav": "remotion render ScrollTestSfx out/hotpepper-scroll-test-sfx.wav --codec=wav",
+    "audio:wav": "remotion render ScrollTestAudio out/hotpepper-scroll-test-audio.wav --codec=wav",
+    "cover": "remotion still ScrollTest out/hotpepper-scroll-test-cover.png --frame=430",
+    "check:camera": "esbuild scripts/check-camera.ts --bundle --platform=node --log-level=error --outfile=out/check-camera.cjs && node out/check-camera.cjs",
+    "check:frames": "python3 scripts/check-frames.py out/hotpepper-scroll-test.mp4",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {

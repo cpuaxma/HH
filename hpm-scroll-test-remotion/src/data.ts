@@ -130,6 +130,26 @@ export const T = {
   coverFrame: 430,
 };
 
+/* ------------------------------------------------------------ voiceover */
+
+/**
+ * Voiceover: three short lines, voiced by scripts/make-voiceover.py into public/vo/.
+ * `at` is the frame each line starts. If you change a line's text, keep LINES in
+ * the script in sync and run it again. Set `lines: []` for no voiceover.
+ */
+export const VOICEOVER = {
+  /** Supertonic 3 voice (0–4 female, 5–9 male). */
+  voice: 3,
+  volume: 0.85,
+  /** The effects dip to this level under the voice. */
+  duckTo: 0.55,
+  lines: [
+    {file: 'scroll', text: 'Scroll... scroll...', at: 258},
+    {file: 'wait', text: 'Wait.', at: 378},
+    {file: 'end', text: 'Your turn.', at: 1386},
+  ],
+};
+
 /* ------------------------------------------------------------ the scroll */
 
 export const SCROLL = {

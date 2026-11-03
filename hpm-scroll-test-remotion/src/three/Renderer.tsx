@@ -65,7 +65,7 @@ const CORNERS = [
 const motionCam = new THREE.PerspectiveCamera();
 const projectPts = (t: number, pts: THREE.Vector3[], w: number, h: number) => {
   const ph = phoneAt(t);
-  applyCamera(motionCam, cameraAt(t, ph), w / h);
+  applyCamera(motionCam, cameraAt(t), w / h);
   return pts.map((v) => {
     const p = v.clone().applyMatrix4(ph.matrix).project(motionCam);
     return new THREE.Vector2(p.x * 0.5 * w, p.y * 0.5 * h);
@@ -109,7 +109,7 @@ const applyState = (world: World, cam: THREE.PerspectiveCamera, t: number, k: nu
   const ph = phoneAt(t);
   world.phone.matrix.copy(ph.matrix);
   world.phone.matrixWorldNeedsUpdate = true;
-  applyCamera(cam, cameraAt(t, ph), size[0] / size[1], jitter, size);
+  applyCamera(cam, cameraAt(t), size[0] / size[1], jitter, size);
   const u = world.screen.uniforms;
   const slice = LOOK.shutter / k;
   u.uScroll.value = feedScroll(t);

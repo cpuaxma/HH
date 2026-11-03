@@ -87,14 +87,15 @@ const jolt = (t: number) => {
 
 export type PhoneState = {matrix: THREE.Matrix4; position: THREE.Vector3; quaternion: THREE.Quaternion};
 
-export const phoneAt = (t: number): PhoneState => {
+/** The phone's pose at time t. `glide` = false leaves out the end-card glide-off (the camera frames that). */
+export const phoneAt = (t: number, glide = true): PhoneState => {
   const {pose} = baseAt(t);
   // A slow float.
   const bob = Math.sin((t / 210) * Math.PI * 2) * 0.03;
   const wobX = Math.sin((t / 260) * Math.PI * 2 + 1.3) * 0.6;
   const wobZ = Math.sin((t / 330) * Math.PI * 2 + 0.4) * 0.5;
   // End card: the phone glides up and away, accelerating.
-  const off = ramp(t, T.phoneOff, T.phoneOff + 54, easeIn);
+  const off = glide ? ramp(t, T.phoneOff, T.phoneOff + 54, easeIn) : 0;
   const j = jolt(t);
   const position = new THREE.Vector3(pose.x + off * 1.1, pose.y + bob + off * 4.6, 0);
   const e = new THREE.Euler(
@@ -127,7 +128,9 @@ export type CameraState = {
 
 const UP = new THREE.Vector3(0, 1, 0);
 
-export const cameraAt = (t: number, phone = phoneAt(t)): CameraState => {
+export const cameraAt = (t: number): CameraState => {
+  // The camera frames the phone's pose without the glide-off, so the phone leaves the frame.
+  const phone = phoneAt(t, false);
   const {cam} = baseAt(t);
   const focusLocal = cam.focusPx ? screenLocal(cam.focusPx[0], cam.focusPx[1]) : new THREE.Vector3(0, 0, 0);
   const focus = focusLocal.applyMatrix4(phone.matrix);
