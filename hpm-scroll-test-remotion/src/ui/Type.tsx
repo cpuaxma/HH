@@ -45,7 +45,7 @@ export const BEATS: Beat[] = [
   })),
   {
     at: T.waitAt,
-    out: 444,
+    out: 436,
     size: 190,
     rotate: 0,
     lines: [<>{red(COPY.stop.startsWith('…') ? '…' : '')}{COPY.stop.replace(/^…/, '')}</>],

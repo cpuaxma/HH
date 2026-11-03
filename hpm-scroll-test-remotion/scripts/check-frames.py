@@ -7,8 +7,9 @@ near-black pixels, and the difference to the previous frame. It flags:
     patch of pure black (NaN pixels from WebGL show up as black),
   - single-frame glitches: a frame that differs from both neighbours while the neighbours
     match each other (flicker),
-  - big jumps that don't sit on a planned hard cut.
-Usage: python3 scripts/check-frames.py VIDEO [--cuts 152,254,342,452]
+  - big jumps that sit neither on a planned hard cut nor inside a planned fast move
+    (the macro shot's racing feed, the brake, the whips, the pull-back, the glide-off).
+Usage: python3 scripts/check-frames.py VIDEO [--cuts 152,254,342,452] [--motion 152-254,360-380,...]
 """
 import subprocess
 import sys
@@ -19,6 +20,11 @@ path = sys.argv[1]
 cuts = {152, 254, 342, 452}
 if '--cuts' in sys.argv:
     cuts = {int(x) for x in sys.argv[sys.argv.index('--cuts') + 1].split(',')}
+motion = '152-254,360-382,656-680,864-890,1078-1114,1258-1320'
+if '--motion' in sys.argv:
+    motion = sys.argv[sys.argv.index('--motion') + 1]
+windows = [tuple(int(v) for v in r.split('-')) for r in motion.split(',')]
+in_motion = lambda i: any(a <= i <= b for a, b in windows)
 W, H = 135, 240
 raw = subprocess.run(
     ['ffmpeg', '-v', 'error', '-i', path, '-vf', f'scale={W}:{H}:flags=area,format=gray', '-f', 'rawvideo', '-'],
@@ -48,7 +54,7 @@ for i in range(1, n - 1):
         problems.append((i, f'single-frame glitch (in {a:.3f}, out {b:.3f}, across {around:.3f})'))
 med = np.median(diff[1:])
 for i in range(1, n):
-    if diff[i] > max(0.06, 12 * med) and i not in cuts:
+    if diff[i] > max(0.06, 12 * med) and i not in cuts and not in_motion(i):
         problems.append((i, f'big jump {diff[i]:.3f} (not a planned cut)'))
 
 if problems:
