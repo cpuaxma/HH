@@ -8,7 +8,7 @@
 //   whole screen red; margin call. After its flip it is connected to Miran Gold.
 // - Right («مع ميران جولد»): the Miran signal (entry, stop loss, target, 1% risk), the market
 //   update before the news (take profit now), then "Protected" when the news hits.
-import {LEFT, Lang, NEWS, SCREEN_COPY, SIGNAL, TIMING, UPDATE} from '../data';
+import {LEFT, Lang, NEWS, RIGHT, SCREEN_COPY, SIGNAL, TIMING, UPDATE} from '../data';
 import {clamp01, easeIn, easeInOut, easeOut, ramp, springAt} from '../lib/ease';
 import {chartRange, leftBalance, leftDanger, leftIsMiran, leftOpenPnl, price, rightBalance, rightOpenPnl} from '../lib/story';
 import {MARKET} from '../data';
@@ -52,7 +52,7 @@ const clock = (t: number) => {
 };
 
 /** Status bar (time, signal, Wi-Fi, battery) and the Dynamic Island. */
-const chrome = (ctx: CanvasRenderingContext2D, t: number, ink = C.text) => {
+const chrome = (ctx: CanvasRenderingContext2D, t: number, acts: Activity[] = [], ink = C.text) => {
   text(ctx, clock(t), 62, 35, {weight: 600, size: 17, color: ink, align: 'center'});
   // Signal bars.
   ctx.fillStyle = ink;
@@ -87,15 +87,66 @@ const chrome = (ctx: CanvasRenderingContext2D, t: number, ink = C.text) => {
   rr(ctx, 339, 26.5, 18.5, 8.5, 2.2);
   ctx.fill();
   ctx.restore();
-  // Dynamic Island.
+  island(ctx, t, acts);
+};
+
+/** A Live Activity: the Dynamic Island expands to show an alert, then shrinks back. */
+type Activity = {at: number; until: number; color: string; icon: IconKind; title: string; sub: string};
+
+const island = (ctx: CanvasRenderingContext2D, t: number, acts: Activity[]) => {
+  let k = 0;
+  let raw = 0;
+  let act: Activity | null = null;
+  for (const a of acts) {
+    if (t < a.at) continue;
+    const p = springAt(t - a.at, {freq: 1.5, damping: 0.66});
+    const c = ramp(t, a.until, a.until + 18, easeInOut);
+    const v = p * (1 - c);
+    if (v > raw) {
+      raw = v;
+      act = a;
+    }
+  }
+  k = Math.max(0, raw);
+  const w = 126 + (W - 24 - 126) * k;
+  const h = 37 + (88 - 37) * k;
+  const r = 18.5 + (36 - 18.5) * Math.min(1, k);
+  ctx.save();
+  if (act && k > 0.02) {
+    // A soft coloured glow under the expanded island.
+    softShadow(ctx, W / 2 - w / 2, 11, w, h, 0.55 * Math.min(1, k), 0, act.color);
+  }
   ctx.fillStyle = '#000';
-  rr(ctx, W / 2 - 63, 11, 126, 37, 18.5);
+  rr(ctx, W / 2 - w / 2, 11, w, h, r);
   ctx.fill();
+  if (act && k > 0.02) {
+    ctx.lineWidth = 1.5;
+    ctx.strokeStyle = hexA(act.color, 0.5 * Math.min(1, k));
+    ctx.stroke();
+  }
+  // The front camera (hidden once expanded content shows).
   ctx.fillStyle = '#0d0f16';
   ctx.beginPath();
-  ctx.arc(W / 2 + 42, 29.5, 6, 0, Math.PI * 2);
+  ctx.arc(W / 2 + w / 2 - 21, 29.5, 6, 0, Math.PI * 2);
   ctx.fill();
+  const ca = clamp01((k - 0.6) / 0.3);
+  if (act && ca > 0) {
+    ctx.globalAlpha = ca;
+    const rtl = SC().rtl;
+    const ix = rtl ? W / 2 + w / 2 - 44 : W / 2 - w / 2 + 44;
+    const cy = 11 + h / 2;
+    ctx.beginPath();
+    ctx.arc(ix, cy, 25, 0, Math.PI * 2);
+    ctx.fillStyle = hexA(act.color, 0.22);
+    ctx.fill();
+    icon(ctx, act.icon, ix, cy, 24, act.color, 2.6);
+    const tx = rtl ? ix - 38 : ix + 38;
+    say(ctx, act.title, tx, cy - 3, {weight: 700, size: 19, color: '#fff', maxW: w - 100});
+    say(ctx, act.sub, tx, cy + 22, {weight: 500, size: 15, color: act.color, maxW: w - 100});
+  }
+  ctx.restore();
 };
+
 
 const homeIndicator = (ctx: CanvasRenderingContext2D, ink = C.text) => {
   ctx.fillStyle = ink;
@@ -169,9 +220,55 @@ const header = (ctx: CanvasRenderingContext2D, mode: 'blind' | 'miran') => {
 };
 
 /** The big balance, plus the open trade's live P&L under it. */
-const balanceBlock = (ctx: CanvasRenderingContext2D, balance: number, balanceColor: string, open: number | null, openAlpha: number) => {
+/** Draws `from` → `to` at frame `at`, anchored at x (reading start); changed digits roll over. */
+const swapNum = (ctx: CanvasRenderingContext2D, from: string, to: string, at: number, t: number, x: number, y: number, size: number, color: string) => {
+  const n = Math.max(from.length, to.length);
+  const A = Array.from({length: n}, (_, i) => from[i - (n - from.length)] ?? '');
+  const B = Array.from({length: n}, (_, i) => to[i - (n - to.length)] ?? '');
+  const cw = (c: string) => (c ? measure(ctx, c, 700, size) : 0);
+  const cols = A.map((a, i) => {
+    const b = B[i];
+    const p = a === b ? 1 : Math.min(1.08, Math.max(0, springAt(t - (at + (n - 1 - i) * 2.2), {freq: 1.8, damping: 0.78})));
+    const k = clamp01(p);
+    return {a, b, p, k, w: cw(a) + (cw(b) - cw(a)) * k};
+  });
+  const total = cols.reduce((s2, c) => s2 + c.w, 0);
+  let cx = SC().rtl ? x - total : x;
+  const em = size * 0.62;
+  ctx.save();
+  ctx.beginPath();
+  ctx.rect(cx - 20, y - size * 1.05, total + 40, size * 1.35);
+  ctx.clip();
+  for (const c of cols) {
+    const mid = cx + c.w / 2;
+    if (c.a === c.b) num(ctx, c.a, mid, y, {size, color, align: 'center'});
+    else {
+      if (c.k < 1 && c.a) {
+        ctx.globalAlpha = 1 - c.k;
+        num(ctx, c.a, mid, y - c.k * em, {size, color, align: 'center'});
+      }
+      if (c.k > 0 && c.b) {
+        ctx.globalAlpha = c.k;
+        num(ctx, c.b, mid, y + (1 - c.p) * em, {size, color, align: 'center'});
+      }
+      ctx.globalAlpha = 1;
+    }
+    cx += c.w;
+  }
+  ctx.restore();
+};
+
+const balanceBlock = (
+  ctx: CanvasRenderingContext2D,
+  balance: number,
+  balanceColor: string,
+  open: number | null,
+  openAlpha: number,
+  swap?: {from: number; to: number; at: number; t: number},
+) => {
   say(ctx, SC().balance, sx(), 146, {weight: 500, size: 17, color: C.meta});
-  num(ctx, usd(balance), sx(), 206, {weight: 700, size: 58, color: balanceColor});
+  if (swap) swapNum(ctx, usd(swap.from), usd(swap.to), swap.at, swap.t, sx(), 206, 58, balanceColor);
+  else num(ctx, usd(balance), sx(), 206, {weight: 700, size: 58, color: balanceColor});
   if (open !== null && openAlpha > 0) {
     ctx.save();
     ctx.globalAlpha = openAlpha;
@@ -271,6 +368,11 @@ const chart = (ctx: CanvasRenderingContext2D, t: number, lineColor: string, leve
   ctx.fill();
   ctx.beginPath();
   pts.forEach(([x, y], i) => (i ? ctx.lineTo(x, y) : ctx.moveTo(x, y)));
+  ctx.strokeStyle = hexA(lineColor, 0.16);
+  ctx.lineWidth = 16;
+  ctx.lineJoin = 'round';
+  ctx.lineCap = 'round';
+  ctx.stroke();
   ctx.strokeStyle = lineColor;
   ctx.lineWidth = 4.5;
   ctx.lineJoin = 'round';
@@ -283,9 +385,10 @@ const chart = (ctx: CanvasRenderingContext2D, t: number, lineColor: string, leve
   ctx.arc(lx, ly, 7, 0, Math.PI * 2);
   ctx.fillStyle = lineColor;
   ctx.fill();
+  const ph = (((t % 48) + 48) % 48) / 48;
   ctx.beginPath();
-  ctx.arc(lx, ly, 13, 0, Math.PI * 2);
-  ctx.fillStyle = hexA(lineColor, 0.25);
+  ctx.arc(lx, ly, 8 + 18 * ph, 0, Math.PI * 2);
+  ctx.fillStyle = hexA(lineColor, 0.4 * (1 - ph));
   ctx.fill();
   const tagY = Math.max(CHART.top, Math.min(CHART.bottom, ly));
   rr(ctx, CHART.right + 6, tagY - 14, 62, 28, 8);
@@ -325,14 +428,22 @@ const cardBox = (ctx: CanvasRenderingContext2D, o: {fill?: string; border?: stri
 const tr = (t: number, inAt: number, outAt = Infinity, dur = 14) => {
   const a = springAt(t - inAt, {freq: 2.0, damping: 0.75});
   const b = Number.isFinite(outAt) ? ramp(t, outAt, outAt + dur, easeIn) : 0;
-  return {alpha: clamp01(a * 1.6) * (1 - b), dy: (1 - Math.min(1, a)) * 40 - b * 24, on: t >= inAt - 1 && t <= outAt + dur};
+  return {
+    alpha: clamp01(a * 1.6) * (1 - b),
+    dy: (1 - Math.min(1, a)) * 26 - b * 14,
+    s: (0.92 + 0.08 * Math.min(1.02, a)) * (1 - 0.05 * b),
+    on: t >= inAt - 1 && t <= outAt + dur,
+  };
 };
 
-const withT = (ctx: CanvasRenderingContext2D, k: {alpha: number; dy: number; on: boolean}, draw: () => void) => {
+const withT = (ctx: CanvasRenderingContext2D, k: {alpha: number; dy: number; s: number; on: boolean}, draw: () => void) => {
   if (!k.on || k.alpha <= 0.001) return;
   ctx.save();
   ctx.globalAlpha = k.alpha;
-  ctx.translate(0, k.dy);
+  const cy = CARD.y + CARD.h / 2;
+  ctx.translate(W / 2, cy + k.dy);
+  ctx.scale(k.s, k.s);
+  ctx.translate(-W / 2, -cy);
   draw();
   ctx.restore();
 };
@@ -344,38 +455,14 @@ const row = (ctx: CanvasRenderingContext2D, y: number, label: string, value: str
   else say(ctx, value, ex() + (SC().rtl ? 4 : -4), y, {weight: 700, size, color, align: aEnd(), maxW: 170});
 };
 
-/** A banner across the top (a push notification). */
-const banner = (ctx: CanvasRenderingContext2D, t: number, at: number, kind: IconKind, title: string, body: string, accent: string, until = Infinity) => {
-  const k = springAt(t - at, {freq: 2.2, damping: 0.7});
-  const out = Number.isFinite(until) ? ramp(t, until, until + 14, easeIn) : 0;
-  if (t < at || out >= 1) return;
-  const y = 58 + (1 - Math.min(1, k)) * -90 - out * 90;
-  ctx.save();
-  ctx.globalAlpha = clamp01(k * 2) * (1 - out);
-  softShadow(ctx, 14, y, W - 28, 76, 0.55, 8);
-  rr(ctx, 14, y, W - 28, 76, 24);
-  ctx.fillStyle = 'rgba(30,33,42,0.97)';
-  ctx.fill();
-  ctx.lineWidth = 2;
-  ctx.strokeStyle = accent;
-  ctx.stroke();
-  const rtl = SC().rtl;
-  const ix = rtl ? W - 14 - 38 : 14 + 38;
-  ctx.beginPath();
-  ctx.arc(ix, y + 38, 21, 0, Math.PI * 2);
-  ctx.fillStyle = hexA(accent, 0.18);
-  ctx.fill();
-  icon(ctx, kind, ix, y + 38, 22, accent, 2.4);
-  const tx = rtl ? ix - 34 : ix + 34;
-  say(ctx, title, tx, y + 34, {weight: 700, size: 19, color: C.text, maxW: W - 120});
-  say(ctx, body, tx, y + 60, {weight: 500, size: 15, color: '#B9BECA', maxW: W - 120});
-  ctx.restore();
-};
-
 // ─── LEFT: trading without a plan ────────────────────────────────────────────
 
 const RED = '#FF4D4D';
 const GREEN = '#3FD08A';
+
+/** The news arrives on the left as a red Live Activity, too late to act on. */
+const LEFT_ACTS_FN = (): Activity[] => [{at: NEWS.at + 2, until: LEFT.marginCallAt + 6, color: RED, icon: 'bolt', title: SC().newsBanner, sub: SC().newsBody}];
+let LEFT_ACTS: Activity[] = [];
 
 /** Before the trade: a ticket with Sell / Buy, and "Buy" gets tapped. */
 const leftTicket = (ctx: CanvasRenderingContext2D, t: number) => {
@@ -444,46 +531,68 @@ const leftPosition = (ctx: CanvasRenderingContext2D) => {
 
 /** The margin call takeover: the whole screen says it. */
 const marginCall = (ctx: CanvasRenderingContext2D, t: number) => {
-  const k = springAt(t - LEFT.marginCallAt, {freq: 1.8, damping: 0.6});
-  const a = clamp01(k * 1.8);
+  const d = t - LEFT.marginCallAt;
+  const wipe = Math.max(0, springAt(d, {freq: 1.25, damping: 0.92}));
   ctx.save();
-  ctx.globalAlpha = a;
+  ctx.beginPath();
+  ctx.arc(W / 2, 250, 30 + 1000 * wipe, 0, Math.PI * 2);
+  ctx.clip();
   const g = ctx.createLinearGradient(0, 0, 0, H);
-  g.addColorStop(0, '#b3121c');
-  g.addColorStop(0.5, '#6e0a11');
+  g.addColorStop(0, '#c0141f');
+  g.addColorStop(0.5, '#730a12');
   g.addColorStop(1, '#2b0508');
   ctx.fillStyle = g;
   ctx.fillRect(0, 0, W, H);
+  const rg = ctx.createRadialGradient(W / 2, 250, 10, W / 2, 250, 380);
+  rg.addColorStop(0, 'rgba(255,120,120,0.35)');
+  rg.addColorStop(1, 'rgba(255,120,120,0)');
+  ctx.fillStyle = rg;
+  ctx.fillRect(0, 0, W, H);
   ctx.translate(W / 2, 0);
-  const s = 0.85 + 0.15 * Math.min(1.05, k);
-  ctx.translate(0, 470);
-  ctx.scale(s, s);
-  ctx.translate(0, -470);
-  // Warning icon.
-  ctx.beginPath();
-  ctx.arc(0, 250, 62, 0, Math.PI * 2);
-  ctx.fillStyle = 'rgba(255,255,255,0.14)';
-  ctx.fill();
-  icon(ctx, 'warn', 0, 250, 64, '#fff', 6);
-  say(ctx, SC().marginCall, 0, 376, {weight: 700, size: 50, color: '#fff', align: 'center', maxW: 350});
-  say(ctx, SC().closedLoss, 0, 420, {weight: 500, size: 21, color: '#FFD3D3', align: 'center', maxW: 350});
-  // The loss.
-  rr(ctx, -160, 458, 320, 104, 30);
-  ctx.fillStyle = 'rgba(0,0,0,0.32)';
-  ctx.fill();
-  num(ctx, signedMoney(LEFT.pnl), 0, 530, {size: 60, color: '#fff', align: 'center'});
-  // The balance after.
-  say(ctx, SC().balance, 0, 626, {weight: 500, size: 19, color: '#FFD3D3', align: 'center'});
-  num(ctx, usd(leftBalance(t)), 0, 680, {size: 44, color: '#fff', align: 'center'});
+  /** Each element lands in turn: fades in, rises and settles. */
+  const el = (delay: number, draw: () => void) => {
+    const p = springAt(d - delay, {freq: 1.9, damping: 0.8});
+    if (p <= 0) return;
+    ctx.save();
+    ctx.globalAlpha = clamp01(p * 1.6);
+    ctx.translate(0, (1 - Math.min(1, p)) * 26);
+    draw();
+    ctx.restore();
+  };
+  el(4, () => {
+    const s = Math.max(0, springAt(d - 4, {freq: 2.2, damping: 0.5}));
+    ctx.save();
+    ctx.translate(0, 250);
+    ctx.scale(s, s);
+    ctx.beginPath();
+    ctx.arc(0, 0, 62, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(255,255,255,0.16)';
+    ctx.fill();
+    icon(ctx, 'warn', 0, 0, 64, '#fff', 6);
+    ctx.restore();
+  });
+  el(10, () => say(ctx, SC().marginCall, 0, 376, {weight: 700, size: 50, color: '#fff', align: 'center', maxW: 350}));
+  el(14, () => say(ctx, SC().closedLoss, 0, 420, {weight: 500, size: 21, color: '#FFD3D3', align: 'center', maxW: 350}));
+  el(18, () => {
+    rr(ctx, -160, 458, 320, 104, 30);
+    ctx.fillStyle = 'rgba(0,0,0,0.32)';
+    ctx.fill();
+    num(ctx, signedMoney(LEFT.pnl), 0, 530, {size: 60, color: '#fff', align: 'center'});
+  });
+  el(24, () => {
+    say(ctx, SC().balance, 0, 626, {weight: 500, size: 19, color: '#FFD3D3', align: 'center'});
+    num(ctx, usd(LEFT.finalBalance), 0, 680, {size: 44, color: '#fff', align: 'center'});
+  });
   ctx.restore();
 };
 
 const drawBlind = (ctx: CanvasRenderingContext2D, t: number) => {
+  LEFT_ACTS = LEFT_ACTS_FN();
   const danger = leftDanger(t);
   background(ctx, 'blind', danger);
-  if (t >= LEFT.marginCallAt + 16) {
+  if (t >= LEFT.marginCallAt + 40) {
     marginCall(ctx, t);
-    chrome(ctx, t);
+    chrome(ctx, t, LEFT_ACTS);
     homeIndicator(ctx);
     return;
   }
@@ -495,15 +604,20 @@ const drawBlind = (ctx: CanvasRenderingContext2D, t: number) => {
   chart(ctx, t, lineColor, [{price: LEFT.entry, color: '#ECE7DC', label: SC().entry, alpha: ramp(t, LEFT.openedAt, LEFT.openedAt + 12)}], RED);
   withT(ctx, tr(t, -100, LEFT.openedAt - 2, 10), () => leftTicket(ctx, t));
   withT(ctx, tr(t, LEFT.openedAt), () => leftPosition(ctx));
-  banner(ctx, t, NEWS.at + 2, 'bolt', SC().newsBanner, SC().newsBody, RED);
   if (t >= LEFT.marginCallAt) marginCall(ctx, t);
-  chrome(ctx, t);
+  chrome(ctx, t, LEFT_ACTS);
   homeIndicator(ctx);
 };
 
 // ─── RIGHT: trading with Miran Gold ──────────────────────────────────────────
 
 const GOLD = '#E3B65E';
+
+/** The right gets the Miran update before the news (gold), then "protected" when it lands (green). */
+const RIGHT_ACTS = (): Activity[] => [
+  {at: UPDATE.at - 6, until: UPDATE.at + 60, color: GOLD, icon: 'bell', title: SC().updateTitle, sub: SC().updateBody},
+  {at: NEWS.at + 4, until: NEWS.at + 150, color: GREEN, icon: 'shield', title: SC().newsReleased, sub: SC().noOpen},
+];
 
 /** Waiting for the signal. */
 const waitingCard = (ctx: CanvasRenderingContext2D, t: number) => {
@@ -649,7 +763,14 @@ const drawMiranRight = (ctx: CanvasRenderingContext2D, t: number) => {
   background(ctx, 'miran', 0);
   header(ctx, 'miran');
   const bal = rightBalance(t);
-  balanceBlock(ctx, bal, bal > 10000.5 ? GREEN : C.text, rightOpenPnl(t), ramp(t, SIGNAL.filledAt, SIGNAL.filledAt + 10) * (1 - ramp(t, UPDATE.closedAt, UPDATE.closedAt + 8)));
+  balanceBlock(
+    ctx,
+    bal,
+    mixHex('#F5F1E8', GREEN, ramp(t, UPDATE.closedAt, UPDATE.closedAt + 16)),
+    rightOpenPnl(t),
+    ramp(t, SIGNAL.filledAt, SIGNAL.filledAt + 10) * (1 - ramp(t, UPDATE.closedAt, UPDATE.closedAt + 8)),
+    {from: RIGHT.startBalance, to: RIGHT.finalBalance, at: UPDATE.closedAt, t},
+  );
   const lv = ramp(t, SIGNAL.filledAt, SIGNAL.filledAt + 16) * (1 - ramp(t, UPDATE.closedAt, UPDATE.closedAt + 14));
   chart(
     ctx,
@@ -667,8 +788,7 @@ const drawMiranRight = (ctx: CanvasRenderingContext2D, t: number) => {
   withT(ctx, tr(t, UPDATE.at, UPDATE.closedAt - 2, 10), () => updateCard(ctx, t));
   withT(ctx, tr(t, UPDATE.closedAt, NEWS.at + 6, 10), () => profitCard(ctx, t));
   withT(ctx, tr(t, NEWS.at + 10), () => protectedCard(ctx, t));
-  banner(ctx, t, NEWS.at + 2, 'bolt', SC().newsReleased, SC().noOpen, GOLD, NEWS.at + 160);
-  chrome(ctx, t);
+  chrome(ctx, t, RIGHT_ACTS());
   homeIndicator(ctx);
 };
 

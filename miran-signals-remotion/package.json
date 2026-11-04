@@ -12,7 +12,6 @@
     "preview": "remotion render MiranSignals out/preview.mp4 --scale=0.5 --crf=24 --x264-preset=veryfast --concurrency=1",
     "render": "remotion render MiranSignals out/miran-signals.mp4 --concurrency=1 --crf=16 --x264-preset=slow --pixel-format=yuv420p --audio-codec=aac --audio-bitrate=320k",
     "render:4x5": "remotion render MiranSignals4x5 out/miran-signals-4x5.mp4 --concurrency=1 --crf=16 --x264-preset=slow --pixel-format=yuv420p --audio-codec=aac --audio-bitrate=320k",
-    "render:en": "remotion render MiranSignalsEN out/miran-signals-en.mp4 --concurrency=1 --crf=16 --x264-preset=slow --pixel-format=yuv420p --audio-codec=aac --audio-bitrate=320k",
     "render:silent": "remotion render MiranSignals out/miran-signals-silent.mp4 --concurrency=1 --crf=16 --x264-preset=slow --pixel-format=yuv420p --muted",
     "sfx:make": "python3 scripts/make-sfx.py",
     "sfx:wav": "remotion render MiranSignalsSfx out/miran-signals-sfx.wav --codec=wav",

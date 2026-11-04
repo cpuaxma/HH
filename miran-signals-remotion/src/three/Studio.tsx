@@ -15,7 +15,7 @@ import * as THREE from 'three';
 import {RectAreaLightUniformsLib} from 'three/examples/jsm/lights/RectAreaLightUniformsLib.js';
 import {RoomEnvironment} from 'three/examples/jsm/environments/RoomEnvironment.js';
 import {BRAND, STUDIO} from '../data';
-import {PhonePose} from '../lib/story';
+import {PhonePose, focus, leftDanger, leftWarmth, syncPulse} from '../lib/story';
 import {useAnimator} from './Pipeline';
 import {studioReflection} from './glass';
 
@@ -60,12 +60,16 @@ const cycMaterial = () =>
       floorCol: {value: new THREE.Color(STUDIO.floor)},
       gold: {value: new THREE.Color(STUDIO.goldGlow)},
       refl: {value: studioReflection()},
+      leftOrb: {value: new THREE.Color(0, 0, 0)},
+      rightOrb: {value: new THREE.Color(0, 0, 0)},
+      uTime: {value: 0},
     },
     vertexShader: /* glsl */ `
       varying vec3 vW;
       void main() { vec4 w = modelMatrix * vec4(position, 1.0); vW = w.xyz; gl_Position = projectionMatrix * viewMatrix * w; }`,
     fragmentShader: /* glsl */ `
       uniform vec3 wallTop; uniform vec3 wallBottom; uniform vec3 floorCol; uniform vec3 gold; uniform sampler2D refl;
+      uniform vec3 leftOrb; uniform vec3 rightOrb; uniform float uTime;
       varying vec3 vW;
       const float PI = 3.141592653589793;
       float hash(vec2 p) { return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758.5453); }
@@ -77,7 +81,13 @@ const cycMaterial = () =>
         // Wall: the navy gradient (bgBottom near the sweep, bgTop above), a soft gold key behind the phones.
         float hW = smoothstep(0.6, 8.5, vW.y);
         vec3 wallC = mix(wallBottom * 1.2, wallTop, hW) * mix(1.0, 0.7, smoothstep(3.0, 14.0, abs(vW.x)));
-        wallC += gold * 0.075 * exp(-(vW.x * vW.x) / 9.0 - (vW.y - 2.4) * (vW.y - 2.4) / 5.0);
+        wallC += gold * 0.06 * exp(-(vW.x * vW.x) / 9.0 - (vW.y - 2.4) * (vW.y - 2.4) / 5.0);
+        // Two big soft light orbs behind the phones, one per side, drifting slowly: the left one
+        // turns red when the news hits (and gold after the switch), the right one stays gold.
+        float lx = vW.x + 1.7 + 0.2 * sin(uTime * 0.011); float ly = vW.y - 1.5 - 0.15 * sin(uTime * 0.008 + 1.0);
+        float rx = vW.x - 1.7 - 0.2 * sin(uTime * 0.010 + 2.0); float ry = vW.y - 1.5 - 0.15 * sin(uTime * 0.009);
+        wallC += leftOrb * exp(-(lx * lx) / 2.2 - (ly * ly) / 2.6);
+        wallC += rightOrb * exp(-(rx * rx) / 2.2 - (ry * ry) / 2.6);
         float k = smoothstep(0.15, 2.6, vW.y);
         vec3 c = mix(floorC, wallC, k);
         // Glossy floor: a blurred reflection of the studio lights, stronger at grazing angles.
@@ -171,6 +181,15 @@ export const Studio: React.FC = () => {
     ];
   }, []);
 
+  useAnimator((t) => {
+    const u = cycMat.uniforms;
+    u.uTime.value = t;
+    const danger = leftDanger(t);
+    const warm = leftWarmth(t);
+    (u.leftOrb.value as THREE.Color).copy(ORB_COOL).lerp(ORB_RED, danger).lerp(ORB_GOLD, warm).multiplyScalar(0.085 * (0.7 + 0.3 * focus('left', t)) + 0.06 * danger);
+    (u.rightOrb.value as THREE.Color).copy(ORB_GOLD).multiplyScalar(0.085 + 0.03 * syncPulse(t));
+  });
+
   return (
     <>
       <hemisphereLight args={['#2A3550', '#0A0E18', 0.5]} />
@@ -260,4 +279,7 @@ export const PhoneGlow: React.FC<{
 };
 
 export const GOLD = new THREE.Color(STUDIO.goldGlow);
+const ORB_COOL = new THREE.Color('#3E5288');
+const ORB_RED = new THREE.Color('#E0383E');
+const ORB_GOLD = new THREE.Color('#C8963E');
 export const RED = new THREE.Color(STUDIO.redGlow);

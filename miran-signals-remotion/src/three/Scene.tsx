@@ -1,5 +1,5 @@
 import {useCallback} from 'react';
-import {BASE, leftGlow, leftPose, leftWarmth, rightGlow, rightPose} from '../lib/story';
+import {BASE, focus, leftGlow, leftPose, leftWarmth, rightGlow, rightPose} from '../lib/story';
 import {drawLeftScreen, drawRightScreen, leftScreenKey, rightScreenKey} from '../screens/draw';
 import {Phone} from './Phone';
 import {Streak} from './Streak';
@@ -15,10 +15,10 @@ export const Scene: React.FC = () => {
   return (
     <>
       <Studio />
-      <PhoneGlow pose={leftPose} glow={(t) => ({color: leftColor(t), strength: leftGlow(t)})} />
+      <PhoneGlow pose={leftPose} glow={(t) => ({color: leftColor(t), strength: leftGlow(t) * (0.4 + 0.6 * focus('left', t))})} />
       <PhoneGlow pose={rightPose} glow={(t) => ({color: GOLD, strength: rightGlow(t)})} />
-      <Phone texture={left} pose={leftPose} brightness={() => 1.0} />
-      <Phone texture={right} pose={rightPose} brightness={() => 1.0} />
+      <Phone texture={left} pose={leftPose} brightness={(t) => 0.25 + 0.75 * focus('left', t)} />
+      <Phone texture={right} pose={rightPose} brightness={(t) => 0.25 + 0.75 * focus('right', t)} />
       <Streak />
     </>
   );

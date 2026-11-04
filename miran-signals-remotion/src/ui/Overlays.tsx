@@ -1,14 +1,14 @@
 // Everything drawn in HTML on top of the 3D: the kinetic lines, the pillar splits, the phone
 // labels, the impact burst, the end card, and the finish (grain, vignette).
-import {CameraMotionBlur} from '@remotion/motion-blur';
+import {measureText} from '@remotion/layout-utils';
 import React from 'react';
 import {AbsoluteFill, Img, staticFile, useCurrentFrame, useVideoConfig} from 'remotion';
 import {BRAND, COLUMN, COPY, FormatId, GOLD_GRADIENT, LAYOUT, LEFT, Lang, RIGHT, SAFE, TIMING, UPDATE} from '../data';
 import {FAMILY} from '../fonts';
 import {clamp01, easeIn, easeInOut, easeOut, hash, ramp, springAt} from '../lib/ease';
 import {projectOnPhone} from '../lib/projection';
-import {PHONE, impact, leftBalance, leftPose, rightBalance, rightPose} from '../lib/story';
-import {Kinetic, KineticProps, kineticMoving} from './Kinetic';
+import {PHONE, focus, impact, leftPose, rightPose} from '../lib/story';
+import {Kinetic, KineticProps, glass} from './Kinetic';
 
 const useFmt = (): FormatId => (useVideoConfig().height > 1500 ? 'vertical' : 'feed');
 
@@ -48,14 +48,64 @@ const TextLayer: React.FC<{fmt: FormatId; lang: Lang}> = ({fmt, lang}) => (
 
 // ─── Scoreboards under the phones ────────────────────────────────────────────
 // Always on during the story: who is who (✕ no plan / ✓ with Miran Gold) and the balance,
-// big enough to read without looking at the screens at all.
+// big enough to read without looking at the screens at all. Frosted glass; when a balance
+// changes, only the digits that change roll over (each one rises, blurs and swaps).
 
 const money0 = (n: number) => `$${Math.round(n).toLocaleString('en-US')}`;
 const pctStr = (p: number) => `${p > 0.05 ? '+' : p < -0.05 ? '−' : ''}${Math.abs(p).toFixed(Math.abs(p) >= 10 ? 0 : 1)}%`;
 
+const widthCache = new Map<string, number>();
+const charW = (ch: string, size: number, weight: number) => {
+  if (!ch) return 0;
+  const k = `${ch}|${size}|${weight}`;
+  let w = widthCache.get(k);
+  if (w === undefined) {
+    w = measureText({text: ch, fontFamily: FAMILY, fontSize: size, fontWeight: String(weight)}).width;
+    widthCache.set(k, w);
+  }
+  return w;
+};
+
+/** A number that swaps from `from` to `to` at frame `at`: changed digits roll, right to left. */
+export const NumberSwap: React.FC<{from: string; to: string; at: number; size: number; weight?: number; lineH: number}> = ({from, to, at, size, weight = 700, lineH}) => {
+  const f = useCurrentFrame();
+  const n = Math.max(from.length, to.length);
+  const A = Array.from({length: n}, (_, i) => from[i - (n - from.length)] ?? '');
+  const B = Array.from({length: n}, (_, i) => to[i - (n - to.length)] ?? '');
+  return (
+    <span style={{display: 'inline-flex', direction: 'ltr', fontSize: size, fontWeight: weight, lineHeight: `${lineH}px`, height: lineH}}>
+      {A.map((a, i) => {
+        const b = B[i];
+        if (a === b) return <span key={i}>{a}</span>;
+        const fromRight = n - 1 - i;
+        const p = Math.min(1.08, Math.max(0, springAt(f - (at + fromRight * 2.2), {freq: 1.8, damping: 0.78})));
+        const k = clamp01(p);
+        const w = charW(a, size, weight) + (charW(b, size, weight) - charW(a, size, weight)) * k;
+        const em = size * 0.62;
+        return (
+          <span key={i} style={{position: 'relative', display: 'inline-block', width: w, height: lineH}}>
+            {k < 1 && a ? (
+              <span style={{position: 'absolute', left: 0, right: 0, textAlign: 'center', opacity: 1 - k, transform: `translateY(${-k * em}px)`, filter: k > 0.02 ? `blur(${(k * 7).toFixed(2)}px)` : undefined}}>{a}</span>
+            ) : null}
+            {k > 0 && b ? (
+              <span style={{position: 'absolute', left: 0, right: 0, textAlign: 'center', opacity: k, transform: `translateY(${(1 - p) * em}px)`, filter: k < 0.98 ? `blur(${((1 - k) * 7).toFixed(2)}px)` : undefined}}>{b}</span>
+            ) : null}
+          </span>
+        );
+      })}
+    </span>
+  );
+};
+
 const Mark: React.FC<{good: boolean; size: number}> = ({good, size}) => (
   <svg width={size} height={size} viewBox="0 0 40 40" style={{flex: 'none'}}>
-    <circle cx="20" cy="20" r="19" fill={good ? BRAND.goldA : BRAND.red} />
+    <defs>
+      <linearGradient id="mk-gold" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0" stopColor={BRAND.goldB} />
+        <stop offset="1" stopColor={BRAND.goldA} />
+      </linearGradient>
+    </defs>
+    <circle cx="20" cy="20" r="19" fill={good ? 'url(#mk-gold)' : BRAND.red} />
     {good ? (
       <path d="M11 20.5 L17.5 27 L29.5 14" fill="none" stroke={BRAND.ink} strokeWidth="4.2" strokeLinecap="round" strokeLinejoin="round" />
     ) : (
@@ -67,33 +117,43 @@ const Mark: React.FC<{good: boolean; size: number}> = ({good, size}) => (
 type BoardProps = {
   label: string;
   good: boolean;
-  balance: number;
   start: number;
+  final: number;
+  changeAt: number;
   x: number;
   y: number;
   alpha: number;
+  enter: number;
   scale: number;
   rtl: boolean;
   illustrative: string;
-  flash: number;
+  dim: number;
 };
 
-const Board: React.FC<BoardProps> = ({label, good, balance, start, x, y, alpha, scale, rtl, illustrative, flash}) => {
-  const pct = ((balance - start) / start) * 100;
-  const col = pct > 0.05 ? BRAND.up : pct < -0.05 ? BRAND.red : BRAND.text;
-  const border = good ? 'rgba(212,162,76,0.75)' : 'rgba(255,77,77,0.7)';
-  const glow = good ? 'rgba(200,150,62,0.35)' : `rgba(255,77,77,${0.3 + 0.4 * flash})`;
-  const tagSide: React.CSSProperties = rtl ? {left: 20} : {right: 20};
+const Board: React.FC<BoardProps> = ({label, good, start, final, changeAt, x, y, alpha, enter, scale, rtl, illustrative, dim}) => {
+  const f = useCurrentFrame();
+  const changed = ramp(f, changeAt, changeAt + 16, easeOut);
+  const pct = ((final - start) / start) * 100;
+  const up = pct > 0;
+  const tone = up ? BRAND.up : BRAND.red;
+  const flash = f >= changeAt ? Math.exp(-(f - changeAt) / 16) : 0;
+  const badge = clamp01(springAt(f - (changeAt + 8), {freq: 2.0, damping: 0.62}));
+  const pop = 1 + 0.05 * Math.sin(Math.PI * clamp01((f - changeAt) / 18));
+  const numColor = mix(BRAND.text, tone, changed);
+  const edge = good ? 'rgba(243,210,122,0.55)' : 'rgba(255,107,107,0.5)';
+  const glow = good ? `rgba(212,162,76,${0.22 + 0.4 * flash})` : `rgba(255,77,77,${0.18 + 0.5 * flash})`;
+  const tagSide: React.CSSProperties = rtl ? {left: 22} : {right: 22};
   return (
     <div
       style={{
         position: 'absolute',
         left: x,
         top: y,
-        width: 370,
-        transform: `translate(-50%, 0) scale(${scale * (0.92 + 0.08 * alpha)})`,
+        width: 372,
+        transform: `translate(-50%, ${(1 - enter) * 40}px) scale(${scale * (0.94 + 0.06 * enter) * (1 - 0.04 * (1 - dim)) * pop})`,
         transformOrigin: 'center top',
-        opacity: alpha,
+        opacity: alpha * (0.45 + 0.55 * dim),
+        filter: enter < 0.98 ? `blur(${((1 - enter) * 10).toFixed(2)}px)` : undefined,
         fontFamily: FAMILY,
       }}
     >
@@ -103,21 +163,37 @@ const Board: React.FC<BoardProps> = ({label, good, balance, start, x, y, alpha, 
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
-          gap: 2,
-          padding: '12px 18px 14px',
-          borderRadius: 30,
-          background: good ? 'linear-gradient(180deg, rgba(38,30,14,0.94), rgba(14,17,28,0.94))' : 'linear-gradient(180deg, rgba(48,12,16,0.94), rgba(16,12,18,0.94))',
-          border: `2px solid ${border}`,
-          boxShadow: `0 16px 40px rgba(0,0,0,0.45), 0 0 ${24 + 40 * flash}px ${glow}`,
+          padding: '14px 18px 14px',
+          borderRadius: 34,
+          ...glass(good ? 'rgba(40,31,14,0.5)' : 'rgba(46,12,16,0.5)', edge),
+          boxShadow: `0 22px 50px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.14), 0 0 ${30 + 50 * flash}px ${glow}`,
         }}
       >
-        <div dir={rtl ? 'rtl' : 'ltr'} style={{display: 'flex', alignItems: 'center', gap: 12, fontWeight: 700, fontSize: 36, lineHeight: '54px', whiteSpace: 'nowrap'}}>
-          <Mark good={good} size={38} />
-          <span style={good ? {backgroundImage: GOLD_GRADIENT, WebkitBackgroundClip: 'text', backgroundClip: 'text', color: 'transparent'} : {color: '#FF7A7A'}}>{label}</span>
+        <div dir={rtl ? 'rtl' : 'ltr'} style={{display: 'flex', alignItems: 'center', gap: 12, fontWeight: 700, fontSize: 34, lineHeight: '50px', whiteSpace: 'nowrap'}}>
+          <Mark good={good} size={36} />
+          <span style={good ? {backgroundImage: GOLD_GRADIENT, WebkitBackgroundClip: 'text', backgroundClip: 'text', color: 'transparent'} : {color: '#FF8080'}}>{label}</span>
         </div>
-        <div style={{display: 'flex', alignItems: 'baseline', gap: 12, direction: 'ltr', whiteSpace: 'nowrap'}}>
-          <span style={{fontWeight: 700, fontSize: 58, lineHeight: '72px', color: col}}>{money0(balance)}</span>
-          <span style={{fontWeight: 700, fontSize: 30, lineHeight: '40px', color: col, opacity: Math.abs(pct) > 0.05 ? 1 : 0}}>{pctStr(pct)}</span>
+        <div style={{display: 'flex', alignItems: 'center', gap: 12, direction: 'ltr', whiteSpace: 'nowrap', color: numColor, height: 74}}>
+          <NumberSwap from={money0(start)} to={money0(final)} at={changeAt} size={60} lineH={74} />
+          {badge > 0 ? (
+            <span
+              style={{
+                fontWeight: 700,
+                fontSize: 26,
+                lineHeight: '38px',
+                padding: '0 12px',
+                borderRadius: 19,
+                color: tone,
+                background: up ? 'rgba(63,208,138,0.16)' : 'rgba(255,77,77,0.16)',
+                border: `1.5px solid ${up ? 'rgba(63,208,138,0.45)' : 'rgba(255,77,77,0.45)'}`,
+                opacity: badge,
+                transform: `scale(${0.6 + 0.4 * badge})`,
+                filter: badge < 0.98 ? `blur(${((1 - badge) * 6).toFixed(2)}px)` : undefined,
+              }}
+            >
+              {pctStr(pct)}
+            </span>
+          ) : null}
         </div>
         <div
           dir={rtl ? 'rtl' : 'ltr'}
@@ -130,9 +206,9 @@ const Board: React.FC<BoardProps> = ({label, good, balance, start, x, y, alpha, 
             lineHeight: '24px',
             padding: '0 10px',
             borderRadius: 12,
-            color: '#B8BECB',
-            background: '#121826',
-            border: '1px solid rgba(140,147,163,0.5)',
+            color: '#C3C8D3',
+            background: 'rgba(18,24,38,0.92)',
+            border: '1px solid rgba(255,255,255,0.18)',
           }}
         >
           {illustrative}
@@ -142,46 +218,56 @@ const Board: React.FC<BoardProps> = ({label, good, balance, start, x, y, alpha, 
   );
 };
 
+const mix = (a: string, b: string, k: number) => {
+  const pa = [1, 3, 5].map((i) => parseInt(a.slice(i, i + 2), 16));
+  const pb = [1, 3, 5].map((i) => parseInt(b.slice(i, i + 2), 16));
+  return `rgb(${pa.map((v, i) => Math.round(v + (pb[i] - v) * k)).join(',')})`;
+};
+
 const Boards: React.FC<{fmt: FormatId; lang: Lang}> = ({fmt, lang}) => {
   const f = useCurrentFrame();
-  if (f < TIMING.boardsIn - 2 || f > TIMING.boardsOut + 16) return null;
-  const alpha = ramp(f, TIMING.boardsIn, TIMING.boardsIn + 18, easeOut) * (1 - ramp(f, TIMING.boardsOut - 4, TIMING.boardsOut + 12, easeIn));
-  if (alpha <= 0) return null;
+  if (f < TIMING.boardsIn - 2 || f > TIMING.boardsOut + 20) return null;
+  const out = 1 - ramp(f, TIMING.boardsOut - 4, TIMING.boardsOut + 14, easeIn);
+  if (out <= 0) return null;
   const c = COPY[lang];
   const L = LAYOUT[fmt];
   const below: [number, number, number] = [0, -PHONE.height / 2, 0];
   const a = projectOnPhone(f, fmt, leftPose(f), below);
   const b = projectOnPhone(f, fmt, rightPose(f), below);
-  const since = (at: number) => (f >= at ? Math.exp(-(f - at) / 14) : 0);
-  const half = 185 * L.boardScale;
+  const half = 186 * L.boardScale;
   const clampX = (x: number, lo: number, hi: number) => Math.min(hi - half, Math.max(lo + half, x));
+  const enter = (d: number) => clamp01(springAt(f - (TIMING.boardsIn + d), {freq: 1.5, damping: 0.85}));
   return (
     <>
       <Board
         label={c.labelLeft}
         good={false}
-        balance={leftBalance(f)}
         start={LEFT.startBalance}
+        final={LEFT.finalBalance}
+        changeAt={LEFT.marginCallAt}
         x={clampX(a.x, COLUMN.x - 40, 534)}
         y={L.boardTop}
-        alpha={alpha}
+        alpha={out}
+        enter={enter(0)}
         scale={L.boardScale}
         rtl={lang === 'ar'}
         illustrative={c.illustrative}
-        flash={since(LEFT.marginCallAt)}
+        dim={focus('left', f)}
       />
       <Board
         label={c.labelRight}
         good
-        balance={rightBalance(f)}
         start={RIGHT.startBalance}
+        final={RIGHT.finalBalance}
+        changeAt={UPDATE.closedAt}
         x={clampX(b.x, 546, COLUMN.x + COLUMN.width + 10)}
         y={L.boardTop}
-        alpha={alpha}
+        alpha={out}
+        enter={enter(6)}
         scale={L.boardScale}
         rtl={lang === 'ar'}
         illustrative={c.illustrative}
-        flash={since(UPDATE.closedAt)}
+        dim={focus('right', f)}
       />
     </>
   );
@@ -294,6 +380,7 @@ const EndCard: React.FC<{fmt: FormatId; lang: Lang}> = ({fmt, lang}) => {
               width: S,
               height: S,
               opacity: clamp01(logo * 2.2),
+              filter: logo < 0.98 ? `blur(${(Math.max(0, 1 - logo) * 18).toFixed(2)}px)` : undefined,
               transform: `perspective(1400px) rotateY(${(1 - logo) * 28}deg) scale(${0.72 + 0.28 * logo})`,
             }}
           >
@@ -308,6 +395,7 @@ const EndCard: React.FC<{fmt: FormatId; lang: Lang}> = ({fmt, lang}) => {
             fontWeight: 700,
             lineHeight: 1.5,
             opacity: clamp01(word * 2),
+            filter: word < 0.98 ? `blur(${(Math.max(0, 1 - word) * 12).toFixed(2)}px)` : undefined,
             transform: `translateY(${(1 - word) * 30}px)`,
             backgroundImage: GOLD_GRADIENT,
             WebkitBackgroundClip: 'text',
@@ -377,6 +465,7 @@ const EndCard: React.FC<{fmt: FormatId; lang: Lang}> = ({fmt, lang}) => {
           lineHeight: 1.6,
           color: 'rgba(245,241,232,0.9)',
           opacity: disc,
+          filter: disc < 0.98 ? `blur(${((1 - disc) * 8).toFixed(2)}px)` : undefined,
           transform: `translateY(${(1 - disc) * 14}px)`,
         }}
       >
@@ -440,17 +529,6 @@ const SafeZones: React.FC<{fmt: FormatId}> = ({fmt}) => {
   );
 };
 
-/** Motion blur on the type only while it is moving (samples = 1 means a sharp single copy). */
-const BlurredText: React.FC<{fmt: FormatId; lang: Lang}> = ({fmt, lang}) => {
-  const f = useCurrentFrame();
-  const moving = textBlocks(fmt, lang).some((b) => kineticMoving(f, b));
-  return (
-    <CameraMotionBlur samples={moving ? 8 : 1} shutterAngle={180}>
-      <TextLayer fmt={fmt} lang={lang} />
-    </CameraMotionBlur>
-  );
-};
-
 export const Overlays: React.FC<{showSafeZones?: boolean; lang: Lang}> = ({showSafeZones, lang}) => {
   const fmt = useFmt();
   const f = useCurrentFrame();
@@ -458,7 +536,7 @@ export const Overlays: React.FC<{showSafeZones?: boolean; lang: Lang}> = ({showS
   return (
     <>
       {hideForImpact ? null : <Boards fmt={fmt} lang={lang} />}
-      {hideForImpact ? null : <BlurredText fmt={fmt} lang={lang} />}
+      {hideForImpact ? null : <TextLayer fmt={fmt} lang={lang} />}
       <ImpactBurst fmt={fmt} />
       <EndCard fmt={fmt} lang={lang} />
       <Finish />

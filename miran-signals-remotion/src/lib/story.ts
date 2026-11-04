@@ -72,6 +72,31 @@ export const flipProgress = (t: number) => {
 /** True once the left phone shows Miran Gold (switches while its back faces the camera). */
 export const leftIsMiran = (t: number) => t >= (TIMING.flipStart + TIMING.flipEnd) / 2;
 
+/** Intro reveal (0 → 1 over the first second): the phones rise and turn into place. */
+export const intro = (t: number) => {
+  const x = clamp01((t + 6) / 62);
+  return 1 - Math.pow(1 - x, 4);
+};
+
+/** A smooth bump: rises over `up` frames, holds, eases back over `down` frames (C2 everywhere). */
+const bump = (t: number, at: number, up: number, hold: number, down: number) =>
+  smootherstep((t - at) / up) * (1 - smootherstep((t - at - up - hold) / down));
+
+/** Left after the margin call: it sinks and tips forward, until it winds up for the flip. */
+const defeat = (t: number) => smootherstep((t - LEFT.marginCallAt) / 24) * (1 - smootherstep((t - (TIMING.flipStart - 40)) / 36));
+
+/** Right on its good moments: a small lift towards the camera (profit taken, protected). */
+const lift = (t: number) => Math.max(bump(t, UPDATE.closedAt, 14, 10, 40), bump(t, NEWS.at + 8, 16, 120, 60));
+
+/**
+ * Where the viewer should look: 1 = in focus, lower = dimmed. During the warning the left
+ * dims so the Miran update on the right is the only thing to read.
+ */
+export const focus = (side: Side, t: number) => {
+  if (side === 'left') return 1 - 0.5 * smootherstep((t - (UPDATE.at - 14)) / 20) * (1 - smootherstep((t - (UPDATE.closedAt + 30)) / 24));
+  return 1;
+};
+
 export const leftPose = (t: number): PhonePose => {
   const [x, y, z] = BASE.left.pos;
   const b = buzz(t);
@@ -82,9 +107,11 @@ export const leftPose = (t: number): PhonePose => {
   const since = t - TIMING.flipEnd;
   const settle = since > 0 ? Math.exp(-since / 9) * Math.sin(since / 2.4) : 0;
   const pulse = syncPulse(t);
+  const i = intro(t);
+  const d = defeat(t);
   return {
-    pos: [x + 0.006 * b.x, y + bob('left', t) + hop + 0.012 * settle, z],
-    rot: [BASE.tilt + 0.05 * settle, BASE.left.yaw + spin + wind + 0.004 * b.r, 0.012 * b.r - 0.015 * settle],
+    pos: [x + 0.006 * b.x - 0.12 * (1 - i), y + bob('left', t) + hop + 0.012 * settle - 0.34 * (1 - i) - 0.035 * d, z - 0.3 * (1 - i)],
+    rot: [BASE.tilt + 0.05 * settle + 0.07 * d, BASE.left.yaw + spin + wind + 0.004 * b.r + 0.7 * (1 - i), 0.012 * b.r - 0.015 * settle + 0.02 * d],
     scale: 1 + 0.018 * pulse,
   };
 };
@@ -92,9 +119,11 @@ export const leftPose = (t: number): PhonePose => {
 export const rightPose = (t: number): PhonePose => {
   const [x, y, z] = BASE.right.pos;
   const pulse = syncPulse(t);
+  const i = intro(Math.max(-6, t - 5));
+  const l = lift(t);
   return {
-    pos: [x, y + bob('right', t), z],
-    rot: [BASE.tilt, BASE.right.yaw, 0],
+    pos: [x + 0.12 * (1 - i), y + bob('right', t) - 0.34 * (1 - i) + 0.03 * l, z - 0.3 * (1 - i) + 0.06 * l],
+    rot: [BASE.tilt - 0.03 * l, BASE.right.yaw - 0.7 * (1 - i), 0],
     scale: 1 + 0.018 * pulse,
   };
 };

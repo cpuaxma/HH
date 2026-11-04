@@ -79,10 +79,10 @@ export const SHOTS: Record<string, Shot> = {
   favourRight: {
     name: 'Two-shot favouring the right (warning)',
     at: (t, fmt) => ({
-      target: [drift(t, 450, 720, 0.04, 0.12), 1.06, 0],
-      az: drift(t, 450, 720, -4, -8),
+      target: [drift(t, 450, 720, 0.02, 0.06), 1.06, 0],
+      az: drift(t, 450, 720, -3.5, -6),
       el: drift(t, 450, 720, 2, 1),
-      dist: drift(t, 450, 720, 5.5, 5.3) * ds(fmt),
+      dist: drift(t, 450, 720, 5.55, 5.45) * ds(fmt),
       hfov: 20,
       roll: drift(t, 450, 720, -0.3, -0.6),
       focus: fy(fmt),

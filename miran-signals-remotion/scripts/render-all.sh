@@ -9,7 +9,7 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 mkdir -p out
 X264="--concurrency=1 --crf=16 --x264-preset=slow --pixel-format=yuv420p --muted"
-FORMATS="${FORMATS:-MiranSignals:miran-signals MiranSignals4x5:miran-signals-4x5 MiranSignalsEN:miran-signals-en}"
+FORMATS="${FORMATS:-MiranSignals:miran-signals MiranSignals4x5:miran-signals-4x5}"
 COVER_FRAME=$(grep -oP 'coverFrame:\s*\K\d+' src/data.ts)
 
 echo "== audio $(date +%T)"

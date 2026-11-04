@@ -32,15 +32,6 @@ export const RemotionRoot: React.FC = () => (
       height={LAYOUT.feed.height}
       defaultProps={{showSafeZones: false, sfx: true, lang: 'ar'} satisfies ReelProps}
     />
-    {/* English: the same picture with the strings swapped. */}
-    <Composition
-      id="MiranSignalsEN"
-      component={Reel}
-      {...common}
-      width={LAYOUT.vertical.width}
-      height={LAYOUT.vertical.height}
-      defaultProps={{showSafeZones: false, sfx: true, lang: 'en'} satisfies ReelProps}
-    />
     <Composition id="MiranSignalsSfx" component={SfxOnly} {...common} width={1080} height={1920} />
   </>
 );
