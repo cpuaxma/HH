@@ -71,7 +71,7 @@ export const SHOTS: Record<string, Shot> = {
   leftMacro: {
     name: 'Left macro (strategy)',
     at: (t, fmt) => ({
-      target: phonePoint('left', [0.0, drift(t, 170, 250, 0.02, -0.1), 0.04], t),
+      target: phonePoint('left', [0.0, drift(t, 170, 250, 0.0, -0.3), 0.04], t),
       az: drift(t, 160, 250, 16, 10),
       el: drift(t, 160, 250, -5, -2),
       dist: drift(t, 160, 250, 2.62, 2.36) * ds(fmt),
@@ -84,7 +84,7 @@ export const SHOTS: Record<string, Shot> = {
   rightMacro: {
     name: 'Right macro (strategy)',
     at: (t, fmt) => ({
-      target: phonePoint('right', [0.0, drift(t, 240, 320, -0.02, -0.1), 0.04], t),
+      target: phonePoint('right', [0.0, drift(t, 236, 310, -0.14, -0.36), 0.04], t),
       az: drift(t, 230, 320, -9, -14),
       el: drift(t, 230, 320, 2, -1),
       dist: drift(t, 230, 320, 2.5, 2.3) * ds(fmt),
@@ -116,7 +116,7 @@ export const SHOTS: Record<string, Shot> = {
         target: [lerp(0, 0.02, k), lerp(0.95, 0.98, k), lerp(0.16, 0.1, k)],
         az: lerp(-7, 3, k),
         el: lerp(62, 71, k),
-        dist: lerp(5.3, 4.7, k) * ds(fmt),
+        dist: lerp(5.35, 4.95, k) * ds(fmt),
         hfov: 26,
         roll: lerp(0.8, -0.6, k),
         focus: fy(fmt, true) + 0.045,
@@ -132,10 +132,10 @@ export const SHOTS: Record<string, Shot> = {
         target: phonePoint('right', [lerp(0, 0.0, p), lerp(0.02, -0.06, p), 0.04], t),
         az: lerp(-6, -10, p),
         el: lerp(5, 3, p),
-        dist: Math.exp(lerp(Math.log(3.6), Math.log(2.05), p)) * ds(fmt),
+        dist: Math.exp(lerp(Math.log(3.6), Math.log(2.38), p)) * ds(fmt),
         hfov: lerp(22, 20, p),
         roll: lerp(0, -1.0, p),
-        focus: fy(fmt, false) + 0.02,
+        focus: lerp(fy(fmt, false), LAYOUT[fmt].pushFocusY / LAYOUT[fmt].height, p),
       };
     },
   },

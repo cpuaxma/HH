@@ -17,6 +17,7 @@
     "sfx:make": "python3 scripts/make-sfx.py",
     "sfx:wav": "remotion render MiranSignalsSfx out/miran-signals-sfx.wav --codec=wav",
     "cover": "remotion still MiranSignals out/miran-signals-cover.png --frame=960",
+    "render:all": "bash scripts/render-all.sh",
     "scan": "python3 scripts/scan-frames.py",
     "typecheck": "tsc --noEmit"
   },

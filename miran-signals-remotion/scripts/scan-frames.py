@@ -1,15 +1,16 @@
 #!/usr/bin/env python3
 """Scans a rendered video for flicker and broken frames.
 
-  python3 scripts/scan-frames.py out/hotpepper-competitor.mp4 [more.mp4 ...]
+  python3 scripts/scan-frames.py out/miran-signals.mp4 [more.mp4 ...]
 
 Every frame is decoded small (grey, 1/4 size) and checked for:
-- black or blank frames (mean brightness far below the reel's off-white look);
-- dark blocks (a sudden jump in the share of near-black pixels: NaN / glitched tiles);
+- black or blank frames (the reel is a dark navy, so only near-true black counts);
+- black blocks (a sudden jump in the share of pure-black pixels: NaN / glitched tiles);
 - one-frame glitches: frame i differs from both neighbours while the neighbours match each
   other (a flash or a dropout), measured as min(d(i-1,i), d(i,i+1)) - d(i-1,i+1);
 - sharp jumps in frame-to-frame difference (a cut or pop where the timeline has none).
-The impact frames are intended and listed separately. Exits 1 if anything else is found.
+The impact frames and the news-candle jolt are intended and listed separately.
+Exits 1 if anything else is found.
 Needs ffmpeg/ffprobe and numpy.
 """
 import json
@@ -24,7 +25,8 @@ FPS = 60
 data = open(__import__('os').path.join(__import__('os').path.dirname(__file__), '..', 'src', 'data.ts')).read()
 IMPACT = int(re.search(r'impactAt:\s*(\d+)', data).group(1))
 IMPACT_N = int(re.search(r'impactFrames:\s*(\d+)', data).group(1))
-INTENDED = set(range(IMPACT - 1, IMPACT + IMPACT_N + 2))
+NEWS = int(re.search(r'export const NEWS = \{\s*/\*\*[^*]*\*/\s*at:\s*(\d+)', data).group(1))
+INTENDED = set(range(IMPACT - 1, IMPACT + IMPACT_N + 2)) | set(range(NEWS - 1, NEWS + 3))
 
 
 def frames(path):
@@ -45,16 +47,16 @@ def scan(path):
     f = frames(path)
     n = len(f)
     mean = f.mean(axis=(1, 2))
-    dark = (f < 0.04).mean(axis=(1, 2))
+    dark = (f < 0.008).mean(axis=(1, 2))
     d = np.abs(np.diff(f, axis=0)).mean(axis=(1, 2))  # d[i] = |f[i+1] - f[i]|
     issues = []
     for i in range(n):
         if i in INTENDED:
             continue
-        if mean[i] < 0.25:
-            issues.append((i, f'very dark frame (mean {mean[i]:.3f})'))
+        if mean[i] < 0.015:
+            issues.append((i, f'black frame (mean {mean[i]:.3f})'))
         if i > 0 and dark[i] - dark[i - 1] > 0.01 and dark[i] > 0.012:
-            issues.append((i, f'dark pixels jump {dark[i - 1]:.4f} -> {dark[i]:.4f}'))
+            issues.append((i, f'black pixels jump {dark[i - 1]:.4f} -> {dark[i]:.4f}'))
     for i in range(1, n - 1):
         if i in INTENDED:
             continue

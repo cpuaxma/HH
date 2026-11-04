@@ -456,6 +456,8 @@ export const LAYOUT: Record<
     focusY: number;
     /** Screen-space y of the camera target in the macro shots. */
     macroFocusY: number;
+    /** Where the checklist card's centre lands at the end of the twist push-in. */
+    pushFocusY: number;
     endLogoTop: number;
     endLogoSize: number;
   }
@@ -470,6 +472,7 @@ export const LAYOUT: Record<
     distScale: 1,
     focusY: 1030,
     macroFocusY: 1270,
+    pushFocusY: 1010,
     endLogoTop: 430,
     endLogoSize: 380,
   },
@@ -483,6 +486,7 @@ export const LAYOUT: Record<
     distScale: 1.1,
     focusY: 790,
     macroFocusY: 905,
+    pushFocusY: 730,
     endLogoTop: 150,
     endLogoSize: 330,
   },
