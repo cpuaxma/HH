@@ -7,7 +7,7 @@ import path from 'node:path';
 const args = process.argv.slice(2);
 const safe = args.includes('--safe');
 const feed = args.includes('--feed');
-const [outDir = 'out/stills', scaleArg = '0.5', framesArg = '90,210,280,360,470,490,520,660,745,805,836,940,1070,1180'] = args.filter((a) => !a.startsWith('--'));
+const [outDir = 'out/stills', scaleArg = '0.5', framesArg = '100,280,560,640,770,820,1000,1080,1140,1230,1450'] = args.filter((a) => !a.startsWith('--'));
 const frames = framesArg.split(',').map(Number);
 const scale = Number(scaleArg);
 const id = process.env.COMP ?? (feed ? 'MiranSignals4x5' : 'MiranSignals');

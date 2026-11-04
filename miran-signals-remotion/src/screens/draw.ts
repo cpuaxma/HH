@@ -1,64 +1,18 @@
-// The two phone screens, drawn per frame into 1200 × 2670 canvases (400 × 890 pt at 3×).
-// One fictional, unbranded trading app on XAU/USD, in three modes:
-// - "blind": the left phone, trading without a plan (copied trades, no stop loss, no news);
-// - "miran": the right phone, trading with Miran Gold (signal, 1% risk, market updates);
-// - the left phone after its flip, now on Miran Gold too.
-// Static parts are cached layers; the rest is drawn from pure functions of the frame.
-import {
-  FRESH_SIGNAL,
-  LEFT,
-  LEFT_AFTER_NOTIFS,
-  LEFT_NOTIFS,
-  LEFT_TRADES,
-  Lang,
-  MARKET,
-  NEWS,
-  RIGHT,
-  RIGHT_NOTIFS,
-  SCREEN_COPY,
-  SIGNAL,
-  TIMING,
-  TOP_TRADER,
-} from '../data';
-import {clamp01, easeIn, easeInOut, easeOut, keyframes, ramp, springAt} from '../lib/ease';
-import {
-  Side,
-  candleAt,
-  chartRange,
-  equitySeries,
-  leftBalance,
-  leftEquity,
-  leftFloating,
-  leftIsMiran,
-  leftLossFlash,
-  leftMarginLevel,
-  liveCandle,
-  price,
-  rightBalance,
-  rightFloating,
-} from '../lib/story';
-import {
-  C,
-  H,
-  IconKind,
-  W,
-  emblem,
-  fit,
-  goldGradient,
-  icon,
-  layer,
-  measure,
-  money,
-  pill,
-  priceStr,
-  rr,
-  signedMoney,
-  signedPct,
-  smear,
-  softShadow,
-  tagPill,
-  text,
-} from './kit';
+// The two phone screens, drawn per frame into 1206 × 2622 canvases (402 × 874 pt at 3×).
+//
+// Designed to be read at a glance on a phone held at arm's length: one big balance, one
+// thick price line, and ONE large card at a time. iOS details (Dynamic Island, status bar,
+// home indicator) make the phones read as iPhones; the app itself is fictional.
+//
+// - Left («بلا خطة»): an impulsive Buy of 3 lots with no stop loss; the news candle turns the
+//   whole screen red; margin call. After its flip it is connected to Miran Gold.
+// - Right («مع ميران جولد»): the Miran signal (entry, stop loss, target, 1% risk), the market
+//   update before the news (take profit now), then "Protected" when the news hits.
+import {LEFT, Lang, NEWS, SCREEN_COPY, SIGNAL, TIMING, UPDATE} from '../data';
+import {clamp01, easeIn, easeInOut, easeOut, ramp, springAt} from '../lib/ease';
+import {chartRange, leftBalance, leftDanger, leftIsMiran, leftOpenPnl, price, rightBalance, rightOpenPnl} from '../lib/story';
+import {MARKET} from '../data';
+import {C, H, IconKind, W, emblem, fit, goldGradient, icon, measure, money, rr, signedMoney, softShadow, tagPill, text} from './kit';
 
 // ─── Language ────────────────────────────────────────────────────────────────
 
@@ -68,1138 +22,689 @@ export const setScreenLang = (l: Lang) => {
 };
 const SC = () => SCREEN_COPY[LANG];
 
-/** Localised text inside [xl, xr]: right-aligned RTL for Arabic, left-aligned for English. */
-const ltext = (ctx: CanvasRenderingContext2D, s: string, xl: number, xr: number, y: number, o: {weight?: number; size?: number; color?: string | CanvasGradient} = {}) => {
+const PAD = 26;
+/** x of the reading start / end (right / left in Arabic). */
+const sx = () => (SC().rtl ? W - PAD : PAD);
+const ex = () => (SC().rtl ? PAD : W - PAD);
+const aStart = (): CanvasTextAlign => (SC().rtl ? 'right' : 'left');
+const aEnd = (): CanvasTextAlign => (SC().rtl ? 'left' : 'right');
+
+/** Localised text that fits in maxW, anchored at x with `align`. */
+const say = (ctx: CanvasRenderingContext2D, s: string, x: number, y: number, o: {weight?: number; size?: number; color?: string | CanvasGradient; align?: CanvasTextAlign; maxW?: number} = {}) => {
   const rtl = SC().rtl;
-  const size = fit(ctx, s, o.weight ?? 500, o.size ?? 14, xr - xl, rtl);
-  return text(ctx, s, rtl ? xr : xl, y, {...o, size, align: rtl ? 'right' : 'left', rtl});
+  const weight = o.weight ?? 600;
+  const size = fit(ctx, s, weight, o.size ?? 18, o.maxW ?? W - 2 * PAD, rtl);
+  return text(ctx, s, x, y, {weight, size, color: o.color ?? C.text, align: o.align ?? aStart(), rtl});
 };
 
-const illus = (ctx: CanvasRenderingContext2D, rightX: number, y: number, size = 9) => tagPill(ctx, SC().illustrative, rightX, y, {rtl: SC().rtl, size});
+/** Numbers are always laid out LTR (so "−$4,800" keeps its sign on the left). */
+const num = (ctx: CanvasRenderingContext2D, s: string, x: number, y: number, o: {weight?: number; size?: number; color?: string | CanvasGradient; align?: CanvasTextAlign} = {}) =>
+  text(ctx, s, x, y, {weight: o.weight ?? 700, size: o.size ?? 18, color: o.color ?? C.text, align: o.align ?? aStart(), rtl: false});
 
-// ─── Shared pieces ───────────────────────────────────────────────────────────
+const usd = (n: number) => `$${money(n, 0)}`;
+const priceLabel = (p: number) => p.toLocaleString('en-US', {minimumFractionDigits: 0, maximumFractionDigits: 0});
 
-const clockAt = keyframes([
-  [0, 13 * 60 + 58],
-  [430, 14 * 60],
-  [478, 14 * 60 + 30],
-  [720, 14 * 60 + 41],
-  [1020, 15 * 60 + 6],
-]);
-export const clockLabel = (t: number) => {
-  const m = Math.floor(clockAt(t));
+// ─── iOS chrome ──────────────────────────────────────────────────────────────
+
+const clock = (t: number) => {
+  const m = 10 * 60 + 24 + Math.floor(Math.max(0, t) / 600);
   return `${Math.floor(m / 60)}:${String(m % 60).padStart(2, '0')}`;
 };
 
-const statusBar = (ctx: CanvasRenderingContext2D, t: number) => {
-  text(ctx, clockLabel(t), 30, 31, {weight: 600, size: 15, color: C.text});
-  ctx.beginPath();
-  ctx.arc(W / 2, 24, 7, 0, Math.PI * 2);
-  ctx.fillStyle = '#000';
-  ctx.fill();
+/** Status bar (time, signal, Wi-Fi, battery) and the Dynamic Island. */
+const chrome = (ctx: CanvasRenderingContext2D, t: number, ink = C.text) => {
+  text(ctx, clock(t), 62, 35, {weight: 600, size: 17, color: ink, align: 'center'});
+  // Signal bars.
+  ctx.fillStyle = ink;
   for (let i = 0; i < 4; i++) {
-    rr(ctx, 300 + i * 6, 31 - 4 - i * 3, 4, 4 + i * 3, 1);
-    ctx.fillStyle = C.text;
+    const h = 4 + i * 2.6;
+    rr(ctx, 290 + i * 5, 34 - h, 3.4, h, 1);
     ctx.fill();
   }
-  rr(ctx, 334, 19, 30, 14, 4);
-  ctx.lineWidth = 1.4;
-  ctx.strokeStyle = C.text;
-  ctx.globalAlpha = 0.45;
-  ctx.stroke();
-  ctx.globalAlpha = 1;
-  rr(ctx, 336.5, 21.5, 20, 9, 2.4);
-  ctx.fillStyle = C.text;
-  ctx.fill();
-  rr(ctx, 365.5, 23.5, 2.4, 5, 1);
-  ctx.fill();
-};
-
-type Mode = 'blind' | 'miran';
-
-/** Background, header and bottom nav: drawn once per mode and language. */
-const baseLayer = (mode: Mode) =>
-  layer(`base:${mode}:${LANG}`, W, H, 3, (ctx) => {
-    ctx.fillStyle = C.appBg;
-    ctx.fillRect(0, 0, W, H);
-    // Header: a generic app mark, the pair.
-    rr(ctx, 20, 52, 34, 34, 10);
-    ctx.fillStyle = C.cardHi;
-    ctx.fill();
-    icon(ctx, 'chart', 37, 69, 18, C.text, 2);
-    text(ctx, MARKET.pair, 64, 68, {weight: 700, size: 18, color: C.text});
-    text(ctx, MARKET.pairName, 64, 85, {weight: 500, size: 11.5, color: C.meta});
-    // Header chip: who drives this account.
-    if (mode === 'blind') {
-      const label = `Copying ${TOP_TRADER}`;
-      const w = measure(ctx, label, 600, 11) + 34;
-      rr(ctx, W - 20 - w, 56, w, 26, 13);
-      ctx.fillStyle = '#2A1C22';
-      ctx.fill();
-      icon(ctx, 'copy', W - 20 - w + 16, 69, 12, C.red, 1.5);
-      text(ctx, label, W - 20 - w + 26, 73, {weight: 600, size: 11, color: '#F0B4B2'});
-    } else {
-      const label = SC().brand;
-      const w = measure(ctx, label, 700, 12, SC().rtl) + 40;
-      rr(ctx, W - 20 - w, 55, w, 28, 14);
-      ctx.fillStyle = '#231D12';
-      ctx.fill();
-      ctx.lineWidth = 1;
-      ctx.strokeStyle = 'rgba(212,162,76,0.55)';
-      ctx.stroke();
-      emblem(ctx, W - 20 - w + 15, 69, 10);
-      text(ctx, label, W - 20 - w + 30 + (w - 36) / 2, 73.5, {weight: 700, size: 12, color: goldGradient(ctx, W - 20 - w, 0, W - 20, 0), align: 'center', rtl: SC().rtl});
-    }
-    // Account block: static labels.
-    text(ctx, 'Balance', 24, 126, {weight: 500, size: 12.5, color: C.meta});
-    // Chart card.
-    rr(ctx, 12, 214, W - 24, 258, 20);
-    ctx.fillStyle = C.card;
-    ctx.fill();
-    text(ctx, `${MARKET.pair} · M1`, 26, 238, {weight: 600, size: 11.5, color: C.meta});
-    // Bottom nav.
-    ctx.fillStyle = '#0E1320';
-    ctx.fillRect(0, 838, W, H - 838);
-    ctx.fillStyle = C.line;
-    ctx.fillRect(0, 838, W, 1);
-    const kinds: IconKind[] = ['home', 'chart', mode === 'blind' ? 'copy' : 'signal', 'bell', 'user'];
-    kinds.forEach((k, i) => icon(ctx, k, 48 + i * 76, 864, 22, i === 1 ? C.text : C.dim, 2));
-  });
-
-// ─── Account block ───────────────────────────────────────────────────────────
-
-const accountBlock = (ctx: CanvasRenderingContext2D, t: number, side: Side, miran: boolean) => {
-  const bal = side === 'left' ? leftBalance(t) : rightBalance(t);
-  const flt = side === 'left' ? leftFloating(t) : rightFloating(t);
-  const eq = side === 'left' ? leftEquity(t) : bal + flt;
-  // During the news candle the left screen shows equity (it is what collapses).
-  const showEq = side === 'left' && t >= NEWS.at && t < LEFT_TRADES[3].closedAt;
-  const big = showEq ? eq : bal;
-  const start = side === 'left' && miran ? LEFT.finalBalance : 10000;
-  const pct = ((bal + (miran && side === 'left' ? flt : 0) - start) / start) * 100;
-  illus(ctx, W - 24, 112);
-  const bigColor = side === 'left' && !miran ? (showEq || bal < 10000 ? '#F2C4C2' : C.text) : C.text;
-  text(ctx, `$${money(big)}`, 22, 166, {weight: 700, size: 36, color: bigColor});
-  if (showEq) text(ctx, 'Equity', 24 + measure(ctx, `$${money(big)}`, 700, 36) + 8, 166, {weight: 600, size: 11, color: C.red});
-  // Change today.
-  const up = pct >= 0;
-  const chg = `${up ? '+' : '−'}${Math.abs(pct).toFixed(1)}% today`;
-  const cw = measure(ctx, chg, 700, 11.5) + 26;
-  rr(ctx, 22, 176, cw, 22, 11);
-  ctx.fillStyle = up ? 'rgba(76,195,138,0.14)' : 'rgba(217,83,79,0.16)';
-  ctx.fill();
-  icon(ctx, up ? 'up' : 'down', 33, 187, 9, up ? C.up : C.red);
-  text(ctx, chg, 41, 191, {weight: 700, size: 11.5, color: up ? C.up : C.red});
-  // Floating P&L.
-  if (Math.abs(flt) > 0.5 && !showEq) {
-    const label = `Floating ${signedMoney(flt, 2)}`;
-    text(ctx, label, 30 + cw, 191, {weight: 600, size: 11.5, color: flt >= 0 ? C.up : C.red});
-  }
-  // Equity sparkline.
-  const s = equitySeries(side, t);
-  const x0 = 258;
-  const x1 = 376;
-  const y0 = 132;
-  const y1 = 176;
-  let lo = Math.min(...s);
-  let hi = Math.max(...s);
-  const mid = (lo + hi) / 2;
-  const span = Math.max(hi - lo, 180);
-  lo = mid - span / 2;
-  hi = mid + span / 2;
-  const col = side === 'left' && !miran ? C.red : C.goldB;
+  // Wi-Fi.
   ctx.save();
-  ctx.beginPath();
-  s.forEach((v, i) => {
-    const x = x0 + ((x1 - x0) * i) / (s.length - 1);
-    const y = y1 - ((v - lo) / (hi - lo)) * (y1 - y0);
-    if (i === 0) ctx.moveTo(x, y);
-    else ctx.lineTo(x, y);
-  });
-  ctx.lineWidth = 2;
-  ctx.strokeStyle = col;
+  ctx.strokeStyle = ink;
+  ctx.lineCap = 'round';
+  for (let i = 0; i < 3; i++) {
+    ctx.lineWidth = 2.2;
+    ctx.beginPath();
+    ctx.arc(320, 35, 3.5 + i * 4, -Math.PI * 0.75, -Math.PI * 0.25);
+    ctx.stroke();
+  }
+  ctx.restore();
+  // Battery.
+  ctx.save();
+  ctx.strokeStyle = ink;
+  ctx.globalAlpha = 0.5;
+  ctx.lineWidth = 1.2;
+  rr(ctx, 337, 24.5, 26, 12.5, 3.6);
   ctx.stroke();
-  ctx.lineTo(x1, y1 + 8);
-  ctx.lineTo(x0, y1 + 8);
-  ctx.closePath();
-  const g = ctx.createLinearGradient(0, y0, 0, y1 + 8);
-  g.addColorStop(0, side === 'left' && !miran ? 'rgba(217,83,79,0.32)' : 'rgba(212,162,76,0.32)');
-  g.addColorStop(1, 'rgba(0,0,0,0)');
-  ctx.fillStyle = g;
+  ctx.globalAlpha = 0.5;
+  rr(ctx, 364.4, 28.5, 1.8, 4.5, 1);
+  ctx.fill();
+  ctx.globalAlpha = 1;
+  ctx.fillStyle = ink;
+  rr(ctx, 339, 26.5, 18.5, 8.5, 2.2);
   ctx.fill();
   ctx.restore();
-  text(ctx, 'Equity', x1, 204, {weight: 500, size: 10, color: C.dim, align: 'right'});
-};
-
-// ─── Chart ───────────────────────────────────────────────────────────────────
-
-const PLOT = {x0: 22, x1: 330, y0: 250, y1: 458};
-
-const niceStep = (span: number) => {
-  const raw = span / 4;
-  for (const s of [1, 2, 2.5, 5, 10, 20]) if (raw <= s) return s;
-  return 20;
-};
-
-type Level = {price: number; label: string; color: string; dash?: number[]};
-
-const chart = (ctx: CanvasRenderingContext2D, t: number, levels: Level[], newsKnown: boolean, accent: string) => {
-  const {x0, x1, y0, y1} = PLOT;
-  const [lo, hi] = chartRange(t);
-  const yOf = (p: number) => y1 - ((p - lo) / (hi - lo)) * (y1 - y0);
-  const n = MARKET.visibleCandles;
-  const cw = (x1 - x0) / n;
-  const u = t / MARKET.candleFrames;
-  const xr = x1 - cw * 0.8;
-  const xOf = (k: number) => xr - (u - (k + 0.5)) * cw;
-  // Grid and price axis.
-  const step = niceStep(hi - lo);
-  ctx.save();
-  for (let p = Math.ceil(lo / step) * step; p < hi; p += step) {
-    const y = yOf(p);
-    if (y < y0 + 4 || y > y1 - 4) continue;
-    ctx.fillStyle = C.line;
-    ctx.fillRect(x0, y, x1 - x0, 0.8);
-    text(ctx, priceStr(p).replace(/\.00$/, ''), 384, y + 3.5, {weight: 500, size: 9.5, color: C.dim, align: 'right'});
-  }
+  // Dynamic Island.
+  ctx.fillStyle = '#000';
+  rr(ctx, W / 2 - 63, 11, 126, 37, 18.5);
+  ctx.fill();
+  ctx.fillStyle = '#0d0f16';
   ctx.beginPath();
-  ctx.rect(x0, y0 - 6, x1 - x0 + 4, y1 - y0 + 12);
-  ctx.clip();
-  // The news candle marker.
-  const kNews = Math.floor(NEWS.at / MARKET.candleFrames);
-  const xn = xOf(kNews);
-  if (newsKnown || t >= NEWS.at) {
-    ctx.fillStyle = 'rgba(232,163,61,0.10)';
-    ctx.fillRect(xn - cw / 2, y0, cw, y1 - y0);
-    ctx.setLineDash([3, 3]);
-    ctx.strokeStyle = 'rgba(232,163,61,0.55)';
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    ctx.moveTo(xn, y0);
-    ctx.lineTo(xn, y1);
-    ctx.stroke();
-    ctx.setLineDash([]);
+  ctx.arc(W / 2 + 42, 29.5, 6, 0, Math.PI * 2);
+  ctx.fill();
+};
+
+const homeIndicator = (ctx: CanvasRenderingContext2D, ink = C.text) => {
+  ctx.fillStyle = ink;
+  ctx.globalAlpha = 0.85;
+  rr(ctx, W / 2 - 68, H - 13, 136, 5, 2.5);
+  ctx.fill();
+  ctx.globalAlpha = 1;
+};
+
+const illus = (ctx: CanvasRenderingContext2D, y: number) => {
+  const rtl = SC().rtl;
+  // tagPill anchors at its right edge.
+  const label = SC().illustrative;
+  const w = measure(ctx, label, 600, 11, rtl) + 12;
+  tagPill(ctx, label, rtl ? PAD + w : W - PAD, y, {rtl, size: 11, color: '#AEB4C2', border: '#4A5266'});
+};
+
+// ─── Backgrounds ─────────────────────────────────────────────────────────────
+
+const background = (ctx: CanvasRenderingContext2D, mode: 'blind' | 'miran', danger: number) => {
+  const g = ctx.createLinearGradient(0, 0, 0, H);
+  if (mode === 'miran') {
+    g.addColorStop(0, '#111a31');
+    g.addColorStop(1, '#0a0f1e');
+  } else {
+    g.addColorStop(0, '#14161c');
+    g.addColorStop(1, '#0b0c10');
   }
-  // Levels (entry, stop loss, targets).
-  for (const l of levels) {
-    const y = yOf(l.price);
-    if (y < y0 - 2 || y > y1 + 2) continue;
-    ctx.setLineDash(l.dash ?? [5, 4]);
-    ctx.strokeStyle = l.color;
-    ctx.globalAlpha = 0.85;
-    ctx.lineWidth = 1.2;
+  ctx.fillStyle = g;
+  ctx.fillRect(0, 0, W, H);
+  if (mode === 'miran') {
+    const rg = ctx.createRadialGradient(W / 2, 0, 10, W / 2, 0, 420);
+    rg.addColorStop(0, 'rgba(212,162,76,0.22)');
+    rg.addColorStop(1, 'rgba(212,162,76,0)');
+    ctx.fillStyle = rg;
+    ctx.fillRect(0, 0, W, H);
+  }
+  if (danger > 0) {
+    ctx.save();
+    ctx.globalAlpha = danger;
+    const d = ctx.createLinearGradient(0, 0, 0, H);
+    d.addColorStop(0, '#8a141b');
+    d.addColorStop(0.55, '#4d0a0f');
+    d.addColorStop(1, '#260407');
+    ctx.fillStyle = d;
+    ctx.fillRect(0, 0, W, H);
+    ctx.restore();
+  }
+};
+
+// ─── Header and balance ──────────────────────────────────────────────────────
+
+const header = (ctx: CanvasRenderingContext2D, mode: 'blind' | 'miran') => {
+  const rtl = SC().rtl;
+  const y = 92;
+  if (mode === 'miran') {
+    const cx = rtl ? W - PAD - 17 : PAD + 17;
+    emblem(ctx, cx, y - 7, 17);
+    say(ctx, SC().brand, rtl ? cx - 27 : cx + 27, y, {weight: 700, size: 22, color: goldGradient(ctx, 0, 0, W, 0), maxW: 200});
+  } else {
+    // A plain gold-coin glyph for the generic app.
+    const cx = rtl ? W - PAD - 17 : PAD + 17;
     ctx.beginPath();
-    ctx.moveTo(x0, y);
-    ctx.lineTo(x1, y);
+    ctx.arc(cx, y - 7, 17, 0, Math.PI * 2);
+    ctx.fillStyle = '#2a2d36';
+    ctx.fill();
+    text(ctx, 'Au', cx, y - 1, {weight: 700, size: 15, color: '#cfc7b4', align: 'center'});
+    say(ctx, SC().pair, rtl ? cx - 27 : cx + 27, y, {weight: 700, size: 21, maxW: 220});
+  }
+  illus(ctx, y - 18);
+};
+
+/** The big balance, plus the open trade's live P&L under it. */
+const balanceBlock = (ctx: CanvasRenderingContext2D, balance: number, balanceColor: string, open: number | null, openAlpha: number) => {
+  say(ctx, SC().balance, sx(), 146, {weight: 500, size: 17, color: C.meta});
+  num(ctx, usd(balance), sx(), 206, {weight: 700, size: 58, color: balanceColor});
+  if (open !== null && openAlpha > 0) {
+    ctx.save();
+    ctx.globalAlpha = openAlpha;
+    const rtl = SC().rtl;
+    const label = SC().openTrade;
+    const lw = say(ctx, label, sx(), 242, {weight: 500, size: 18, color: C.meta, maxW: 200});
+    const col = open >= 0 ? C.up : C.red;
+    num(ctx, signedMoney(open), rtl ? sx() - lw - 12 : sx() + lw + 12, 242, {weight: 700, size: 22, color: col});
+    ctx.restore();
+  }
+};
+
+// ─── The chart: one thick price line ─────────────────────────────────────────
+
+type Level = {price: number; color: string; label: string; alpha: number};
+
+const CHART = {top: 268, bottom: 520, left: PAD, right: W - PAD - 70};
+
+const chart = (ctx: CanvasRenderingContext2D, t: number, lineColor: string, levels: Level[], newsColor: string) => {
+  const span = MARKET.chartSpan;
+  let [lo, hi] = chartRange(t);
+  // Keep visible levels (stop loss, target) inside the chart, easing the range out to them.
+  for (const l of levels) {
+    if (l.alpha <= 0) continue;
+    lo = Math.min(lo, lo + (l.price - 1.5 - lo) * l.alpha);
+    hi = Math.max(hi, hi + (l.price + 1.5 - hi) * l.alpha);
+  }
+  const X = (f: number) => CHART.left + ((f - (t - span)) / span) * (CHART.right - CHART.left);
+  const Y = (p: number) => CHART.bottom - ((p - lo) / (hi - lo)) * (CHART.bottom - CHART.top);
+
+  // Faint grid.
+  ctx.strokeStyle = 'rgba(255,255,255,0.06)';
+  ctx.lineWidth = 1;
+  for (let i = 0; i <= 3; i++) {
+    const y = CHART.top + ((CHART.bottom - CHART.top) * i) / 3;
+    ctx.beginPath();
+    ctx.moveTo(CHART.left, y);
+    ctx.lineTo(W - PAD, y);
+    ctx.stroke();
+  }
+
+  // The news moment: a vertical marker.
+  if (t >= NEWS.at) {
+    const x = X(NEWS.at);
+    if (x > CHART.left) {
+      ctx.save();
+      ctx.strokeStyle = newsColor;
+      ctx.globalAlpha = 0.55;
+      ctx.lineWidth = 2;
+      ctx.setLineDash([5, 5]);
+      ctx.beginPath();
+      ctx.moveTo(x, CHART.top - 6);
+      ctx.lineTo(x, CHART.bottom);
+      ctx.stroke();
+      ctx.restore();
+      icon(ctx, 'bolt', x, CHART.top - 14, 16, newsColor, 2);
+    }
+  }
+
+  // Levels (entry, stop loss, target), dashed, with small tags at the right.
+  for (const l of levels) {
+    if (l.alpha <= 0) continue;
+    const y = Y(l.price);
+    ctx.save();
+    ctx.globalAlpha = l.alpha;
+    ctx.strokeStyle = l.color;
+    ctx.lineWidth = 2;
+    ctx.setLineDash([7, 6]);
+    ctx.beginPath();
+    ctx.moveTo(CHART.left, y);
+    ctx.lineTo(CHART.right, y);
     ctx.stroke();
     ctx.setLineDash([]);
-    ctx.globalAlpha = 1;
-    const w = measure(ctx, l.label, 700, 9) + 10;
-    rr(ctx, x0 + 2, y - 8, w, 16, 5);
+    rr(ctx, CHART.right + 6, y - 12, 62, 24, 12);
     ctx.fillStyle = l.color;
     ctx.fill();
-    text(ctx, l.label, x0 + 2 + w / 2, y + 3.2, {weight: 700, size: 9, color: '#0B0F19', align: 'center'});
+    text(ctx, l.label, CHART.right + 37, y + 5, {weight: 700, size: 13, color: '#0b0f19', align: 'center', rtl: SC().rtl});
+    ctx.restore();
   }
-  // Candles.
-  const now = liveCandle(t);
-  for (let k = now - n - 1; k <= now; k++) {
-    const c = candleAt(k, t);
-    const x = xOf(k);
-    if (x < x0 - cw || x > x1 + cw) continue;
-    const upC = c.c >= c.o;
-    const col = upC ? C.up : C.red;
-    ctx.fillStyle = col;
-    ctx.fillRect(x - 0.6, yOf(c.h), 1.2, Math.max(1, yOf(c.l) - yOf(c.h)));
-    const top = yOf(Math.max(c.o, c.c));
-    const bh = Math.max(1.2, Math.abs(yOf(c.o) - yOf(c.c)));
-    ctx.fillRect(x - cw * 0.32, top, cw * 0.64, bh);
+
+  // The line, with a soft area fill under it.
+  const N = 150;
+  const pts: [number, number][] = [];
+  for (let i = 0; i <= N; i++) {
+    const f = t - span + (span * i) / N;
+    pts.push([X(f), Y(price(f))]);
   }
-  ctx.restore();
-  // Live price line and tag.
-  const p = price(t);
-  const y = Math.min(y1, Math.max(y0, yOf(p)));
-  ctx.setLineDash([2, 3]);
-  ctx.strokeStyle = accent;
-  ctx.globalAlpha = 0.8;
-  ctx.lineWidth = 1;
   ctx.beginPath();
-  ctx.moveTo(x0, y);
-  ctx.lineTo(x1 + 4, y);
-  ctx.stroke();
-  ctx.setLineDash([]);
-  ctx.globalAlpha = 1;
-  const live = candleAt(now, t);
-  const tagCol = live.c >= live.o ? C.up : C.red;
-  rr(ctx, 334, y - 9, 54, 18, 5);
-  ctx.fillStyle = tagCol;
+  pts.forEach(([x, y], i) => (i ? ctx.lineTo(x, y) : ctx.moveTo(x, y)));
+  ctx.lineTo(CHART.right, CHART.bottom);
+  ctx.lineTo(CHART.left, CHART.bottom);
+  ctx.closePath();
+  const area = ctx.createLinearGradient(0, CHART.top, 0, CHART.bottom);
+  area.addColorStop(0, hexA(lineColor, 0.3));
+  area.addColorStop(1, hexA(lineColor, 0));
+  ctx.fillStyle = area;
   ctx.fill();
-  text(ctx, priceStr(p), 361, y + 3.6, {weight: 700, size: 9.5, color: '#0B0F19', align: 'center'});
-  // Header price.
-  text(ctx, priceStr(p), W - 26, 238, {weight: 700, size: 13, color: tagCol, align: 'right'});
-};
-
-// ─── Notification banners (stacked, newest on top, smeared while moving) ─────
-
-type Notif = {at: number; kind: string; title: string; body: string};
-
-const BANNER_H = 50;
-const BANNER_GAP = 56;
-
-const bannerY = (n: Notif, all: Notif[], t: number) => {
-  const drop = springAt(t - n.at, {freq: 2.6, damping: 0.62});
-  let rank = 0;
-  for (const m of all) if (m.at > n.at && m.at <= t) rank += easeOut(clamp01((t - m.at) / 12));
-  return {y: 12 + rank * BANNER_GAP - (1 - drop) * 80, rank};
-};
-
-const KIND: Record<string, {icon: IconKind | 'emblem'; tint: string; color: string}> = {
-  copy: {icon: 'copy', tint: '#22293A', color: '#AEB6C8'},
-  loss: {icon: 'down', tint: '#3A1F24', color: C.red},
-  warn: {icon: 'warn', tint: '#3A2E1C', color: C.warn},
-  news: {icon: 'news', tint: '#3A1F24', color: C.red},
-  call: {icon: 'warn', tint: '#5A2024', color: '#FFD2D0'},
-  tp: {icon: 'emblem', tint: '#1C2A22', color: C.up},
-  sl: {icon: 'emblem', tint: '#22293A', color: C.meta},
-  signal: {icon: 'emblem', tint: '#2A2214', color: C.goldB},
-  shield: {icon: 'emblem', tint: '#2A2214', color: C.goldB},
-  update: {icon: 'emblem', tint: '#2A2214', color: C.goldB},
-};
-
-const banner = (ctx: CanvasRenderingContext2D, n: Notif, y: number, alpha: number, scale: number) => {
-  if (alpha <= 0.01) return;
-  const k = KIND[n.kind] ?? KIND.copy;
-  ctx.save();
-  ctx.globalAlpha = alpha;
-  ctx.translate(W / 2, y + BANNER_H / 2);
-  ctx.scale(scale, scale);
-  ctx.translate(-W / 2, -BANNER_H / 2);
-  softShadow(ctx, 16, 2, W - 32, BANNER_H - 4, 0.55, 6);
-  rr(ctx, 12, 0, W - 24, BANNER_H, 16);
-  ctx.fillStyle = n.kind === 'call' ? '#4A1B20' : 'rgba(28,35,52,0.98)';
-  ctx.fill();
-  ctx.lineWidth = 1;
-  ctx.strokeStyle = n.kind === 'call' ? 'rgba(217,83,79,0.9)' : k.icon === 'emblem' ? 'rgba(212,162,76,0.45)' : '#2E374B';
+  ctx.beginPath();
+  pts.forEach(([x, y], i) => (i ? ctx.lineTo(x, y) : ctx.moveTo(x, y)));
+  ctx.strokeStyle = lineColor;
+  ctx.lineWidth = 4.5;
+  ctx.lineJoin = 'round';
+  ctx.lineCap = 'round';
   ctx.stroke();
-  if (k.icon === 'emblem') emblem(ctx, 40, BANNER_H / 2, 15);
-  else {
-    ctx.beginPath();
-    ctx.arc(40, BANNER_H / 2, 15, 0, Math.PI * 2);
-    ctx.fillStyle = k.tint;
-    ctx.fill();
-    icon(ctx, k.icon, 40, BANNER_H / 2, 15, k.color, 1.8);
-  }
-  text(ctx, n.title, 64, 22, {weight: 700, size: fit(ctx, n.title, 700, 13, 270), color: n.kind === 'call' ? '#FFFFFF' : k.icon === 'emblem' ? k.color : C.text});
-  text(ctx, n.body, 64, 39, {weight: 500, size: fit(ctx, n.body, 500, 11, 290), color: n.kind === 'call' ? '#F2C4C2' : C.meta});
-  text(ctx, 'now', W - 26, 22, {weight: 500, size: 10.5, color: C.dim, align: 'right'});
-  ctx.restore();
+
+  // Live dot and price tag.
+  const [lx, ly] = pts[pts.length - 1];
+  ctx.beginPath();
+  ctx.arc(lx, ly, 7, 0, Math.PI * 2);
+  ctx.fillStyle = lineColor;
+  ctx.fill();
+  ctx.beginPath();
+  ctx.arc(lx, ly, 13, 0, Math.PI * 2);
+  ctx.fillStyle = hexA(lineColor, 0.25);
+  ctx.fill();
+  const tagY = Math.max(CHART.top, Math.min(CHART.bottom, ly));
+  rr(ctx, CHART.right + 6, tagY - 14, 62, 28, 8);
+  ctx.fillStyle = lineColor;
+  ctx.fill();
+  num(ctx, priceLabel(price(t)), CHART.right + 37, tagY + 6, {size: 15, color: '#0b0f19', align: 'center'});
 };
 
-const notifStack = (ctx: CanvasRenderingContext2D, list: Notif[], t: number, life: number, maxRank = 1.6) => {
-  const live = list.filter((n) => n.at <= t + 0.5 && t - n.at < life + 20);
-  if (!live.length) return;
-  let travel = 0;
-  for (const n of live) travel = Math.max(travel, Math.abs(bannerY(n, list, t + 0.25).y - bannerY(n, list, t - 0.25).y));
-  const samples = Math.min(8, Math.max(1, Math.ceil(travel)));
-  smear(
-    ctx,
-    samples,
-    (c, i) => {
-      const ts = samples === 1 ? t : t + 0.5 * ((i + 0.5) / samples - 0.5);
-      for (const n of [...live].reverse()) {
-        if (n.at > ts) continue;
-        const {y, rank} = bannerY(n, list, ts);
-        const age = 1 - ramp(ts, n.at + life, n.at + life + 16, easeIn);
-        const alpha = clamp01(maxRank + 1 - rank) * clamp01((ts - n.at) / 3 + 0.4) * age;
-        banner(c, n, y - (1 - age) * 30, alpha, 1 - Math.min(rank, 3) * 0.04);
-      }
-    },
-    -90,
-    12 + 3 * BANNER_GAP + BANNER_H + 20,
-  );
+const hexA = (hex: string, a: number) => {
+  const h = hex.replace('#', '');
+  const r = parseInt(h.slice(0, 2), 16);
+  const g = parseInt(h.slice(2, 4), 16);
+  const b = parseInt(h.slice(4, 6), 16);
+  return `rgba(${r},${g},${b},${a})`;
 };
 
 // ─── Cards ───────────────────────────────────────────────────────────────────
 
-const card = (ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, {gold = false, red = false, alpha = 1} = {}) => {
-  ctx.save();
-  ctx.globalAlpha = alpha;
-  softShadow(ctx, x + 4, y + 4, w - 8, h - 6, 0.5, 6);
-  rr(ctx, x, y, w, h, 18);
-  ctx.fillStyle = C.card;
+const CARD = {x: PAD - 6, y: 556, w: W - 2 * PAD + 12, h: 278};
+
+const cardBox = (ctx: CanvasRenderingContext2D, o: {fill?: string; border?: string; glow?: string; y?: number; h?: number} = {}) => {
+  const y = o.y ?? CARD.y;
+  const h = o.h ?? CARD.h;
+  softShadow(ctx, CARD.x, y, CARD.w, h, 0.5, 8);
+  if (o.glow) softShadow(ctx, CARD.x, y, CARD.w, h, 0.6, 0, o.glow);
+  rr(ctx, CARD.x, y, CARD.w, h, 30);
+  ctx.fillStyle = o.fill ?? 'rgba(26,31,44,0.96)';
   ctx.fill();
-  if (gold || red) {
-    ctx.lineWidth = 1.2;
-    ctx.strokeStyle = gold ? 'rgba(212,162,76,0.6)' : 'rgba(217,83,79,0.7)';
+  if (o.border) {
+    ctx.lineWidth = 2;
+    ctx.strokeStyle = o.border;
     ctx.stroke();
   }
+};
+
+/** Card transition: 0 → 1 in, then 1 → 0 out; returns alpha and a vertical offset. */
+const tr = (t: number, inAt: number, outAt = Infinity, dur = 14) => {
+  const a = springAt(t - inAt, {freq: 2.0, damping: 0.75});
+  const b = Number.isFinite(outAt) ? ramp(t, outAt, outAt + dur, easeIn) : 0;
+  return {alpha: clamp01(a * 1.6) * (1 - b), dy: (1 - Math.min(1, a)) * 40 - b * 24, on: t >= inAt - 1 && t <= outAt + dur};
+};
+
+const withT = (ctx: CanvasRenderingContext2D, k: {alpha: number; dy: number; on: boolean}, draw: () => void) => {
+  if (!k.on || k.alpha <= 0.001) return;
+  ctx.save();
+  ctx.globalAlpha = k.alpha;
+  ctx.translate(0, k.dy);
+  draw();
   ctx.restore();
 };
 
-/** A horizontal risk gauge (green → amber → red) with a needle at v (0–1). */
-const riskMeter = (ctx: CanvasRenderingContext2D, x: number, y: number, w: number, v: number, label: string, value: string, color: string) => {
-  text(ctx, label, x, y, {weight: 600, size: 12, color: C.meta});
-  text(ctx, value, x + w, y, {weight: 700, size: 13, color, align: 'right'});
-  const by = y + 12;
-  const segs = 10;
-  for (let i = 0; i < segs; i++) {
-    const sx = x + (w / segs) * i;
-    const f = i / (segs - 1);
-    const col = f < 0.35 ? C.up : f < 0.65 ? C.warn : C.red;
-    rr(ctx, sx + 1, by, w / segs - 2, 10, 3);
-    ctx.fillStyle = col;
-    ctx.globalAlpha = v * segs >= i + 0.5 ? 1 : 0.22;
-    ctx.fill();
-    ctx.globalAlpha = 1;
-  }
-  const nx = x + w * clamp01(v);
-  ctx.beginPath();
-  ctx.moveTo(nx, by - 2);
-  ctx.lineTo(nx - 6, by - 10);
-  ctx.lineTo(nx + 6, by - 10);
-  ctx.closePath();
-  ctx.fillStyle = C.text;
-  ctx.fill();
+/** A labelled row: label at the start, value (LTR number or text) at the end. */
+const row = (ctx: CanvasRenderingContext2D, y: number, label: string, value: string, color: string, isNum = true, size = 24) => {
+  say(ctx, label, sx() + (SC().rtl ? -4 : 4), y, {weight: 500, size: 21, color: '#C9CDD6', maxW: 170});
+  if (isNum) num(ctx, value, ex() + (SC().rtl ? 4 : -4), y, {size, color, align: aEnd()});
+  else say(ctx, value, ex() + (SC().rtl ? 4 : -4), y, {weight: 700, size, color, align: aEnd(), maxW: 170});
 };
 
-/** Row of a trade list (left phone). */
-const tradeRow = (
-  ctx: CanvasRenderingContext2D,
-  y: number,
-  r: {side: string; lots: number; source: string; note: string; pnl: number; open: boolean},
-  alpha: number,
-  t: number,
-) => {
-  if (alpha <= 0) return;
+/** A banner across the top (a push notification). */
+const banner = (ctx: CanvasRenderingContext2D, t: number, at: number, kind: IconKind, title: string, body: string, accent: string, until = Infinity) => {
+  const k = springAt(t - at, {freq: 2.2, damping: 0.7});
+  const out = Number.isFinite(until) ? ramp(t, until, until + 14, easeIn) : 0;
+  if (t < at || out >= 1) return;
+  const y = 58 + (1 - Math.min(1, k)) * -90 - out * 90;
   ctx.save();
-  ctx.globalAlpha = alpha;
-  ctx.fillStyle = C.line;
-  ctx.fillRect(28, y + 58, W - 56, 1);
-  const buy = r.side === 'BUY';
-  pill(ctx, r.side, 28, y + 8, {bg: buy ? 'rgba(76,195,138,0.16)' : 'rgba(217,83,79,0.18)', color: buy ? C.up : C.red, size: 11, h: 22, padX: 8});
-  text(ctx, `${r.lots.toFixed(2)} lots`, 80, y + 24, {weight: 700, size: 14, color: C.text});
-  text(ctx, r.source, 28, y + 48, {weight: 500, size: 11, color: C.meta});
-  text(ctx, 'SL: —', 168, y + 24, {weight: 700, size: 12, color: C.red});
-  // The "?" where a reason should be.
-  const qx = 250;
-  const q = 0.5 + 0.5 * Math.sin(t / 6);
-  ctx.beginPath();
-  ctx.arc(qx, y + 20, 11, 0, Math.PI * 2);
-  ctx.fillStyle = `rgba(232,163,61,${0.16 + 0.12 * q})`;
+  ctx.globalAlpha = clamp01(k * 2) * (1 - out);
+  softShadow(ctx, 14, y, W - 28, 76, 0.55, 8);
+  rr(ctx, 14, y, W - 28, 76, 24);
+  ctx.fillStyle = 'rgba(30,33,42,0.97)';
   ctx.fill();
-  ctx.lineWidth = 1.2;
-  ctx.strokeStyle = C.warn;
+  ctx.lineWidth = 2;
+  ctx.strokeStyle = accent;
   ctx.stroke();
-  text(ctx, '?', qx, y + 25.5, {weight: 700, size: 15, color: C.warn, align: 'center'});
-  text(ctx, 'Reason', qx, y + 46, {weight: 500, size: 9.5, color: C.dim, align: 'center'});
-  text(ctx, signedMoney(r.pnl, 0), W - 28, y + 25, {weight: 700, size: 15, color: r.pnl >= 0 ? C.up : C.red, align: 'right'});
-  text(ctx, r.note, W - 28, y + 46, {weight: 500, size: 10.5, color: r.open ? C.warn : C.dim, align: 'right'});
-  ctx.restore();
-};
-
-// ─── LEFT: trading blind ─────────────────────────────────────────────────────
-
-const FOCUS_Y = 482;
-
-const leftTrades = (ctx: CanvasRenderingContext2D, t: number, alpha: number) => {
-  if (alpha <= 0) return;
-  ctx.save();
-  ctx.globalAlpha = alpha;
-  card(ctx, 12, FOCUS_Y, W - 24, 346);
-  text(ctx, "Today's trades", 28, FOCUS_Y + 30, {weight: 700, size: 16, color: C.text});
-  illus(ctx, W - 28, FOCUS_Y + 16);
-  const [t1, t2, t3] = LEFT_TRADES;
-  const rows: {side: string; lots: number; source: string; note: string; pnl: number; open: boolean; at: number}[] = [
-    {side: t1.side, lots: t1.lots, source: `Copied · ${TOP_TRADER}`, note: t < t1.closedAt ? 'open · no stop loss' : 'closed in panic', pnl: t < t1.closedAt ? leftFloating(t) : t1.pnl, open: t < t1.closedAt, at: -100},
-    {side: t2.side, lots: t2.lots, source: 'Manual · random buy', note: t < t2.closedAt ? 'opened late' : 'closed in panic', pnl: t < t2.closedAt ? leftFloating(t) : t2.pnl, open: t < t2.closedAt, at: t2.openedAt},
-    {side: t3.side, lots: t3.lots, source: 'Manual · random sell', note: t < t3.closedAt ? 'guess' : 'closed in panic', pnl: t < t3.closedAt ? leftFloating(t) : t3.pnl, open: t < t3.closedAt, at: t3.openedAt},
-  ];
-  // Newest on top, pushing the older ones down.
-  const shown = rows.filter((r) => t >= r.at).reverse();
-  let y = FOCUS_Y + 46;
-  for (const r of shown) {
-    const p = easeOut(clamp01((t - r.at) / 14));
-    tradeRow(ctx, y - (1 - p) * 30, r, p, t);
-    y += 62 * p;
-  }
-  // Summary: no plan.
-  const sy = FOCUS_Y + 300;
-  rr(ctx, 28, sy, W - 56, 32, 10);
-  ctx.fillStyle = 'rgba(217,83,79,0.12)';
+  const rtl = SC().rtl;
+  const ix = rtl ? W - 14 - 38 : 14 + 38;
+  ctx.beginPath();
+  ctx.arc(ix, y + 38, 21, 0, Math.PI * 2);
+  ctx.fillStyle = hexA(accent, 0.18);
   ctx.fill();
-  icon(ctx, 'question', 46, sy + 16, 14, C.warn, 1.8);
-  text(ctx, 'No plan · no stop loss · no reason', 62, sy + 21, {weight: 600, size: 12, color: '#F0B4B2'});
+  icon(ctx, kind, ix, y + 38, 22, accent, 2.4);
+  const tx = rtl ? ix - 34 : ix + 34;
+  say(ctx, title, tx, y + 34, {weight: 700, size: 19, color: C.text, maxW: W - 120});
+  say(ctx, body, tx, y + 60, {weight: 500, size: 15, color: '#B9BECA', maxW: W - 120});
   ctx.restore();
 };
 
-const leftPosition = (ctx: CanvasRenderingContext2D, t: number, alpha: number) => {
-  if (alpha <= 0) return;
-  const T4 = LEFT_TRADES[3];
+// ─── LEFT: trading without a plan ────────────────────────────────────────────
+
+const RED = '#FF4D4D';
+const GREEN = '#3FD08A';
+
+/** Before the trade: a ticket with Sell / Buy, and "Buy" gets tapped. */
+const leftTicket = (ctx: CanvasRenderingContext2D, t: number) => {
+  cardBox(ctx);
+  const rtl = SC().rtl;
+  say(ctx, SC().noPlan, sx() + (rtl ? -6 : 6), CARD.y + 50, {weight: 500, size: 18, color: '#9AA1B0'});
+  // Lot size.
+  num(ctx, `3.00 ${SC().lots === 'lots' ? 'lots' : ''}`.trim(), W / 2, CARD.y + 120, {size: 44, align: 'center'});
+  if (SC().lots !== 'lots') say(ctx, SC().lots, W / 2, CARD.y + 152, {weight: 500, size: 18, color: '#9AA1B0', align: 'center'});
+  // Sell and Buy buttons (Buy on the reading-end side for LTR, start for RTL: like the app's order).
+  const press = Math.sin(Math.PI * clamp01((t - LEFT.tapAt) / 10));
+  const bw = 156;
+  const by = CARD.y + 178;
+  const sellX = rtl ? W / 2 + 8 : W / 2 - 8 - bw;
+  const buyX = rtl ? W / 2 - 8 - bw : W / 2 + 8;
+  rr(ctx, sellX, by, bw, 74, 22);
+  ctx.lineWidth = 2.5;
+  ctx.strokeStyle = RED;
+  ctx.stroke();
+  say(ctx, SC().sell, sellX + bw / 2, by + 47, {weight: 700, size: 26, color: RED, align: 'center'});
   ctx.save();
-  ctx.globalAlpha = alpha;
-  card(ctx, 12, FOCUS_Y, W - 24, 346, {red: true});
-  text(ctx, 'Open position', 28, FOCUS_Y + 30, {weight: 700, size: 16, color: C.text});
-  illus(ctx, W - 28, FOCUS_Y + 16);
-  pill(ctx, 'BUY', 28, FOCUS_Y + 46, {bg: 'rgba(76,195,138,0.16)', color: C.up, size: 13, h: 28, padX: 10});
-  text(ctx, `${T4.lots.toFixed(2)} lots`, 86, FOCUS_Y + 68, {weight: 700, size: 24, color: C.text});
-  text(ctx, `Copied late from ${TOP_TRADER} · ${priceStr(T4.entry)}`, 28, FOCUS_Y + 94, {weight: 500, size: 11, color: C.meta});
-  // Three big boxes: stop loss, leverage, lot size.
-  const flash = 0.5 + 0.5 * Math.sin(t / 4.5);
-  const boxes: [string, string][] = [
-    ['Stop loss', 'SL: —'],
-    ['Leverage', LEFT.leverage],
-    ['Lot size', T4.lots.toFixed(2)],
-  ];
-  boxes.forEach(([label, value], i) => {
-    const bx = 28 + i * 118;
-    const by = FOCUS_Y + 108;
-    rr(ctx, bx, by, 108, 78, 14);
-    ctx.fillStyle = `rgba(217,83,79,${0.1 + 0.1 * flash})`;
-    ctx.fill();
-    ctx.lineWidth = 1.2;
-    ctx.strokeStyle = `rgba(217,83,79,${0.5 + 0.4 * flash})`;
-    ctx.stroke();
-    text(ctx, label, bx + 54, by + 24, {weight: 600, size: 11, color: '#F0B4B2', align: 'center'});
-    text(ctx, value, bx + 54, by + 58, {weight: 700, size: fit(ctx, value, 700, 24, 96), color: C.red, align: 'center'});
-  });
-  // Risk meter swinging into the red.
-  const swing = springAt(t - (T4.openedAt + 4), {freq: 1.6, damping: 0.35});
-  const v = 0.3 + 0.64 * swing + 0.02 * Math.sin(t / 3.1);
-  riskMeter(ctx, 28, FOCUS_Y + 222, W - 56, v, 'Account risk', 'EXTREME', C.red);
-  const ml = leftMarginLevel(t);
-  text(ctx, `Margin level ${ml ? Math.round(ml) : LEFT.marginBefore}%`, 28, FOCUS_Y + 276, {weight: 700, size: 14, color: C.warn});
-  const fl = leftFloating(t);
-  text(ctx, `Floating ${signedMoney(fl, 2)}`, W - 28, FOCUS_Y + 276, {weight: 700, size: 14, color: fl >= 0 ? C.up : C.red, align: 'right'});
-  rr(ctx, 28, FOCUS_Y + 298, W - 56, 32, 10);
-  ctx.fillStyle = 'rgba(217,83,79,0.12)';
+  ctx.translate(buyX + bw / 2, by + 37);
+  ctx.scale(1 - 0.07 * press, 1 - 0.07 * press);
+  rr(ctx, -bw / 2, -37, bw, 74, 22);
+  ctx.fillStyle = GREEN;
   ctx.fill();
-  icon(ctx, 'warn', 46, FOCUS_Y + 314, 14, C.red, 1.8);
-  text(ctx, 'No stop loss · oversized lot · 1:500', 62, FOCUS_Y + 319, {weight: 600, size: 12, color: '#F0B4B2'});
+  if (press > 0) {
+    ctx.fillStyle = `rgba(255,255,255,${0.35 * press})`;
+    ctx.fill();
+  }
+  say(ctx, SC().buy, 0, 10, {weight: 700, size: 28, color: '#062514', align: 'center'});
   ctx.restore();
 };
 
-const leftCalendar = (ctx: CanvasRenderingContext2D, t: number, alpha: number) => {
-  if (alpha <= 0) return;
-  ctx.save();
-  ctx.globalAlpha = alpha;
-  card(ctx, 12, FOCUS_Y, W - 24, 346);
-  icon(ctx, 'calendar', 36, FOCUS_Y + 25, 18, C.meta, 1.8);
-  text(ctx, 'Economic calendar', 54, FOCUS_Y + 31, {weight: 700, size: 16, color: C.text});
-  const nw = pill(ctx, 'Not opened', W - 28 - 96, FOCUS_Y + 16, {bg: '#22293A', color: C.meta, size: 11, h: 24, padX: 10});
-  void nw;
-  icon(ctx, 'eyeOff', W - 28 - 110, FOCUS_Y + 28, 16, C.dim, 1.6);
-  // Events, greyed out: never looked at.
-  ctx.save();
-  ctx.globalAlpha *= 0.42;
-  const ev: [string, string, number, string][] = [
-    ['14:30', 'USD', 3, NEWS.detail],
-    ['16:00', 'USD', 2, 'Consumer sentiment'],
-    ['18:00', 'EUR', 1, 'Speech'],
-  ];
-  ev.forEach(([time, ccy, impactN, name], i) => {
-    const y = FOCUS_Y + 62 + i * 46;
-    rr(ctx, 28, y, W - 56, 38, 10);
-    ctx.fillStyle = C.cardHi;
-    ctx.fill();
-    text(ctx, time, 40, y + 24, {weight: 700, size: 13, color: C.text});
-    text(ctx, ccy, 90, y + 24, {weight: 700, size: 12, color: C.meta});
-    for (let b = 0; b < 3; b++) {
-      rr(ctx, 124 + b * 9, y + 13, 6, 12, 2);
-      ctx.fillStyle = b < impactN ? C.red : C.line;
-      ctx.fill();
-    }
-    text(ctx, name, 162, y + 24, {weight: 500, size: 12, color: C.text});
-  });
-  ctx.restore();
-  text(ctx, '0 alerts set · 1 high-impact event today', 28, FOCUS_Y + 222, {weight: 500, size: 11.5, color: C.dim});
-  // The open position, still without a stop.
-  const T4 = LEFT_TRADES[3];
-  const y = FOCUS_Y + 240;
-  rr(ctx, 28, y, W - 56, 60, 12);
-  ctx.fillStyle = 'rgba(217,83,79,0.1)';
+/** The open trade: Buy 3.00 lots, stop loss: none. */
+const leftPosition = (ctx: CanvasRenderingContext2D) => {
+  cardBox(ctx);
+  const rtl = SC().rtl;
+  // "Buy 3.00 lots"
+  const bw = say(ctx, SC().buy, sx() + (rtl ? -6 : 6), CARD.y + 62, {weight: 700, size: 32, color: GREEN, maxW: 120});
+  const nx = rtl ? sx() - 6 - bw - 14 : sx() + 6 + bw + 14;
+  const lotsStr = SC().lots === 'lots' ? '3.00 lots' : '3.00';
+  const lw = num(ctx, lotsStr, nx, CARD.y + 62, {size: 32});
+  if (SC().lots !== 'lots') say(ctx, SC().lots, rtl ? nx - lw - 10 : nx + lw + 10, CARD.y + 62, {weight: 700, size: 32, maxW: 80});
+  // The big red "Stop loss: none".
+  const y = CARD.y + 98;
+  rr(ctx, CARD.x + 16, y, CARD.w - 32, 96, 22);
+  ctx.fillStyle = 'rgba(255,77,77,0.14)';
   ctx.fill();
-  text(ctx, `BUY ${T4.lots.toFixed(2)} · ${LEFT.leverage}`, 42, y + 25, {weight: 700, size: 14, color: C.text});
-  text(ctx, 'SL: —', 42, y + 46, {weight: 700, size: 12, color: C.red});
-  const fl = t < T4.closedAt ? leftFloating(t) : T4.pnl;
-  text(ctx, signedMoney(fl, 2), W - 42, y + 33, {weight: 700, size: 16, color: fl >= 0 ? C.up : C.red, align: 'right'});
-  text(ctx, 'Not watching the news', 28, FOCUS_Y + 330, {weight: 600, size: 12, color: '#F0B4B2'});
-  ctx.restore();
+  ctx.lineWidth = 2;
+  ctx.strokeStyle = 'rgba(255,77,77,0.7)';
+  ctx.stroke();
+  const ix = rtl ? CARD.x + CARD.w - 16 - 46 : CARD.x + 16 + 46;
+  ctx.beginPath();
+  ctx.arc(ix, y + 48, 25, 0, Math.PI * 2);
+  ctx.fillStyle = RED;
+  ctx.fill();
+  icon(ctx, 'x', ix, y + 48, 22, '#2a0507', 4);
+  const tx = rtl ? ix - 40 : ix + 40;
+  say(ctx, SC().stopLoss, tx, y + 40, {weight: 500, size: 19, color: '#F2C2C2', maxW: 230});
+  say(ctx, SC().none, tx, y + 76, {weight: 700, size: 30, color: RED, maxW: 230});
+  // Leverage, small.
+  say(ctx, `${LANG === 'ar' ? 'الرافعة' : 'Leverage'}`, sx() + (rtl ? -6 : 6), CARD.y + 244, {weight: 500, size: 18, color: '#9AA1B0', maxW: 160});
+  num(ctx, LEFT.leverage, ex() + (rtl ? 6 : -6), CARD.y + 244, {size: 20, color: '#E0B04A', align: aEnd()});
 };
 
-/** "Margin level 112%" then "Margin call": the overlay cards on the left after the news. */
-const leftCrash = (ctx: CanvasRenderingContext2D, t: number) => {
-  const ml = leftMarginLevel(t);
-  const warnIn = springAt(t - (NEWS.at + 6), {freq: 2.4, damping: 0.5});
-  const callAt = LEFT_NOTIFS[LEFT_NOTIFS.length - 1].at;
-  const callIn = springAt(t - callAt, {freq: 2.0, damping: 0.55});
-  if (t >= NEWS.at + 6 && t < callAt + 10) {
-    const a = clamp01(warnIn * 2) * (1 - ramp(t, callAt, callAt + 10));
-    ctx.save();
-    ctx.globalAlpha = a;
-    ctx.translate(W / 2, FOCUS_Y + 60);
-    ctx.scale(0.8 + 0.2 * warnIn, 0.8 + 0.2 * warnIn);
-    ctx.translate(-W / 2, -(FOCUS_Y + 60));
-    card(ctx, 20, FOCUS_Y + 6, W - 40, 110, {red: true});
-    icon(ctx, 'warn', 50, FOCUS_Y + 44, 24, C.red, 2.2);
-    text(ctx, `Margin level ${Math.round(ml ?? LEFT.marginAtNews)}%`, 74, FOCUS_Y + 52, {weight: 700, size: 22, color: C.red});
-    text(ctx, 'Equity collapsing · no stop loss', 74, FOCUS_Y + 76, {weight: 500, size: 12, color: '#F0B4B2'});
-    riskMeter(ctx, 40, FOCUS_Y + 98, W - 80, 0.98, '', '', C.red);
-    ctx.restore();
-  }
-  if (t >= callAt) {
-    ctx.save();
-    ctx.globalAlpha = clamp01(callIn * 2);
-    ctx.translate(W / 2, FOCUS_Y + 170);
-    ctx.scale(0.85 + 0.15 * callIn, 0.85 + 0.15 * callIn);
-    ctx.translate(-W / 2, -(FOCUS_Y + 170));
-    softShadow(ctx, 20, FOCUS_Y + 6, W - 40, 330, 0.7, 8);
-    rr(ctx, 12, FOCUS_Y, W - 24, 346, 18);
-    const g = ctx.createLinearGradient(0, FOCUS_Y, 0, FOCUS_Y + 346);
-    g.addColorStop(0, '#4A1B20');
-    g.addColorStop(1, '#22121A');
-    ctx.fillStyle = g;
-    ctx.fill();
-    ctx.lineWidth = 1.5;
-    ctx.strokeStyle = 'rgba(217,83,79,0.9)';
-    ctx.stroke();
-    const pulse = 0.5 + 0.5 * Math.sin((t - callAt) / 5);
-    ctx.beginPath();
-    ctx.arc(W / 2, FOCUS_Y + 64, 30 + 4 * pulse, 0, Math.PI * 2);
-    ctx.fillStyle = `rgba(217,83,79,${0.22 + 0.1 * pulse})`;
-    ctx.fill();
-    icon(ctx, 'warn', W / 2, FOCUS_Y + 64, 30, '#FFD2D0', 2.6);
-    text(ctx, 'MARGIN CALL', W / 2, FOCUS_Y + 134, {weight: 700, size: 30, color: '#FFFFFF', align: 'center'});
-    text(ctx, 'Positions closed · no stop loss was set', W / 2, FOCUS_Y + 160, {weight: 500, size: 12.5, color: '#F2C4C2', align: 'center'});
-    ctx.fillStyle = 'rgba(255,255,255,0.08)';
-    ctx.fillRect(40, FOCUS_Y + 184, W - 80, 1);
-    text(ctx, 'Balance', 40, FOCUS_Y + 214, {weight: 500, size: 12.5, color: '#F2C4C2'});
-    text(ctx, `$${money(leftBalance(t))}`, W - 40, FOCUS_Y + 216, {weight: 700, size: 22, color: '#FFFFFF', align: 'right'});
-    text(ctx, 'Today', 40, FOCUS_Y + 252, {weight: 500, size: 12.5, color: '#F2C4C2'});
-    const today = leftBalance(t) - 10000;
-    text(ctx, `${signedMoney(today, 0)} (${signedPct((today / 10000) * 100)})`, W - 40, FOCUS_Y + 254, {weight: 700, size: 18, color: C.red, align: 'right'});
-    illus(ctx, W - 40, FOCUS_Y + 284);
-    ctx.restore();
-  }
+/** The margin call takeover: the whole screen says it. */
+const marginCall = (ctx: CanvasRenderingContext2D, t: number) => {
+  const k = springAt(t - LEFT.marginCallAt, {freq: 1.8, damping: 0.6});
+  const a = clamp01(k * 1.8);
+  ctx.save();
+  ctx.globalAlpha = a;
+  const g = ctx.createLinearGradient(0, 0, 0, H);
+  g.addColorStop(0, '#b3121c');
+  g.addColorStop(0.5, '#6e0a11');
+  g.addColorStop(1, '#2b0508');
+  ctx.fillStyle = g;
+  ctx.fillRect(0, 0, W, H);
+  ctx.translate(W / 2, 0);
+  const s = 0.85 + 0.15 * Math.min(1.05, k);
+  ctx.translate(0, 470);
+  ctx.scale(s, s);
+  ctx.translate(0, -470);
+  // Warning icon.
+  ctx.beginPath();
+  ctx.arc(0, 250, 62, 0, Math.PI * 2);
+  ctx.fillStyle = 'rgba(255,255,255,0.14)';
+  ctx.fill();
+  icon(ctx, 'warn', 0, 250, 64, '#fff', 6);
+  say(ctx, SC().marginCall, 0, 376, {weight: 700, size: 50, color: '#fff', align: 'center', maxW: 350});
+  say(ctx, SC().closedLoss, 0, 420, {weight: 500, size: 21, color: '#FFD3D3', align: 'center', maxW: 350});
+  // The loss.
+  rr(ctx, -160, 458, 320, 104, 30);
+  ctx.fillStyle = 'rgba(0,0,0,0.32)';
+  ctx.fill();
+  num(ctx, signedMoney(LEFT.pnl), 0, 530, {size: 60, color: '#fff', align: 'center'});
+  // The balance after.
+  say(ctx, SC().balance, 0, 626, {weight: 500, size: 19, color: '#FFD3D3', align: 'center'});
+  num(ctx, usd(leftBalance(t)), 0, 680, {size: 44, color: '#fff', align: 'center'});
+  ctx.restore();
 };
 
 const drawBlind = (ctx: CanvasRenderingContext2D, t: number) => {
-  ctx.drawImage(baseLayer('blind'), 0, 0, W, H);
-  accountBlock(ctx, t, 'left', false);
-  const T4 = LEFT_TRADES[3];
-  chart(ctx, t, t >= T4.openedAt && t < T4.closedAt ? [{price: T4.entry, label: `BUY 8.00 · SL —`, color: '#AEB6C8'}] : [], false, '#AEB6C8');
-  // Focus card: trades (strategy) → position (risk) → calendar (market updates) → crash.
-  const toPos = ramp(t, 304, 322, easeInOut);
-  const toCal = ramp(t, 418, 436, easeInOut);
-  const callAt = LEFT_NOTIFS[LEFT_NOTIFS.length - 1].at;
-  const hideCal = ramp(t, callAt, callAt + 8);
-  ctx.save();
-  ctx.beginPath();
-  ctx.rect(0, FOCUS_Y - 10, W, 838 - FOCUS_Y + 10);
-  ctx.clip();
-  if (toPos < 1) {
-    ctx.save();
-    ctx.translate(-W * 0.3 * toPos, 0);
-    leftTrades(ctx, t, 1 - toPos);
-    ctx.restore();
+  const danger = leftDanger(t);
+  background(ctx, 'blind', danger);
+  if (t >= LEFT.marginCallAt + 16) {
+    marginCall(ctx, t);
+    chrome(ctx, t);
+    homeIndicator(ctx);
+    return;
   }
-  if (toPos > 0 && toCal < 1) {
-    ctx.save();
-    ctx.translate(W * 0.3 * (1 - toPos) - W * 0.3 * toCal, 0);
-    leftPosition(ctx, t, toPos * (1 - toCal));
-    ctx.restore();
-  }
-  if (toCal > 0 && hideCal < 1) {
-    ctx.save();
-    ctx.translate(W * 0.3 * (1 - toCal), 0);
-    leftCalendar(ctx, t, toCal * (1 - hideCal) * (1 - 0.65 * ramp(t, NEWS.at + 2, NEWS.at + 12)));
-    ctx.restore();
-  }
-  ctx.restore();
-  if (t >= NEWS.at) leftCrash(ctx, t);
-  // Red alarm glow at the screen edges, pulsing with each loss.
-  const flash = leftLossFlash(t) + (t > callAt ? 0.35 + 0.15 * Math.sin((t - callAt) / 6) : 0);
-  if (flash > 0.01) {
-    const g = ctx.createRadialGradient(W / 2, H / 2, H * 0.32, W / 2, H / 2, H * 0.62);
-    g.addColorStop(0, 'rgba(217,83,79,0)');
-    g.addColorStop(1, `rgba(217,83,79,${Math.min(0.55, 0.4 * flash)})`);
-    ctx.fillStyle = g;
-    ctx.fillRect(0, 0, W, H);
-  }
-  ctx.fillStyle = C.appBg;
-  ctx.fillRect(0, 0, W, 44);
-  statusBar(ctx, t);
-  notifStack(ctx, LEFT_NOTIFS as unknown as Notif[], t, 150, 1.4);
+  header(ctx, 'blind');
+  const open = leftOpenPnl(t);
+  const balColor = C.text;
+  balanceBlock(ctx, leftBalance(t), balColor, open, ramp(t, LEFT.openedAt, LEFT.openedAt + 10));
+  const lineColor = mixHex('#ECE7DC', RED, ramp(t, NEWS.at, NEWS.at + 8));
+  chart(ctx, t, lineColor, [{price: LEFT.entry, color: '#ECE7DC', label: SC().entry, alpha: ramp(t, LEFT.openedAt, LEFT.openedAt + 12)}], RED);
+  withT(ctx, tr(t, -100, LEFT.openedAt - 2, 10), () => leftTicket(ctx, t));
+  withT(ctx, tr(t, LEFT.openedAt), () => leftPosition(ctx));
+  banner(ctx, t, NEWS.at + 2, 'bolt', SC().newsBanner, SC().newsBody, RED);
+  if (t >= LEFT.marginCallAt) marginCall(ctx, t);
+  chrome(ctx, t);
+  homeIndicator(ctx);
 };
 
 // ─── RIGHT: trading with Miran Gold ──────────────────────────────────────────
 
-type SignalSpec = {side: string; entry: number; sl: number; tp1: number; tp2: number; lots: number; riskPct: number};
+const GOLD = '#E3B65E';
 
-/** The Miran signal card. `lines` (0–8, fractional) is how far it has built. */
-const signalCard = (
-  ctx: CanvasRenderingContext2D,
-  y: number,
-  t: number,
-  s: SignalSpec,
-  lines: number,
-  st: {filled: boolean; slLabel?: string; slBE?: boolean; tp1Done?: string; tp2Done?: string; title?: string; riskGlow?: number; closedBE?: boolean},
-) => {
-  const x = 12;
-  const w = W - 24;
-  const h = 270;
-  card(ctx, x, y, w, h, {gold: true});
-  const L = (i: number) => easeOut(clamp01(lines - i));
-  const row = (i: number, draw: () => void) => {
-    const p = L(i);
-    if (p <= 0) return;
-    ctx.save();
-    ctx.globalAlpha *= p;
-    ctx.translate(SC().rtl ? -(1 - p) * 18 : (1 - p) * 18, 0);
-    draw();
-    ctx.restore();
-  };
-  const rtl = SC().rtl;
-  // 0. Header: emblem + title.
-  row(0, () => {
-    const ex = rtl ? x + w - 30 : x + 30;
-    emblem(ctx, ex, y + 26, 15);
-    ltext(ctx, st.title ?? SC().signalTitle, x + 52, x + w - 52, y + 32, {weight: 700, size: 15, color: goldGradient(ctx, x, 0, x + w, 0)});
-    illus(ctx, rtl ? x + 16 + measure(ctx, SC().illustrative, 600, 9, true) + 12 : x + w - 16, y + 18);
-  });
-  // 1. Pair + side.
-  row(1, () => {
-    const pw = measure(ctx, MARKET.pair, 700, 22);
-    text(ctx, MARKET.pair, x + 18, y + 72, {weight: 700, size: 22, color: C.text});
-    pill(ctx, s.side, x + 26 + pw, y + 53, {bg: 'rgba(76,195,138,0.18)', color: C.up, size: 13, h: 26, padX: 10});
-    text(ctx, `${s.lots.toFixed(2)} lots`, x + w - 18, y + 72, {weight: 600, size: 12, color: C.meta, align: 'right'});
-  });
-  const field = (i: number, label: string, value: string, color: string, chip?: {text: string; color: string; bg: string; icon?: IconKind}) =>
-    row(i, () => {
-      const ry = y + 86 + (i - 2) * 30;
-      ctx.fillStyle = C.line;
-      ctx.fillRect(x + 18, ry, w - 36, 0.8);
-      text(ctx, label, x + 18, ry + 20, {weight: 500, size: 12.5, color: C.meta});
-      text(ctx, value, x + w - 18, ry + 21, {weight: 700, size: 15, color, align: 'right'});
-      if (chip) {
-        const vw = measure(ctx, value, 700, 15);
-        const cw = measure(ctx, chip.text, 700, 10.5) + (chip.icon ? 26 : 14);
-        const cx = x + w - 18 - vw - 8 - cw;
-        rr(ctx, cx, ry + 6, cw, 19, 9.5);
-        ctx.fillStyle = chip.bg;
-        ctx.fill();
-        if (chip.icon) icon(ctx, chip.icon, cx + 11, ry + 15.5, 10, chip.color, 1.6);
-        text(ctx, chip.text, cx + (chip.icon ? 20 : 7), ry + 19.5, {weight: 700, size: 10.5, color: chip.color});
-      }
-    });
-  field(2, 'Entry', priceStr(s.entry), C.text, st.filled ? {text: 'filled', color: C.up, bg: 'rgba(76,195,138,0.14)', icon: 'check'} : undefined);
-  field(
-    3,
-    'Stop loss',
-    st.slLabel ?? priceStr(s.sl),
-    st.slBE ? C.goldB : C.red,
-    st.closedBE ? {text: 'closed at BE · $0', color: C.goldB, bg: 'rgba(212,162,76,0.16)', icon: 'shield'} : st.slBE ? {text: 'break-even', color: C.goldB, bg: 'rgba(212,162,76,0.16)', icon: 'lock'} : {text: 'set', color: C.text, bg: C.cardHi, icon: 'lock'},
-  );
-  field(4, 'TP1', priceStr(s.tp1), C.up, st.tp1Done ? {text: st.tp1Done, color: '#0B0F19', bg: C.up, icon: 'check'} : undefined);
-  field(5, 'TP2', priceStr(s.tp2), C.up, st.tp2Done ? {text: st.tp2Done, color: '#0B0F19', bg: C.up, icon: 'check'} : undefined);
-  // 6. Reason.
-  row(6, () => {
-    const ry = y + 86 + 4 * 30;
-    ctx.fillStyle = C.line;
-    ctx.fillRect(x + 18, ry, w - 36, 0.8);
-    const ix = rtl ? x + w - 28 : x + 28;
-    icon(ctx, 'target', ix, ry + 17, 14, C.goldB, 1.6);
-    ltext(ctx, SC().reason, x + 44, x + w - 44, ry + 22, {weight: 600, size: 13, color: C.text});
-  });
-  // 7. Risk 1%.
-  row(7, () => {
-    const ry = y + 86 + 4 * 30 + 36;
-    const glow = st.riskGlow ?? 0;
-    if (glow > 0.01) {
-      rr(ctx, x + 14 - 4 * glow, ry - 4 * glow, 110 + 8 * glow, 30 + 8 * glow, 15 + 4 * glow);
-      ctx.fillStyle = `rgba(243,210,122,${0.25 * glow})`;
-      ctx.fill();
-    }
-    const label = `Risk ${s.riskPct}%`;
-    pill(ctx, label, x + 18, ry, {bg: goldGradient(ctx, x + 18, 0, x + 120, 0), color: '#0B0F19', size: 14, h: 30, padX: 14});
-    const risk = Math.round((s.entry - s.sl) * s.lots * 100);
-    text(ctx, `Max loss $${money(risk, 0)} · stop loss always set`, x + w - 18, ry + 20, {weight: 500, size: 11, color: C.meta, align: 'right'});
-  });
-  return h;
-};
-
-const marketUpdateCard = (ctx: CanvasRenderingContext2D, y: number, alpha: number, title = SC().updateTitle, body = SC().updateBody, action = SC().updateAction, h = 128) => {
-  if (alpha <= 0) return;
-  ctx.save();
-  ctx.globalAlpha = alpha;
-  const x = 12;
-  const w = W - 24;
-  softShadow(ctx, x + 4, y + 4, w - 8, h - 6, 0.7, 8);
-  rr(ctx, x, y, w, h, 18);
-  const g = ctx.createLinearGradient(0, y, 0, y + h);
-  g.addColorStop(0, '#2A2214');
-  g.addColorStop(1, '#171A22');
-  ctx.fillStyle = g;
-  ctx.fill();
-  ctx.lineWidth = 1.4;
-  ctx.strokeStyle = 'rgba(243,210,122,0.75)';
-  ctx.stroke();
-  const rtl = SC().rtl;
-  emblem(ctx, rtl ? x + w - 30 : x + 30, y + 28, 16);
-  ltext(ctx, title, x + 54, x + w - 54, y + 34, {weight: 700, size: 16, color: goldGradient(ctx, x, 0, x + w, 0)});
-  const bx = rtl ? x + 18 : x + w - 18;
-  icon(ctx, 'bolt', rtl ? bx + 8 : bx - 8, y + 28, 14, C.warn);
-  ltext(ctx, body, x + 18, x + w - 18, y + 68, {weight: 700, size: 15, color: C.text});
-  ltext(ctx, action, x + 18, x + w - 18, y + 96, {weight: 500, size: 13, color: C.goldB});
-  if (h > 110) text(ctx, `Miran Gold · ${NEWS.label}`, rtl ? x + 18 : x + w - 18, y + h - 12, {weight: 500, size: 9.5, color: C.dim, align: rtl ? 'left' : 'right'});
-  ctx.restore();
-};
-
-const historyCard = (ctx: CanvasRenderingContext2D, y: number, h: number, t: number, alpha: number, max = 4) => {
-  if (alpha <= 0) return;
-  ctx.save();
-  ctx.globalAlpha = alpha;
-  card(ctx, 12, y, W - 24, h);
-  text(ctx, 'Trade history', 28, y + 28, {weight: 700, size: 15, color: C.text});
-  illus(ctx, W - 28, y + 14);
-  const rows = RIGHT.history.filter((r) => r.at <= t).reverse().slice(0, max);
-  rows.forEach((r, i) => {
-    const p = easeOut(clamp01((t - r.at) / 12));
-    const ry = y + 44 + i * 34 - (1 - p) * 20;
-    ctx.save();
-    ctx.globalAlpha *= i === 0 ? p : 1;
-    ctx.fillStyle = C.line;
-    ctx.fillRect(28, ry, W - 56, 0.8);
-    const col = r.pnl > 0 ? C.up : r.pnl < 0 ? C.red : C.goldB;
+/** Waiting for the signal. */
+const waitingCard = (ctx: CanvasRenderingContext2D, t: number) => {
+  cardBox(ctx, {border: 'rgba(212,162,76,0.35)'});
+  emblem(ctx, W / 2, CARD.y + 92, 44);
+  say(ctx, SC().waiting, W / 2, CARD.y + 186, {weight: 600, size: 22, align: 'center', maxW: 320});
+  for (let i = 0; i < 3; i++) {
+    const p = 0.35 + 0.65 * Math.max(0, Math.sin((t / 8 - i * 0.9) % (Math.PI * 2)));
     ctx.beginPath();
-    ctx.arc(36, ry + 17, 4, 0, Math.PI * 2);
-    ctx.fillStyle = col;
+    ctx.arc(W / 2 - 22 + i * 22, CARD.y + 226, 5.5, 0, Math.PI * 2);
+    ctx.fillStyle = hexA(GOLD, p);
     ctx.fill();
-    text(ctx, r.label.replace(' ✓', ''), 48, ry + 22, {weight: 600, size: 12.5, color: C.text});
-    const v = r.pnl === 0 ? '$0 · BE' : `${signedMoney(r.pnl, 0)} (${signedPct(r.pct)})`;
-    text(ctx, v, W - 28, ry + 22, {weight: 700, size: 12.5, color: col, align: 'right'});
-    ctx.restore();
-  });
-  ctx.restore();
+  }
 };
 
-const checklistModal = (ctx: CanvasRenderingContext2D, t: number) => {
-  const a = ramp(t, TIMING.checklistAt - 10, TIMING.checklistAt + 10, easeOut) * (1 - ramp(t, 714, 734, easeIn));
-  if (a <= 0) return;
-  ctx.save();
-  ctx.globalAlpha = a;
-  ctx.fillStyle = 'rgba(6,8,14,0.78)';
-  ctx.fillRect(0, 0, W, H);
-  const pop = springAt(t - TIMING.checklistAt, {freq: 1.9, damping: 0.55});
-  const cy = 480;
-  ctx.translate(W / 2, cy);
-  ctx.scale(0.86 + 0.14 * pop, 0.86 + 0.14 * pop);
-  ctx.translate(-W / 2, -cy);
-  const x = 22;
-  const w = W - 44;
-  const y = 262;
-  const h = 420;
-  softShadow(ctx, x + 6, y + 8, w - 12, h - 10, 0.9, 10);
-  rr(ctx, x, y, w, h, 26);
-  const g = ctx.createLinearGradient(0, y, 0, y + h);
-  g.addColorStop(0, '#1F1A12');
-  g.addColorStop(0.5, '#141A28');
-  g.addColorStop(1, '#10141F');
-  ctx.fillStyle = g;
-  ctx.fill();
-  ctx.lineWidth = 1.6;
-  ctx.strokeStyle = goldGradient(ctx, x, 0, x + w, 0);
-  ctx.stroke();
-  // Emblem with a soft gold halo.
-  const halo = ctx.createRadialGradient(W / 2, y + 62, 10, W / 2, y + 62, 70);
-  halo.addColorStop(0, 'rgba(243,210,122,0.35)');
-  halo.addColorStop(1, 'rgba(243,210,122,0)');
-  ctx.fillStyle = halo;
-  ctx.fillRect(x, y, w, 140);
-  emblem(ctx, W / 2, y + 62, 38);
-  text(ctx, SC().checklistTitle, W / 2, y + 132, {weight: 700, size: 22, color: goldGradient(ctx, x, 0, x + w, 0), align: 'center', rtl: SC().rtl});
+/** The Miran signal, building line by line. */
+const signalCard = (ctx: CanvasRenderingContext2D, t: number) => {
+  cardBox(ctx, {border: 'rgba(212,162,76,0.7)', glow: '#C8963E'});
   const rtl = SC().rtl;
-  SC().checklist.forEach((item, i) => {
-    const ty = TIMING.ticks[i];
-    const p = springAt(t - ty, {freq: 2.4, damping: 0.45});
-    const ry = y + 156 + i * 66;
-    rr(ctx, x + 18, ry, w - 36, 54, 14);
-    ctx.fillStyle = p > 0.01 ? `rgba(212,162,76,${0.08 + 0.08 * clamp01(p)})` : 'rgba(255,255,255,0.04)';
+  const line = (i: number) => ramp(t, SIGNAL.at + i * SIGNAL.lineGap, SIGNAL.at + i * SIGNAL.lineGap + 10, easeOut);
+  // Title row.
+  ctx.save();
+  ctx.globalAlpha *= line(0);
+  const ex0 = rtl ? CARD.x + CARD.w - 24 - 15 : CARD.x + 24 + 15;
+  emblem(ctx, ex0, CARD.y + 38, 15);
+  say(ctx, SC().signalTitle, rtl ? ex0 - 24 : ex0 + 24, CARD.y + 45, {weight: 700, size: 18, color: goldGradient(ctx, 0, 0, W, 0), maxW: 200});
+  // Executed tick.
+  const ex1 = ramp(t, SIGNAL.filledAt, SIGNAL.filledAt + 10, easeOut);
+  if (ex1 > 0) {
+    ctx.globalAlpha = line(0) * ex1;
+    const label = `✓ ${SC().executed}`;
+    const w = measure(ctx, SC().executed, 700, 15, rtl) + 40;
+    const px = rtl ? CARD.x + 22 : CARD.x + CARD.w - 22 - w;
+    rr(ctx, px, CARD.y + 24, w, 30, 15);
+    ctx.fillStyle = 'rgba(63,208,138,0.18)';
     ctx.fill();
-    ctx.lineWidth = 1;
-    ctx.strokeStyle = p > 0.01 ? 'rgba(212,162,76,0.5)' : C.line;
-    ctx.stroke();
-    const ccx = rtl ? x + w - 46 : x + 46;
-    ctx.beginPath();
-    ctx.arc(ccx, ry + 27, 15, 0, Math.PI * 2);
-    ctx.lineWidth = 1.6;
-    ctx.strokeStyle = 'rgba(212,162,76,0.6)';
-    ctx.stroke();
-    if (p > 0.001) {
-      ctx.save();
-      ctx.translate(ccx, ry + 27);
-      ctx.scale(Math.max(0, p), Math.max(0, p));
-      icon(ctx, 'checkCircle', 0, 0, 30, goldGradient(ctx, -15, 0, 15, 0), 2.6);
-      ctx.restore();
-      // A ring that pulses out once.
-      const ring = clamp01((t - ty) / 24);
-      if (ring > 0 && ring < 1) {
-        ctx.beginPath();
-        ctx.arc(ccx, ry + 27, 15 + 18 * ring, 0, Math.PI * 2);
-        ctx.lineWidth = 2;
-        ctx.strokeStyle = `rgba(243,210,122,${0.7 * (1 - ring)})`;
-        ctx.stroke();
-      }
-    }
-    ltext(ctx, item, x + 74, x + w - 74, ry + 35, {weight: 700, size: 21, color: p > 0.01 ? C.text : C.meta});
-  });
-  // "Signal source: Miran Gold" tag with a glint.
-  const tp = springAt(t - TIMING.tagAt, {freq: 2.2, damping: 0.5});
-  if (tp > 0.001) {
-    const label = SC().source;
-    const tw = measure(ctx, label, 700, 13, rtl) + 44;
-    const tx = W / 2 - tw / 2;
-    const tyy = y + h - 50;
+    icon(ctx, 'check', rtl ? px + w - 16 : px + 16, CARD.y + 39, 12, GREEN, 2.4);
+    say(ctx, SC().executed, rtl ? px + w - 30 : px + 30, CARD.y + 44, {weight: 700, size: 15, color: GREEN, maxW: w});
+    void label;
+  }
+  ctx.restore();
+  // "Buy gold".
+  ctx.save();
+  ctx.globalAlpha *= line(1);
+  say(ctx, SC().signalHead, sx() + (rtl ? -6 : 6), CARD.y + 98, {weight: 700, size: 34, color: GREEN, maxW: 300});
+  ctx.restore();
+  const rows: [string, string, string][] = [
+    [SC().entry, priceLabel(SIGNAL.entry), C.text],
+    [SC().stopLoss, priceLabel(SIGNAL.sl), RED],
+    [SC().target, priceLabel(SIGNAL.tp), GREEN],
+    [SC().risk, `${SIGNAL.riskPct}%`, GOLD],
+  ];
+  rows.forEach(([l, v, c], i) => {
     ctx.save();
-    ctx.globalAlpha *= clamp01(tp * 2);
-    ctx.translate(W / 2, tyy + 15);
-    ctx.scale(0.8 + 0.2 * tp, 0.8 + 0.2 * tp);
-    ctx.translate(-W / 2, -(tyy + 15));
-    rr(ctx, tx, tyy, tw, 30, 15);
-    ctx.fillStyle = '#2A2214';
-    ctx.fill();
-    ctx.lineWidth = 1.2;
-    ctx.strokeStyle = 'rgba(243,210,122,0.8)';
-    ctx.stroke();
-    emblem(ctx, rtl ? tx + tw - 17 : tx + 17, tyy + 15, 10);
-    text(ctx, label, W / 2 + (rtl ? -8 : 8), tyy + 20, {weight: 700, size: 13, color: C.goldB, align: 'center', rtl});
-    // Glint: a bright diagonal band sweeping across the tag.
-    const gl = clamp01((t - TIMING.tagAt - 8) / 22);
-    if (gl > 0 && gl < 1) {
-      ctx.save();
-      rr(ctx, tx, tyy, tw, 30, 15);
-      ctx.clip();
-      const gx = tx - 30 + (tw + 60) * gl;
-      const gg = ctx.createLinearGradient(gx - 24, 0, gx + 24, 0);
-      gg.addColorStop(0, 'rgba(255,248,225,0)');
-      gg.addColorStop(0.5, 'rgba(255,248,225,0.75)');
-      gg.addColorStop(1, 'rgba(255,248,225,0)');
-      ctx.fillStyle = gg;
-      ctx.fillRect(tx, tyy, tw, 30);
-      ctx.restore();
+    ctx.globalAlpha *= line(i + 2);
+    const y = CARD.y + 140 + i * 36;
+    row(ctx, y, l, v, c);
+    if (i < rows.length - 1) {
+      ctx.strokeStyle = 'rgba(255,255,255,0.07)';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(CARD.x + 22, y + 13);
+      ctx.lineTo(CARD.x + CARD.w - 22, y + 13);
+      ctx.stroke();
     }
     ctx.restore();
-  }
-  ctx.restore();
+  });
 };
 
-/** The calm risk meter under the Miran signal. */
-const calmMeter = (ctx: CanvasRenderingContext2D, y: number, alpha: number) => {
-  if (alpha <= 0) return;
+/** The market update: high-impact news soon, take profit now. */
+const updateCard = (ctx: CanvasRenderingContext2D, t: number) => {
+  const pulse = 0.5 + 0.5 * Math.sin((t - UPDATE.at) / 6);
+  cardBox(ctx, {fill: 'rgba(40,33,20,0.97)', border: GOLD, glow: '#C8963E'});
+  const rtl = SC().rtl;
+  const ix = rtl ? CARD.x + CARD.w - 24 - 22 : CARD.x + 24 + 22;
+  ctx.beginPath();
+  ctx.arc(ix, CARD.y + 44, 22, 0, Math.PI * 2);
+  ctx.fillStyle = hexA(GOLD, 0.2 + 0.1 * pulse);
+  ctx.fill();
+  icon(ctx, 'bell', ix, CARD.y + 44, 22, GOLD, 2.4);
+  say(ctx, SC().updateTitle, rtl ? ix - 34 : ix + 34, CARD.y + 52, {weight: 700, size: 22, color: GOLD, maxW: 240});
+  say(ctx, SC().updateBody, sx() + (rtl ? -6 : 6), CARD.y + 120, {weight: 700, size: 27, color: C.text, maxW: CARD.w - 40});
+  // The button.
+  const press = Math.sin(Math.PI * clamp01((t - UPDATE.tapAt) / 10));
   ctx.save();
-  ctx.globalAlpha = alpha;
-  card(ctx, 12, y, W - 24, 66);
-  riskMeter(ctx, 28, y + 24, W - 56, 0.12, 'Account risk', 'LOW · 1% per trade', C.up);
+  ctx.translate(W / 2, CARD.y + 196);
+  ctx.scale(1 - 0.06 * press, 1 - 0.06 * press);
+  rr(ctx, -(CARD.w - 40) / 2, -34, CARD.w - 40, 68, 34);
+  ctx.fillStyle = goldGradient(ctx, -170, 0, 170, 0);
+  ctx.fill();
+  if (press > 0) {
+    ctx.fillStyle = `rgba(255,255,255,${0.35 * press})`;
+    ctx.fill();
+  }
+  say(ctx, SC().updateAction, 0, 10, {weight: 700, size: 26, color: '#1a1206', align: 'center', maxW: 300});
   ctx.restore();
 };
 
-const signalState = (t: number) => ({
-  filled: t >= SIGNAL.filledAt,
-  slBE: t >= SIGNAL.beAt,
-  slLabel: t >= SIGNAL.beAt ? priceStr(SIGNAL.entry) : priceStr(SIGNAL.sl),
-  tp1Done: t >= SIGNAL.tp1At ? `${signedMoney(SIGNAL.tp1Profit)}` : undefined,
-  closedBE: t >= SIGNAL.beClosedAt,
-  riskGlow: Math.exp(-Math.abs(t - 352) / 18) * (t > 320 ? 1 : 0),
-});
+/** Profit taken before the news. */
+const profitCard = (ctx: CanvasRenderingContext2D, t: number) => {
+  cardBox(ctx, {border: 'rgba(63,208,138,0.6)'});
+  const k = springAt(t - UPDATE.closedAt, {freq: 2.2, damping: 0.5});
+  ctx.save();
+  ctx.translate(W / 2, CARD.y + 74);
+  ctx.scale(Math.max(0, k), Math.max(0, k));
+  icon(ctx, 'checkCircle', 0, 0, 72, GREEN, 4.5);
+  ctx.restore();
+  say(ctx, SC().profitTaken, W / 2, CARD.y + 152, {weight: 700, size: 26, align: 'center'});
+  num(ctx, signedMoney(UPDATE.profit), W / 2, CARD.y + 212, {size: 52, color: GREEN, align: 'center'});
+  say(ctx, SC().noOpen, W / 2, CARD.y + 252, {weight: 500, size: 17, color: '#AEB4C2', align: 'center', maxW: 330});
+};
 
-const freshState = (t: number) => ({
-  title: SC().freshTitle,
-  filled: t >= FRESH_SIGNAL.at + 10,
-  slBE: t >= FRESH_SIGNAL.tp1At + 8,
-  slLabel: t >= FRESH_SIGNAL.tp1At + 8 ? priceStr(FRESH_SIGNAL.entry) : priceStr(FRESH_SIGNAL.sl),
-  tp1Done: t >= FRESH_SIGNAL.tp1At ? signedMoney(FRESH_SIGNAL.tp1Profit) : undefined,
-  tp2Done: t >= FRESH_SIGNAL.tp2At ? signedMoney(FRESH_SIGNAL.tp2Profit) : undefined,
-});
-
-const miranLevels = (t: number): Level[] => {
-  if (t >= SIGNAL.filledAt - 40 && t < SIGNAL.beClosedAt) {
-    const be = t >= SIGNAL.beAt;
-    return [
-      {price: SIGNAL.tp1, label: t >= SIGNAL.tp1At ? 'TP1 ✓' : 'TP1', color: C.up},
-      {price: be ? SIGNAL.entry : SIGNAL.sl, label: be ? 'SL · BE' : 'SL', color: be ? C.goldB : C.red},
-      ...(be ? [] : [{price: SIGNAL.entry, label: 'Entry', color: C.goldA, dash: [2, 3]}]),
-    ];
+/** The news hits: protected. */
+const protectedCard = (ctx: CanvasRenderingContext2D, t: number) => {
+  const k = springAt(t - (NEWS.at + 10), {freq: 2.0, damping: 0.5});
+  cardBox(ctx, {fill: 'rgba(14,44,32,0.97)', border: GREEN, glow: '#1d8a55'});
+  ctx.save();
+  ctx.translate(W / 2, CARD.y + 84);
+  ctx.scale(0.6 + 0.4 * Math.max(0, k), 0.6 + 0.4 * Math.max(0, k));
+  ctx.beginPath();
+  ctx.arc(0, 0, 52, 0, Math.PI * 2);
+  ctx.fillStyle = 'rgba(63,208,138,0.18)';
+  ctx.fill();
+  icon(ctx, 'shield', 0, 0, 66, GREEN, 5);
+  ctx.restore();
+  say(ctx, SC().protectedTitle, W / 2, CARD.y + 196, {weight: 700, size: 46, color: GREEN, align: 'center'});
+  const label = SC().protectedBody;
+  const rtl = SC().rtl;
+  const lw = measure(ctx, label, 600, 21, rtl);
+  const nw = measure(ctx, signedMoney(UPDATE.profit), 700, 23, false);
+  const total = lw + 12 + nw;
+  const left = W / 2 - total / 2;
+  if (rtl) {
+    say(ctx, label, left + total, CARD.y + 246, {weight: 600, size: 21, color: '#CFEBDD', align: 'right'});
+    num(ctx, signedMoney(UPDATE.profit), left, CARD.y + 246, {size: 23, color: GREEN, align: 'left'});
+  } else {
+    say(ctx, label, left, CARD.y + 246, {weight: 600, size: 21, color: '#CFEBDD', align: 'left'});
+    num(ctx, signedMoney(UPDATE.profit), left + total, CARD.y + 246, {size: 23, color: GREEN, align: 'right'});
   }
-  if (t >= FRESH_SIGNAL.at && t < FRESH_SIGNAL.tp2At + 20) {
-    const be = t >= FRESH_SIGNAL.tp1At + 8;
-    return [
-      {price: FRESH_SIGNAL.tp1, label: t >= FRESH_SIGNAL.tp1At ? 'TP1 ✓' : 'TP1', color: C.up},
-      {price: FRESH_SIGNAL.tp2, label: t >= FRESH_SIGNAL.tp2At ? 'TP2 ✓' : 'TP2', color: C.up},
-      {price: be ? FRESH_SIGNAL.entry : FRESH_SIGNAL.sl, label: be ? 'SL · BE' : 'SL', color: be ? C.goldB : C.red},
-    ];
-  }
-  return [];
 };
 
 const drawMiranRight = (ctx: CanvasRenderingContext2D, t: number) => {
-  ctx.drawImage(baseLayer('miran'), 0, 0, W, H);
-  accountBlock(ctx, t, 'right', true);
-  chart(ctx, t, miranLevels(t), t >= TIMING.updateAt, C.goldB);
-  // The upcoming news, flagged on the chart by the Miran update.
-  if (t >= TIMING.updateAt && t < NEWS.at + 30) {
-    const a = ramp(t, TIMING.updateAt, TIMING.updateAt + 12) * (1 - ramp(t, NEWS.at + 10, NEWS.at + 30));
-    ctx.save();
-    ctx.globalAlpha = a;
-    const label = t < NEWS.at ? `${NEWS.label} · 14:30` : NEWS.label;
-    const w = measure(ctx, label, 700, 10) + 30;
-    rr(ctx, PLOT.x1 - w, PLOT.y0 - 2, w, 20, 10);
-    ctx.fillStyle = 'rgba(232,163,61,0.2)';
-    ctx.fill();
-    icon(ctx, 'bolt', PLOT.x1 - w + 12, PLOT.y0 + 8, 11, C.warn);
-    text(ctx, label, PLOT.x1 - w + 22, PLOT.y0 + 11.5, {weight: 700, size: 10, color: C.warn});
-    ctx.restore();
-  }
-  ctx.save();
-  ctx.beginPath();
-  ctx.rect(0, FOCUS_Y - 10, W, 838 - FOCUS_Y + 10);
-  ctx.clip();
-  const toSignal = ramp(t, TIMING.signalBuildAt - 12, TIMING.signalBuildAt + 4, easeInOut);
-  const toFresh = ramp(t, FRESH_SIGNAL.at, FRESH_SIGNAL.at + 16, easeInOut);
-  // History (before the signal), then the signal card + calm meter, then the fresh signal.
-  if (toSignal < 1) historyCard(ctx, FOCUS_Y, 190, t, 1 - toSignal);
-  if (toSignal > 0 && toFresh < 1) {
-    const lines = (t - TIMING.signalBuildAt) / TIMING.signalLineGap + 1;
-    const down = 140 * ramp(t, TIMING.updateAt, TIMING.updateAt + 18, easeOut);
-    ctx.save();
-    ctx.globalAlpha = toSignal * (1 - toFresh);
-    ctx.translate(-W * 0.3 * toFresh, down);
-    signalCard(ctx, FOCUS_Y, t, SIGNAL, lines, signalState(t));
-    calmMeter(ctx, FOCUS_Y + 278, ramp(t, TIMING.signalBuildAt + 8 * TIMING.signalLineGap, TIMING.signalBuildAt + 8 * TIMING.signalLineGap + 14));
-    ctx.restore();
-  }
-  if (toFresh > 0 && t < 736) {
-    const lines = (t - FRESH_SIGNAL.at) / 3 + 1;
-    const down = 140 * (1 - ramp(t, FRESH_SIGNAL.at, FRESH_SIGNAL.at + 18, easeInOut));
-    ctx.save();
-    ctx.globalAlpha = toFresh;
-    ctx.translate(W * 0.3 * (1 - toFresh), down);
-    signalCard(ctx, FOCUS_Y, t, FRESH_SIGNAL, lines, freshState(t));
-    calmMeter(ctx, FOCUS_Y + 278, 1);
-    ctx.restore();
-  }
-  // After the twist: the fresh signal running, and the history (with its one small loss).
-  if (t >= 716) {
-    const a = ramp(t, 716, 740, easeOut);
-    ctx.save();
-    ctx.globalAlpha = a;
-    signalCard(ctx, FOCUS_Y, t, FRESH_SIGNAL, 9, freshState(t));
-    ctx.restore();
-    historyCard(ctx, FOCUS_Y + 278, 210, t, a, 5);
-  }
-  ctx.restore();
-  // The market update lands on top (before the news), then the "protected" chip.
-  const upIn = springAt(t - TIMING.updateAt, {freq: 2.0, damping: 0.6});
-  const upOut = ramp(t, SIGNAL.beClosedAt - 4, SIGNAL.beClosedAt + 8, easeIn);
-  if (t >= TIMING.updateAt && upOut < 1) {
-    ctx.save();
-    ctx.translate(0, -(1 - upIn) * 120);
-    marketUpdateCard(ctx, FOCUS_Y - 2, clamp01(upIn * 2) * (1 - upOut));
-    ctx.restore();
-  }
-  if (t >= SIGNAL.beClosedAt && t < FRESH_SIGNAL.at + 10) {
-    const p = springAt(t - SIGNAL.beClosedAt, {freq: 2.2, damping: 0.55});
-    const a = clamp01(p * 2) * (1 - ramp(t, FRESH_SIGNAL.at - 6, FRESH_SIGNAL.at + 10));
-    ctx.save();
-    ctx.globalAlpha = a;
-    ctx.translate(W / 2, FOCUS_Y + 60);
-    ctx.scale(0.85 + 0.15 * p, 0.85 + 0.15 * p);
-    ctx.translate(-W / 2, -(FOCUS_Y + 60));
-    rr(ctx, 12, FOCUS_Y - 2, W - 24, 128, 18);
-    const g = ctx.createLinearGradient(0, FOCUS_Y, 0, FOCUS_Y + 128);
-    g.addColorStop(0, '#2C2414');
-    g.addColorStop(1, '#171A22');
-    ctx.fillStyle = g;
-    ctx.fill();
-    ctx.lineWidth = 1.6;
-    ctx.strokeStyle = 'rgba(243,210,122,0.85)';
-    ctx.stroke();
-    const rtl = SC().rtl;
-    const sx = rtl ? W - 50 : 50;
-    ctx.beginPath();
-    ctx.arc(sx, FOCUS_Y + 46, 24, 0, Math.PI * 2);
-    ctx.fillStyle = 'rgba(243,210,122,0.16)';
-    ctx.fill();
-    icon(ctx, 'shield', sx, FOCUS_Y + 46, 28, C.goldB, 2.2);
-    ltext(ctx, SC().protectedTitle, 84, W - 84, FOCUS_Y + 42, {weight: 700, size: 18, color: goldGradient(ctx, 0, 0, W, 0)});
-    ltext(ctx, SC().protectedBody, 84, W - 84, FOCUS_Y + 66, {weight: 500, size: 13, color: C.text});
-    text(ctx, `TP1 ✓ ${signedMoney(SIGNAL.tp1Profit)}`, rtl ? W - 28 : 28, FOCUS_Y + 106, {weight: 700, size: 15, color: C.up, align: rtl ? 'right' : 'left'});
-    text(ctx, 'Rest closed at BE · $0', rtl ? 28 : W - 28, FOCUS_Y + 106, {weight: 600, size: 12, color: C.goldB, align: rtl ? 'left' : 'right'});
-    ctx.restore();
-  }
-  ctx.fillStyle = C.appBg;
-  ctx.fillRect(0, 0, W, 44);
-  statusBar(ctx, t);
-  notifStack(ctx, RIGHT_NOTIFS as unknown as Notif[], t, 84, 0.8);
-  checklistModal(ctx, t);
+  background(ctx, 'miran', 0);
+  header(ctx, 'miran');
+  const bal = rightBalance(t);
+  balanceBlock(ctx, bal, bal > 10000.5 ? GREEN : C.text, rightOpenPnl(t), ramp(t, SIGNAL.filledAt, SIGNAL.filledAt + 10) * (1 - ramp(t, UPDATE.closedAt, UPDATE.closedAt + 8)));
+  const lv = ramp(t, SIGNAL.filledAt, SIGNAL.filledAt + 16) * (1 - ramp(t, UPDATE.closedAt, UPDATE.closedAt + 14));
+  chart(
+    ctx,
+    t,
+    GOLD,
+    [
+      {price: SIGNAL.tp, color: GREEN, label: 'TP', alpha: lv},
+      {price: SIGNAL.entry, color: '#ECE7DC', label: SC().entry, alpha: lv},
+      {price: SIGNAL.sl, color: RED, label: 'SL', alpha: lv},
+    ],
+    GOLD,
+  );
+  withT(ctx, tr(t, -100, SIGNAL.at - 4, 10), () => waitingCard(ctx, t));
+  withT(ctx, tr(t, SIGNAL.at, UPDATE.at - 6, 10), () => signalCard(ctx, t));
+  withT(ctx, tr(t, UPDATE.at, UPDATE.closedAt - 2, 10), () => updateCard(ctx, t));
+  withT(ctx, tr(t, UPDATE.closedAt, NEWS.at + 6, 10), () => profitCard(ctx, t));
+  withT(ctx, tr(t, NEWS.at + 10), () => protectedCard(ctx, t));
+  banner(ctx, t, NEWS.at + 2, 'bolt', SC().newsReleased, SC().noOpen, GOLD, NEWS.at + 160);
+  chrome(ctx, t);
+  homeIndicator(ctx);
 };
 
-// ─── LEFT after the flip: on Miran Gold ──────────────────────────────────────
+// ─── LEFT after the flip: connected to Miran Gold ────────────────────────────
 
 const drawMiranLeft = (ctx: CanvasRenderingContext2D, t: number) => {
-  ctx.drawImage(baseLayer('miran'), 0, 0, W, H);
-  accountBlock(ctx, t, 'left', true);
-  const a = LEFT.afterFlip;
-  const lv: Level[] =
-    t >= 850
-      ? [
-          {price: a.tp1, label: 'TP1', color: C.up},
-          {price: a.sl, label: 'SL', color: C.red},
-          {price: a.entry, label: 'Entry', color: C.goldA, dash: [2, 3]},
-        ]
-      : [];
-  chart(ctx, t, lv, true, C.goldB);
-  ctx.save();
-  ctx.beginPath();
-  ctx.rect(0, FOCUS_Y - 10, W, 838 - FOCUS_Y + 10);
-  ctx.clip();
-  // "Connected to Miran Gold", then the first signal card and today's market update.
-  const toSig = ramp(t, 846, 862, easeInOut);
-  if (toSig < 1) {
-    ctx.save();
-    ctx.globalAlpha = 1 - toSig;
-    card(ctx, 12, FOCUS_Y, W - 24, 160, {gold: true});
-    emblem(ctx, W / 2, FOCUS_Y + 52, 30);
-    text(ctx, SC().connected, W / 2, FOCUS_Y + 112, {weight: 700, size: 17, color: goldGradient(ctx, 0, 0, W, 0), align: 'center', rtl: SC().rtl});
-    icon(ctx, 'checkCircle', W / 2, FOCUS_Y + 138, 18, C.up, 2);
-    ctx.restore();
-  }
-  if (toSig > 0) {
-    const lines = (t - 850) / 3 + 1;
-    ctx.save();
-    ctx.globalAlpha = toSig;
-    signalCard(
-      ctx,
-      FOCUS_Y,
-      t,
-      {side: 'BUY', entry: a.entry, sl: a.sl, tp1: a.tp1, tp2: a.tp2, lots: a.lots, riskPct: 1},
-      lines,
-      {filled: t >= a.openedAt},
-    );
-    ctx.restore();
-  }
-  ctx.restore();
-  const upIn = springAt(t - 900, {freq: 2.0, damping: 0.6});
-  if (t >= 900) marketUpdateCard(ctx, FOCUS_Y + 280 + (1 - upIn) * 60, clamp01(upIn * 2), SC().todayTitle, SC().todayBody, SC().updateAction, 104);
-  ctx.fillStyle = C.appBg;
-  ctx.fillRect(0, 0, W, 44);
-  statusBar(ctx, t);
-  notifStack(ctx, LEFT_AFTER_NOTIFS as unknown as Notif[], t, 84, 0.8);
+  background(ctx, 'miran', 0);
+  header(ctx, 'miran');
+  balanceBlock(ctx, leftBalance(t), C.text, null, 0);
+  chart(ctx, t, GOLD, [], GOLD);
+  const k = tr(t, (TIMING.flipStart + TIMING.flipEnd) / 2 + 4);
+  withT(ctx, k, () => {
+    cardBox(ctx, {border: GOLD, glow: '#C8963E'});
+    emblem(ctx, W / 2, CARD.y + 80, 50);
+    say(ctx, SC().connected, W / 2, CARD.y + 176, {weight: 700, size: 26, color: goldGradient(ctx, 40, 0, W - 40, 0), align: 'center', maxW: 340});
+    say(ctx, SC().nextSignal, W / 2, CARD.y + 226, {weight: 600, size: 19, color: '#D5D8DF', align: 'center', maxW: 340});
+  });
+  chrome(ctx, t);
+  homeIndicator(ctx);
 };
 
-// ─── Entry points ────────────────────────────────────────────────────────────
+// ─── Exports ─────────────────────────────────────────────────────────────────
+
+const mixHex = (a: string, b: string, k: number) => {
+  const pa = [1, 3, 5].map((i) => parseInt(a.slice(i, i + 2), 16));
+  const pb = [1, 3, 5].map((i) => parseInt(b.slice(i, i + 2), 16));
+  const m = pa.map((v, i) => Math.round(v + (pb[i] - v) * k));
+  return `#${m.map((v) => v.toString(16).padStart(2, '0')).join('')}`;
+};
+
+void easeInOut;
 
 export const drawLeftScreen = (ctx: CanvasRenderingContext2D, t: number) => (leftIsMiran(t) ? drawMiranLeft(ctx, t) : drawBlind(ctx, t));
 export const drawRightScreen = (ctx: CanvasRenderingContext2D, t: number) => drawMiranRight(ctx, t);
 
-/** Content keys: a screen is only redrawn when its key changes (it holds still once the end card covers it). */
+/** Screens stop changing once the end card covers them. */
 const FREEZE = TIMING.endCardStart + 60;
 export const leftScreenKey = (t: number) => `${LANG}|${Math.min(t, FREEZE)}`;
 export const rightScreenKey = (t: number) => `${LANG}|${Math.min(t, FREEZE)}`;

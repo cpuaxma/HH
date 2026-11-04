@@ -4,25 +4,27 @@ from PIL import Image, ImageDraw, ImageFont
 
 out, d = sys.argv[1], sys.argv[2]
 SHOTS = [
-    (40, '1 HOOK', 'Wide two-shot, slow push + arc. Left already red (stacking alerts), right calm gold. "Same market. Same gold."'),
-    (150, '1 HOOK', '"Two different results." Labels pinned under each phone with live balances (illustrative).'),
-    (210, '2 STRATEGY', 'Speed-ramped whip into a macro on the left: copied + random trades, "?" where a reason should be.'),
-    (280, '2 STRATEGY', 'Whip to the right macro: the Miran signal card builds line by line (entry, SL, TP1, TP2, reason, Risk 1%).'),
-    (400, '2 RISK', 'Low 3/4 across both: "SL: —", 1:500, 8.00 lots, red meter vs Risk 1%, SL at break-even, green meter.'),
-    (452, '2 UPDATES', 'Overhead crane over the leaning phones: the Miran market update lands on the right; the left calendar is unopened.'),
-    (486, '2 UPDATES', 'The news candle hits both screens on the same frame: camera jolt + speed-ramped push. Margin level 112%.'),
-    (520, '2 UPDATES', 'Left: margin call under a red pool. Right: protected (TP1 +$212, rest closed at BE) under a gold pool.'),
-    (600, '3 TWIST', 'Push-in on the right screen: the Miran Gold checklist card reveals. "It isn\'t luck..."'),
-    (708, '3 TWIST', 'Three gold ticks: strategy, risk management, market updates; the "signal source" tag glints. "...it\'s the plan."'),
-    (745, '4 FLIP', 'Pull back to the low 3/4 hero; the gold bar streak whips across (real motion blur).'),
-    (805, '4 FLIP', 'The left phone flips 360 degrees (speed ramp, motion blur).'),
-    (836, '4 FLIP', 'Impact frame on the landing: navy/gold two-tone silhouette, 3 frames.'),
-    (940, '4 FLIP', 'Both on Miran Gold, pulsing gold in sync. Left: first signal, Risk 1%, recovering +1.2%. "Trade with a plan..."'),
-    (1100, '5 END', 'Soft blur to navy, gold particles, logo, gold CTA; risk disclaimer on screen 2.5s+.'),
-    (1180, '5 END', 'Held last second.'),
+    (110, '1 HOOK', 'Wide two-shot: both phones at $10,000, the same gold chart. "Same gold. Same day."'),
+    (150, '1 HOOK', '"Two different results." Scoreboards under the phones: X no plan / check with Miran Gold (illustrative).'),
+    (216, '2 ENTRY', 'Left: a Sell/Buy ticket, 3.00 lots, "no plan, no alerts" - Buy gets tapped. Right: the Miran signal card builds.'),
+    (300, '2 ENTRY', '"Both bought gold." Left: Buy 3.00 lots, STOP LOSS: NONE. Right: entry 4,002, SL 3,997, target 4,012, risk 1%.'),
+    (470, '2 ENTRY', 'Gold drifts up. The left looks great (+$2,000 open) while the right is up +$100: the temptation.'),
+    (545, '3 WARNING', 'Camera favours the right: the Miran market update - high-impact USD news in 10 min, take profit now.'),
+    (640, '3 WARNING', 'Profit taken: +$140, the right board turns green ($10,140). The left is still holding, no alerts.'),
+    (740, '4 NEWS', '"Then the news hit." Heartbeat under the calm.'),
+    (770, '4 NEWS', 'The same news candle hits both charts on the same frame: jolt + push. The left screen floods red.'),
+    (830, '4 NEWS', 'Left: MARGIN CALL, -$4,800, board $5,200 (-48%). Right: PROTECTED, profit kept +$140.'),
+    (900, '5 PAYOFF', 'Slow pull back, both results side by side. "It isn\'t luck..."'),
+    (1000, '5 PAYOFF', '"...it\'s the plan." (cover frame)'),
+    (1088, '6 SWITCH', 'Boards fade; low 3/4 hero. A gold bar streaks across (real motion blur).'),
+    (1140, '6 SWITCH', 'The left phone flips 360 degrees: the back, camera plateau and three lenses.'),
+    (1166, '6 SWITCH', 'Impact frame on the landing: navy/gold two-tone, 3 frames.'),
+    (1240, '6 SWITCH', 'Left now connected to Miran Gold (its $5,200 stays: no magic recovery). "Trade with a plan with Miran Gold."'),
+    (1430, '7 END', 'Navy, gold particles, logo, gold CTA; risk disclaimer on screen 3.5s+.'),
+    (1545, '7 END', 'Held last second.'),
 ]
 W, H = 360, 640
-cols = 8
+cols = 9
 rows = (len(SHOTS) + cols - 1) // cols
 CAP = 110
 sheet = Image.new('RGB', (cols * (W + 14) + 14, rows * (H + CAP + 14) + 14), (10, 14, 24))

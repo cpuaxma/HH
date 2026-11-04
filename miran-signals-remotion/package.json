@@ -2,11 +2,11 @@
   "name": "miran-signals-remotion",
   "version": "1.0.0",
   "private": true,
-  "description": "Miran Gold: \"Trading blind vs. trading with Miran Gold.\" 20-second 1080x1920 Arabic 3D reel (Remotion + React Three Fiber)",
+  "description": "Miran Gold: one trade, one news candle, two results. 26-second 1080x1920 Arabic 3D reel with iPhone-style phones (Remotion + React Three Fiber)",
   "scripts": {
     "studio": "remotion studio",
     "stills": "node scripts/stills.mjs",
-    "stills:feed": "node scripts/stills.mjs out/stills-feed 0.5 90,250,380,490,620,800,836,940,1180 --feed",
+    "stills:feed": "node scripts/stills.mjs out/stills-feed 0.5 90,280,560,640,780,820,1000,1180,1450 --feed",
     "check:camera": "esbuild scripts/check-camera.ts --bundle --platform=node --outfile=scripts/tmp/check-camera.cjs --log-level=error && node scripts/tmp/check-camera.cjs vertical && node scripts/tmp/check-camera.cjs feed",
     "blur:budget": "esbuild scripts/blur-budget.ts --bundle --platform=node --outfile=scripts/tmp/blur-budget.cjs --log-level=error && node scripts/tmp/blur-budget.cjs vertical && node scripts/tmp/blur-budget.cjs feed",
     "preview": "remotion render MiranSignals out/preview.mp4 --scale=0.5 --crf=24 --x264-preset=veryfast --concurrency=1",
@@ -16,7 +16,7 @@
     "render:silent": "remotion render MiranSignals out/miran-signals-silent.mp4 --concurrency=1 --crf=16 --x264-preset=slow --pixel-format=yuv420p --muted",
     "sfx:make": "python3 scripts/make-sfx.py",
     "sfx:wav": "remotion render MiranSignalsSfx out/miran-signals-sfx.wav --codec=wav",
-    "cover": "remotion still MiranSignals out/miran-signals-cover.png --frame=960",
+    "cover": "remotion still MiranSignals out/miran-signals-cover.png --frame=1000",
     "render:all": "bash scripts/render-all.sh",
     "scan": "python3 scripts/scan-frames.py",
     "typecheck": "tsc --noEmit"

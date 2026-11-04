@@ -1,10 +1,10 @@
 // Drawing kit for the fictional, unbranded trading app: text (LTR and RTL), icons, avatars,
-// pills, smearing, cached layers. Units are design points (the screen is 400 × 890 pt, drawn at 3×).
+// pills, smearing, cached layers. Units are design points (the screen is 402 × 874 pt, drawn at 3×).
 import {BRAND} from '../data';
 import {FAMILY} from '../fonts';
 
-export const W = 400;
-export const H = 890;
+export const W = 402;
+export const H = 874;
 
 export const C = {
   appBg: '#0B0F19',

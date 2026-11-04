@@ -6,8 +6,8 @@ import {FormatId, LAYOUT} from '../data';
 import {computeCamera} from '../lib/camera';
 import {SCREEN, V3} from '../lib/story';
 
-/** Screen canvas size: 400 × 890 design points at 3×, matching the screen's 0.702 × 1.562 aspect. */
-export const TEX = {w: 1200, h: 2670, scale: 3};
+/** Screen canvas size: 402 × 874 design points at 3×, matching the screen aspect (0.708 × 1.538). */
+export const TEX = {w: 1206, h: 2622, scale: 3};
 
 export type ScreenTextures = {hi: THREE.CanvasTexture; lo: THREE.CanvasTexture; active: {current: THREE.Texture}};
 

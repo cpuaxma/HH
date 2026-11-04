@@ -6,14 +6,7 @@ import {SoundTrack} from './sound';
 /** The sound effects on their own, for exporting a WAV to mix elsewhere. */
 const SfxOnly: React.FC = () => (
   <AbsoluteFill style={{background: '#000'}}>
-    <SoundTrack voice={false} />
-  </AbsoluteFill>
-);
-
-/** Effects and voiceover together, for muxing onto a silent render. */
-const AudioMix: React.FC = () => (
-  <AbsoluteFill style={{background: '#000'}}>
-    <SoundTrack voice />
+    <SoundTrack />
   </AbsoluteFill>
 );
 
@@ -49,6 +42,5 @@ export const RemotionRoot: React.FC = () => (
       defaultProps={{showSafeZones: false, sfx: true, lang: 'en'} satisfies ReelProps}
     />
     <Composition id="MiranSignalsSfx" component={SfxOnly} {...common} width={1080} height={1920} />
-    <Composition id="MiranSignalsAudio" component={AudioMix} {...common} width={1080} height={1920} />
   </>
 );

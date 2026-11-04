@@ -3,165 +3,189 @@
 import {CameraMotionBlur} from '@remotion/motion-blur';
 import React from 'react';
 import {AbsoluteFill, Img, staticFile, useCurrentFrame, useVideoConfig} from 'remotion';
-import {BRAND, COLUMN, COPY, FormatId, GOLD_GRADIENT, LAYOUT, Lang, SAFE, TIMING} from '../data';
+import {BRAND, COLUMN, COPY, FormatId, GOLD_GRADIENT, LAYOUT, LEFT, Lang, RIGHT, SAFE, TIMING, UPDATE} from '../data';
 import {FAMILY} from '../fonts';
 import {clamp01, easeIn, easeInOut, easeOut, hash, ramp, springAt} from '../lib/ease';
 import {projectOnPhone} from '../lib/projection';
-import {PHONE, impact, leftBalance, leftEquity, leftIsMiran, leftPose, rightBalance, rightPose, syncPulse} from '../lib/story';
-import {Kinetic, KineticProps, SplitPair, kineticMoving} from './Kinetic';
+import {PHONE, impact, leftBalance, leftPose, rightBalance, rightPose} from '../lib/story';
+import {Kinetic, KineticProps, kineticMoving} from './Kinetic';
 
 const useFmt = (): FormatId => (useVideoConfig().height > 1500 ? 'vertical' : 'feed');
 
-/** All the kinetic text blocks, in order. */
+/** All the kinetic text blocks, in order (one short line each). */
 export const textBlocks = (fmt: FormatId, lang: Lang): KineticProps[] => {
   const L = LAYOUT[fmt];
   const c = COPY[lang];
+  const at = (block: KineticProps['block'], inAt: number, outAt: number, backing = true, stagger = 4): KineticProps => ({
+    block,
+    lang,
+    inAt,
+    outAt,
+    top: L.textTop,
+    maxSize: L.textSize,
+    backing,
+    stagger,
+  });
   return [
-    {block: c.hookA, lang, inAt: TIMING.hookAIn, outAt: TIMING.hookAOut, top: L.textTop, maxSize: L.textSize},
-    {block: c.hookB, lang, inAt: TIMING.hookBIn, outAt: TIMING.hookBOut, top: L.textTop + L.textSize * 0.4, maxSize: L.textSize},
-    {block: c.twistA, lang, inAt: TIMING.twistAIn, outAt: TIMING.twistAOut, top: L.textTop, maxSize: L.textSize * 0.84, backing: true, stagger: 5},
-    {block: c.twistB, lang, inAt: TIMING.twistBIn, outAt: TIMING.twistBOut, top: L.textTop, maxSize: L.textSize * 0.9, backing: true, stagger: 5},
-    {block: c.flip, lang, inAt: TIMING.flipTextIn, outAt: TIMING.flipTextOut, top: L.textTop, maxSize: L.textSize * 0.95, stagger: 5},
+    at(c.hookA, TIMING.hookAIn, TIMING.hookAOut, false),
+    at(c.hookB, TIMING.hookBIn, TIMING.hookBOut, false),
+    at(c.entry, TIMING.entryIn, TIMING.entryOut),
+    at(c.warning, TIMING.warningIn, TIMING.warningOut),
+    at(c.news, TIMING.newsIn, TIMING.newsOut),
+    at(c.payoffA, TIMING.payoffAIn, TIMING.payoffAOut, true, 5),
+    at(c.payoffB, TIMING.payoffBIn, TIMING.payoffBOut, true, 5),
+    at(c.flip, TIMING.flipTextIn, TIMING.flipTextOut, false, 4),
   ];
 };
 
-const splitMoving = (f: number) =>
-  TIMING.pillars.some((p) => (f >= p.redIn - 8 && f <= p.redIn + 36) || (f >= p.goldIn - 8 && f <= p.goldIn + 40) || (f >= p.out - 14 && f <= p.out + 12) || (f >= p.from - 4 && f <= p.from + 30));
+const TextLayer: React.FC<{fmt: FormatId; lang: Lang}> = ({fmt, lang}) => (
+  <AbsoluteFill>
+    {textBlocks(fmt, lang).map((b, i) => (
+      <Kinetic key={i} {...b} />
+    ))}
+  </AbsoluteFill>
+);
 
-const TextLayer: React.FC<{fmt: FormatId; lang: Lang}> = ({fmt, lang}) => {
-  const L = LAYOUT[fmt];
-  const c = COPY[lang];
+// ─── Scoreboards under the phones ────────────────────────────────────────────
+// Always on during the story: who is who (✕ no plan / ✓ with Miran Gold) and the balance,
+// big enough to read without looking at the screens at all.
+
+const money0 = (n: number) => `$${Math.round(n).toLocaleString('en-US')}`;
+const pctStr = (p: number) => `${p > 0.05 ? '+' : p < -0.05 ? '−' : ''}${Math.abs(p).toFixed(Math.abs(p) >= 10 ? 0 : 1)}%`;
+
+const Mark: React.FC<{good: boolean; size: number}> = ({good, size}) => (
+  <svg width={size} height={size} viewBox="0 0 40 40" style={{flex: 'none'}}>
+    <circle cx="20" cy="20" r="19" fill={good ? BRAND.goldA : BRAND.red} />
+    {good ? (
+      <path d="M11 20.5 L17.5 27 L29.5 14" fill="none" stroke={BRAND.ink} strokeWidth="4.2" strokeLinecap="round" strokeLinejoin="round" />
+    ) : (
+      <path d="M13 13 L27 27 M27 13 L13 27" fill="none" stroke="#fff" strokeWidth="4.2" strokeLinecap="round" />
+    )}
+  </svg>
+);
+
+type BoardProps = {
+  label: string;
+  good: boolean;
+  balance: number;
+  start: number;
+  x: number;
+  y: number;
+  alpha: number;
+  scale: number;
+  rtl: boolean;
+  illustrative: string;
+  flash: number;
+};
+
+const Board: React.FC<BoardProps> = ({label, good, balance, start, x, y, alpha, scale, rtl, illustrative, flash}) => {
+  const pct = ((balance - start) / start) * 100;
+  const col = pct > 0.05 ? BRAND.up : pct < -0.05 ? BRAND.red : BRAND.text;
+  const border = good ? 'rgba(212,162,76,0.75)' : 'rgba(255,77,77,0.7)';
+  const glow = good ? 'rgba(200,150,62,0.35)' : `rgba(255,77,77,${0.3 + 0.4 * flash})`;
+  const tagSide: React.CSSProperties = rtl ? {left: 20} : {right: 20};
   return (
-    <AbsoluteFill>
-      {textBlocks(fmt, lang).map((b, i) => (
-        <Kinetic key={i} {...b} />
-      ))}
-      {TIMING.pillars.map((p, i) => (
-        <SplitPair
-          key={i}
-          lang={lang}
-          index={i}
-          name={c.pillars[i].name}
-          word={c.pillarWord}
-          without={c.pillars[i].without}
-          withText={c.pillars[i].with}
-          chipIn={p.from + 4}
-          redIn={p.redIn}
-          goldIn={p.goldIn}
-          out={p.out}
-          top={L.textTop}
-          size={L.splitSize}
-        />
-      ))}
-    </AbsoluteFill>
+    <div
+      style={{
+        position: 'absolute',
+        left: x,
+        top: y,
+        width: 370,
+        transform: `translate(-50%, 0) scale(${scale * (0.92 + 0.08 * alpha)})`,
+        transformOrigin: 'center top',
+        opacity: alpha,
+        fontFamily: FAMILY,
+      }}
+    >
+      <div
+        style={{
+          position: 'relative',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          gap: 2,
+          padding: '12px 18px 14px',
+          borderRadius: 30,
+          background: good ? 'linear-gradient(180deg, rgba(38,30,14,0.94), rgba(14,17,28,0.94))' : 'linear-gradient(180deg, rgba(48,12,16,0.94), rgba(16,12,18,0.94))',
+          border: `2px solid ${border}`,
+          boxShadow: `0 16px 40px rgba(0,0,0,0.45), 0 0 ${24 + 40 * flash}px ${glow}`,
+        }}
+      >
+        <div dir={rtl ? 'rtl' : 'ltr'} style={{display: 'flex', alignItems: 'center', gap: 12, fontWeight: 700, fontSize: 36, lineHeight: '54px', whiteSpace: 'nowrap'}}>
+          <Mark good={good} size={38} />
+          <span style={good ? {backgroundImage: GOLD_GRADIENT, WebkitBackgroundClip: 'text', backgroundClip: 'text', color: 'transparent'} : {color: '#FF7A7A'}}>{label}</span>
+        </div>
+        <div style={{display: 'flex', alignItems: 'baseline', gap: 12, direction: 'ltr', whiteSpace: 'nowrap'}}>
+          <span style={{fontWeight: 700, fontSize: 58, lineHeight: '72px', color: col}}>{money0(balance)}</span>
+          <span style={{fontWeight: 700, fontSize: 30, lineHeight: '40px', color: col, opacity: Math.abs(pct) > 0.05 ? 1 : 0}}>{pctStr(pct)}</span>
+        </div>
+        <div
+          dir={rtl ? 'rtl' : 'ltr'}
+          style={{
+            position: 'absolute',
+            top: -13,
+            ...tagSide,
+            fontSize: 16,
+            fontWeight: 600,
+            lineHeight: '24px',
+            padding: '0 10px',
+            borderRadius: 12,
+            color: '#B8BECB',
+            background: '#121826',
+            border: '1px solid rgba(140,147,163,0.5)',
+          }}
+        >
+          {illustrative}
+        </div>
+      </div>
+    </div>
   );
 };
 
-// ─── Labels pinned under the phones ──────────────────────────────────────────
-
-const labelWindows: [number, number][] = [
-  [20, 166],
-  [900, 1014],
-];
-
-const money0 = (n: number) => `$${Math.round(n).toLocaleString('en-US')}`;
-
-const Label: React.FC<{text: string; sub: string; subColor: string; x: number; y: number; alpha: number; gold: boolean; pulse: number; rtl: boolean; illustrative: string}> = ({
-  text,
-  sub,
-  subColor,
-  x,
-  y,
-  alpha,
-  gold,
-  pulse,
-  rtl,
-  illustrative,
-}) => (
-  <div
-    dir={rtl ? 'rtl' : 'ltr'}
-    style={{
-      position: 'absolute',
-      left: x,
-      top: y,
-      transform: `translate(-50%, 0) scale(${0.9 + 0.1 * alpha})`,
-      opacity: alpha,
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-      gap: 2,
-      padding: '8px 24px 10px',
-      borderRadius: 26,
-      background: 'rgba(14,19,32,0.9)',
-      border: `1.5px solid ${gold ? 'rgba(212,162,76,0.55)' : 'rgba(217,83,79,0.55)'}`,
-      boxShadow: `0 12px 30px rgba(0,0,0,0.4), 0 0 ${18 + 20 * pulse}px ${gold ? 'rgba(200,150,62,0.28)' : 'rgba(217,83,79,0.28)'}`,
-      fontFamily: FAMILY,
-      whiteSpace: 'nowrap',
-    }}
-  >
-    <div style={{display: 'flex', alignItems: 'center', gap: 12, fontWeight: 700, fontSize: 30, lineHeight: '46px', color: BRAND.text}}>
-      <div style={{width: 13, height: 13, borderRadius: 7, background: gold ? BRAND.goldA : BRAND.red, boxShadow: `0 0 ${8 + 12 * pulse}px ${gold ? BRAND.goldB : BRAND.red}`}} />
-      <span style={gold ? {backgroundImage: GOLD_GRADIENT, WebkitBackgroundClip: 'text', backgroundClip: 'text', color: 'transparent'} : undefined}>{text}</span>
-    </div>
-    <div style={{display: 'flex', alignItems: 'center', gap: 10, fontWeight: 600, fontSize: 24, lineHeight: '34px'}}>
-      <bdi style={{color: subColor}}>{sub}</bdi>
-      <span style={{fontSize: 15, fontWeight: 600, color: BRAND.meta, border: '1px solid rgba(140,147,163,0.5)', borderRadius: 10, padding: '0 8px', lineHeight: '22px'}}>{illustrative}</span>
-    </div>
-  </div>
-);
-
-const Labels: React.FC<{fmt: FormatId; lang: Lang}> = ({fmt, lang}) => {
+const Boards: React.FC<{fmt: FormatId; lang: Lang}> = ({fmt, lang}) => {
   const f = useCurrentFrame();
-  const w = labelWindows.find(([a, b]) => f >= a - 2 && f <= b + 14);
-  if (!w) return null;
-  const alpha = ramp(f, w[0], w[0] + 16, easeOut) * (1 - ramp(f, w[1] - 4, w[1] + 10, easeIn));
+  if (f < TIMING.boardsIn - 2 || f > TIMING.boardsOut + 16) return null;
+  const alpha = ramp(f, TIMING.boardsIn, TIMING.boardsIn + 18, easeOut) * (1 - ramp(f, TIMING.boardsOut - 4, TIMING.boardsOut + 12, easeIn));
   if (alpha <= 0) return null;
   const c = COPY[lang];
-  const below: [number, number, number] = [0, -PHONE.height / 2 - 0.1, 0];
+  const L = LAYOUT[fmt];
+  const below: [number, number, number] = [0, -PHONE.height / 2, 0];
   const a = projectOnPhone(f, fmt, leftPose(f), below);
   const b = projectOnPhone(f, fmt, rightPose(f), below);
-  const maxY = LAYOUT[fmt].textBottom - 94;
-  const y = Math.min(maxY, Math.max(a.y, b.y));
-  const miran = leftIsMiran(f);
-  const pulse = f > TIMING.flipEnd ? syncPulse(f) : 0.5 + 0.5 * Math.sin(f / 5);
-  const lb = miran ? leftEquity(f) : leftBalance(f);
-  const lPct = miran ? ((lb - 6850) / 6850) * 100 : ((lb - 10000) / 10000) * 100;
-  const rb = rightBalance(f);
-  const rPct = ((rb - 10000) / 10000) * 100;
-  const pct = (p: number) => `${p >= 0 ? '+' : '−'}${Math.abs(p).toFixed(1)}%`;
-  const leftText = miran ? c.labelRight : c.labelLeft;
+  const since = (at: number) => (f >= at ? Math.exp(-(f - at) / 14) : 0);
+  const half = 185 * L.boardScale;
+  const clampX = (x: number, lo: number, hi: number) => Math.min(hi - half, Math.max(lo + half, x));
   return (
     <>
-      <Label
-        text={leftText}
-        sub={`${money0(lb)}  ${pct(lPct)}`}
-        subColor={lPct >= 0 ? BRAND.up : BRAND.red}
-        x={clampX(a.x, 360)}
-        y={y}
+      <Board
+        label={c.labelLeft}
+        good={false}
+        balance={leftBalance(f)}
+        start={LEFT.startBalance}
+        x={clampX(a.x, COLUMN.x - 40, 534)}
+        y={L.boardTop}
         alpha={alpha}
-        gold={miran}
-        pulse={pulse}
+        scale={L.boardScale}
         rtl={lang === 'ar'}
         illustrative={c.illustrative}
+        flash={since(LEFT.marginCallAt)}
       />
-      <Label
-        text={c.labelRight}
-        sub={`${money0(rb)}  ${pct(rPct)}`}
-        subColor={BRAND.up}
-        x={clampX(b.x, 360)}
-        y={y}
+      <Board
+        label={c.labelRight}
+        good
+        balance={rightBalance(f)}
+        start={RIGHT.startBalance}
+        x={clampX(b.x, 546, COLUMN.x + COLUMN.width + 10)}
+        y={L.boardTop}
         alpha={alpha}
-        gold
-        pulse={pulse}
+        scale={L.boardScale}
         rtl={lang === 'ar'}
         illustrative={c.illustrative}
+        flash={since(UPDATE.closedAt)}
       />
     </>
   );
 };
-
-/** Keep a label's pill inside the centred column. */
-const clampX = (x: number, width: number) => Math.min(COLUMN.x + COLUMN.width - width / 2, Math.max(COLUMN.x + width / 2, x));
 
 // ─── Impact burst ────────────────────────────────────────────────────────────
 
@@ -345,7 +369,7 @@ const EndCard: React.FC<{fmt: FormatId; lang: Lang}> = ({fmt, lang}) => {
           position: 'absolute',
           left: COLUMN.x,
           width: COLUMN.width,
-          top: vertical ? 1346 : 1000,
+          top: L.disclaimerTop,
           textAlign: 'center',
           fontFamily: FAMILY,
           fontWeight: 500,
@@ -419,7 +443,7 @@ const SafeZones: React.FC<{fmt: FormatId}> = ({fmt}) => {
 /** Motion blur on the type only while it is moving (samples = 1 means a sharp single copy). */
 const BlurredText: React.FC<{fmt: FormatId; lang: Lang}> = ({fmt, lang}) => {
   const f = useCurrentFrame();
-  const moving = textBlocks(fmt, lang).some((b) => kineticMoving(f, b)) || splitMoving(f);
+  const moving = textBlocks(fmt, lang).some((b) => kineticMoving(f, b));
   return (
     <CameraMotionBlur samples={moving ? 8 : 1} shutterAngle={180}>
       <TextLayer fmt={fmt} lang={lang} />
@@ -433,7 +457,7 @@ export const Overlays: React.FC<{showSafeZones?: boolean; lang: Lang}> = ({showS
   const hideForImpact = impact(f) > 0;
   return (
     <>
-      {hideForImpact ? null : <Labels fmt={fmt} lang={lang} />}
+      {hideForImpact ? null : <Boards fmt={fmt} lang={lang} />}
       {hideForImpact ? null : <BlurredText fmt={fmt} lang={lang} />}
       <ImpactBurst fmt={fmt} />
       <EndCard fmt={fmt} lang={lang} />
