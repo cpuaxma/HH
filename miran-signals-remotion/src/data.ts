@@ -392,10 +392,10 @@ export const TIMING = {
 
   // 3. The twist (540–720): push in on the right phone's screen.
   twistStart: 540,
-  checklistAt: 584,
-  /** The three checklist ticks. */
-  ticks: [606, 630, 654],
-  tagAt: 676,
+  checklistAt: 562,
+  /** The three checklist ticks (on the voiceover's three words). */
+  ticks: [576, 633, 694],
+  tagAt: 700,
   twistAIn: 556,
   twistAOut: 634,
   twistBIn: 642,
@@ -482,7 +482,7 @@ export const LAYOUT: Record<
     textBottom: 1250,
     distScale: 1.1,
     focusY: 790,
-    macroFocusY: 820,
+    macroFocusY: 905,
     endLogoTop: 150,
     endLogoSize: 330,
   },
@@ -512,12 +512,13 @@ export const STUDIO = {
 export const VOICEOVER = {
   /** Set to false for an effects-only mix. */
   enabled: true,
-  volume: 1,
+  volume: 0.7,
   /** Effects dip to this level under the voice. */
   duckTo: 0.5,
+  /** `tempo` (optional) speeds a line up in the polish step, keeping its pitch. */
   lines: [
     {file: 'hook', text: 'نفس السوق… نتيجتان مختلفتان.', at: 14},
-    {file: 'twist', text: 'استراتيجية، إدارة مخاطر، وتحديثات السوق.', at: 600},
+    {file: 'twist', text: 'استراتيجية، إدارة مخاطر، وتحديثات السوق.', at: 572, tempo: 1.1},
     {file: 'flip', text: 'تداول بخطة مع ميران جولد.', at: 868},
   ],
 };
