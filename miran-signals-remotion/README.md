@@ -46,6 +46,8 @@ Compositions:
 
 The English version (`miran-signals-en-sfx.mp4`, `miran-signals-en-silent.mp4`) is rendered too, without the Arabic voiceover. Set `FORMATS` to render a subset.
 
+The script writes to `out/`, which git ignores. The finished files from the last full render, all scanned clean, are committed in `deliverables/`.
+
 Final settings are H.264, CRF 16, yuv420p, preset slow. They are passed on the render command, not in `remotion.config.ts`, because setting them there breaks the WAV renders.
 
 Rendering uses the Chrome Headless Shell in `/opt/pw-browsers` with SwiftShader through ANGLE (`swangle`), so it needs no GPU and every frame is deterministic. Concurrency is 1. A full-res format takes about 45 minutes, so run `setsid nohup bash scripts/render-all.sh > out/render-all.log 2>&1 &` and poll. IBM Plex Sans Arabic is bundled through `@fontsource`, so rendering never fetches fonts. If Chrome hits certificate errors on other downloads, add your network's TLS-inspection CA to its NSS store (`certutil -d sql:$HOME/.pki/nssdb -A -t "C,," -n name -i ca.crt`). Never turn TLS checks off.
