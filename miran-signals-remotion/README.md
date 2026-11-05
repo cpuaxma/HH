@@ -1,10 +1,10 @@
 # Miran Gold: one trade, one news candle, two results (signals reel)
 
-A 27-second Arabic reel (26.8s: 1080×1920 and 1080×1350, 60fps, 1608 frames) built in Remotion with `@remotion/three` (React Three Fiber). Two iPhone-style 3D phones in a navy studio make **the same gold trade on the same day**, and the same news candle hits both:
+A 32-second Arabic reel (32.2s: 1080×1920 and 1080×1350, 60fps, 1930 frames) built in Remotion with `@remotion/three` (React Three Fiber). Two iPhone-style 3D phones in a navy studio make **the same gold trade on the same day**, and the same news candle hits both:
 
-- **Left «بلا خطة»** (no plan). Buys gold with **no stop loss** («لا حدّ للخسارة», no limit on the loss) and no alerts. Its balance climbs to about $12,100 while gold rises. Then the news candle drops gold $23, the screen floods red and the balance crashes: **«خسارة كبيرة» −$4,800, $10,000 → $5,200 (−48%)**.
+- **Left «بلا خطة»** (no plan). Buys gold with **no stop loss** («لا حدّ للخسارة», no limit on the loss) and no alerts. It buys 1 lot. Its balance climbs to about $10,700 while gold rises, close to the right's. Then the news candle drops gold $37, the screen floods red and the balance crashes: **«خسارة كبيرة» −$3,000, $10,000 → $7,000 (−30%)**.
 - **Right «مع Miran Gold»** (with Miran Gold). A Miran signal: buy gold, **with a stop loss, small risk (1%)**. Before the news, a **Miran Gold alert** (big news in 10 minutes: take profit now) closes the trade at **+$140**. When the news hits it is **protected: $10,000 → $10,140 (+1.4%)**.
-- Then the left phone flips and connects to Miran Gold. Its $5,200 stays: there's no magic recovery.
+- Then the left phone flips and connects to Miran Gold. Its $7,000 stays: there's no magic recovery.
 
 Big scoreboards under the phones (✕ «بلا خطة» / ✓ «مع Miran Gold» with the live account value) are on screen for the whole story, so it reads even without looking at the screens.
 
@@ -23,7 +23,7 @@ In `deliverables/` (and `out/` after a render):
 | `miran-signals-4x5.mp4` | 4:5 (1080×1350), re-framed for the feed, with the sound effects |
 | `miran-signals-4x5-silent.mp4` | 4:5, silent |
 | `miran-signals-sfx.wav` | The sound effects alone (to mix under your voiceover) |
-| `miran-signals-cover.png` | 1080×1920 cover (frame 1000) |
+| `miran-signals-cover.png` | 1080×1920 cover (frame 1200) |
 | `storyboard.png` (repo root) | Captioned storyboard of real stills |
 
 Final settings: H.264, CRF 16, yuv420p, preset slow, 60fps. They're on the render command, not in `remotion.config.ts` (setting them there breaks the WAV render).
@@ -34,17 +34,17 @@ There's no voiceover in the mix. A suggested script, timed to the beats:
 
 | Time | Frames | Line |
 |---|---|---|
-| 0.2–2.9s | 10–172 | متداولان، نفس الذهب… نتيجتان مختلفتان. |
-| 3.3–5.5s | 196–330 | كلاهما اشترى الذهب. |
-| 5.7–8.0s | 344–480 | الذهب يرتفع… وكلاهما يربح. |
-| 8.3–9.8s | 500–590 | Miran Gold نبّهت: خبر قوي قادم. |
-| 10.0–11.6s | 600–694 | فخرج بربحه قبل الخبر. |
-| 11.9–13.8s | 712–828 | ثم صدر الخبر… وهبط الذهب. |
-| 14.2–16.0s | 850–958 | الفرق ليس في الحظ… بل في الخطة. |
-| 16.1–18.3s | 966–1098 | الخطة: وقف خسارة + تنبيه قبل الخبر. |
-| 20.6–22.5s | 1238–1348 | تداول بخطة مع Miran Gold. |
+| 0.2–3.4s | 12–206 | متداولان، نفس الذهب… نتيجتان مختلفتان. |
+| 3.9–6.6s | 235–396 | كلاهما اشترى الذهب. |
+| 6.9–9.6s | 413–576 | الذهب يرتفع… وكلاهما يربح. |
+| 10.0–11.8s | 600–708 | Miran Gold نبّهت: خبر قوي قادم. |
+| 12.0–13.9s | 720–833 | فخرج بربحه قبل الخبر. |
+| 14.2–16.6s | 854–994 | ثم صدر الخبر… وهبط الذهب. |
+| 17.0–19.2s | 1020–1150 | الفرق ليس في الحظ… بل في الخطة. |
+| 19.3–22.0s | 1159–1318 | الخطة: وقف خسارة + تنبيه قبل الخبر. |
+| 24.8–27.0s | 1486–1618 | تداول بخطة مع Miran Gold. |
 
-The end card runs from 22.6s to 26.8s. If your takes run longer or shorter, change the timings in `TIMING` (below) and re-render: captions, screens, sound and camera all follow.
+The end card runs from 27.2s to 32.2s. If your takes run longer or shorter, change the timings in `TIMING` (below) and re-render: captions, screens, sound and camera all follow.
 
 ## Commands
 
@@ -52,7 +52,7 @@ The end card runs from 22.6s to 26.8s. If your takes run longer or shorter, chan
 npm install
 npm run studio          # Remotion Studio (live preview)
 npm run stills          # QA stills → out/stills (args: outDir scale frames [--safe] [--feed])
-npm run stills -- out/safe 0.5 300,830,1000 --safe   # with Instagram's UI zones drawn on top
+npm run stills -- out/safe 0.5 360,996,1200 --safe   # with Instagram's UI zones drawn on top
 npm run check:camera    # camera path smoothness (both formats)
 npm run blur:budget     # how many frames get motion blur, and a render-time estimate
 npm run preview         # half-res draft → out/preview.mp4
@@ -62,7 +62,7 @@ npm run scan -- out/miran-signals-silent.mp4   # flicker / black / glitched fram
 python3 scripts/storyboard.py storyboard.png out/sb   # captioned storyboard from stills
 ```
 
-Rendering uses the Chrome Headless Shell in `/opt/pw-browsers` with SwiftShader through ANGLE (`swangle`): no GPU needed, and every frame is deterministic. Concurrency is 1. A full-res format takes about 45 minutes, so run `setsid nohup bash scripts/render-all.sh > out/render-all.log 2>&1 &` and poll. IBM Plex Sans Arabic is bundled through `@fontsource`, so rendering never fetches fonts. If Chrome hits certificate errors on other downloads, add your network's TLS-inspection CA to its NSS store (`certutil -d sql:$HOME/.pki/nssdb -A -t "C,," -n name -i ca.crt`). Never turn TLS checks off.
+Rendering uses the Chrome Headless Shell in `/opt/pw-browsers` with SwiftShader through ANGLE (`swangle`): no GPU needed, and every frame is deterministic. Concurrency is 1. A full-res format takes about an hour, so run `setsid nohup bash scripts/render-all.sh > out/render-all.log 2>&1 &` and poll. IBM Plex Sans Arabic is bundled through `@fontsource`, so rendering never fetches fonts. If Chrome hits certificate errors on other downloads, add your network's TLS-inspection CA to its NSS store (`certutil -d sql:$HOME/.pki/nssdb -A -t "C,," -n name -i ca.crt`). Never turn TLS checks off.
 
 ## Changing things
 
@@ -72,7 +72,7 @@ Everything you're likely to change is in **`src/data.ts`**:
   - `COPY.ar`: the captions (`hookA`, `hookB`, `entry`, `rise`, `warning`, `exit`, `news`, `payoffA`, `payoffB`, `flip`), the scoreboard labels, the CTA and the disclaimer. In each caption block, `gold` / `red` list the words drawn in gold or red. Write the brand as `Miran Gold` (Latin): the caption animation keeps a run of Latin words together as one left-to-right unit.
   - `SCREEN_COPY.ar`: every word inside the phones.
   - (`COPY.en` / `SCREEN_COPY.en` are kept for a possible English cut but nothing renders them.)
-- **Prices:** `MARKET.price` is the gold price as `[frame, price]` keyframes joined by a smooth curve. The news drop is the stretch from frame 758 to 776.
+- **Prices:** `MARKET.price` is the gold price as `[frame, price]` keyframes joined by a smooth curve. The news drop is the stretch from frame 910 to 931.
 - **The trades:**
   - `LEFT`: lots, leverage, entry, close price, P&L, balances and the margin-call frame.
   - `SIGNAL`: entry, stop loss, target, lots and risk.
@@ -138,7 +138,7 @@ The mix sits around −20 LUFS with peaks near −3 dBFS, so it stays under musi
 
 ## Layout and safe zones
 
-On 9:16, Instagram covers the top 220px, the bottom 400px and the right 140px. All text stays in a centred 800px column (140px margins), from 256px down to 1500px. The 4:5 version is re-framed (camera, type and layout per format), not cropped. Check with `npm run stills -- out/safe 0.5 300,830,1000 --safe`.
+On 9:16, Instagram covers the top 220px, the bottom 400px and the right 140px. All text stays in a centred 800px column (140px margins), from 256px down to 1500px. The 4:5 version is re-framed (camera, type and layout per format), not cropped. Check with `npm run stills -- out/safe 0.5 360,996,1200 --safe`.
 
 ## Compliance notes (for Miran Gold's sign-off)
 
@@ -148,7 +148,7 @@ Built in:
 - No real people, testimonials, brokers or platforms; the app is generic. No trading method is called a scam: the message is about trading without a plan, a stop loss or market updates.
 - The news event is generic («خبر اقتصادي قوي», big economic news), with no date and no claim about a real release.
 - Every result is labelled «توضيحي». The Miran side shows 1% risk, a stop loss set and a modest result (+1.4%). The left phone doesn't magically recover after switching.
-- The risk disclaimer is readable on mute and on screen for about 3.7 seconds.
+- The risk disclaimer is readable on mute and on screen for about 4.4 seconds.
 
 Worth checking with compliance before running it as an ad:
 
