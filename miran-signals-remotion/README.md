@@ -1,12 +1,14 @@
 # Miran Gold: one trade, one news candle, two results (signals reel)
 
-A 26-second Arabic reel (1080×1920 and 1080×1350, 60fps, 1560 frames) built in Remotion with `@remotion/three` (React Three Fiber). Two iPhone-style 3D phones in a navy studio make **the same gold trade on the same day**, and the same news candle hits both:
+A 27-second Arabic reel (26.8s: 1080×1920 and 1080×1350, 60fps, 1608 frames) built in Remotion with `@remotion/three` (React Three Fiber). Two iPhone-style 3D phones in a navy studio make **the same gold trade on the same day**, and the same news candle hits both:
 
-- **Left «بلا خطة»** (no plan). An impulsive Buy of 3.00 lots at 1:200 with **no stop loss** and no alerts. It looks great while gold rises. Then the news candle drops gold $23, the screen floods red and it gets a **margin call: −$4,800, $10,000 → $5,200 (−48%)**.
-- **Right «مع ميران جولد»** (with Miran Gold). A Miran signal: entry 4,002, stop loss 3,997, target 4,012, **risk 1%**. Before the news, a Miran **market update** (high-impact USD news in 10 minutes: take profit now) closes the trade at **+$140**. When the news hits it is **protected: $10,000 → $10,140 (+1.4%)**.
+- **Left «بلا خطة»** (no plan). Buys gold with **no stop loss** («لا حدّ للخسارة», no limit on the loss) and no alerts. Its balance climbs to about $12,100 while gold rises. Then the news candle drops gold $23, the screen floods red and the balance crashes: **«خسارة كبيرة» −$4,800, $10,000 → $5,200 (−48%)**.
+- **Right «مع Miran Gold»** (with Miran Gold). A Miran signal: buy gold, **with a stop loss, small risk (1%)**. Before the news, a **Miran Gold alert** (big news in 10 minutes: take profit now) closes the trade at **+$140**. When the news hits it is **protected: $10,000 → $10,140 (+1.4%)**.
 - Then the left phone flips and connects to Miran Gold. Its $5,200 stays: there's no magic recovery.
 
-Big scoreboards under the phones (✕ «بلا خطة» / ✓ «مع ميران جولد» with the live balance) are on screen for the whole story, so it reads even without looking at the screens.
+Big scoreboards under the phones (✕ «بلا خطة» / ✓ «مع Miran Gold» with the live account value) are on screen for the whole story, so it reads even without looking at the screens.
+
+Written for the average viewer: no trading jargon on screen (no lots, leverage, price levels or "margin call"), one number per phone, and a caption for every step, ending on the one thing to learn: «الخطة: وقف خسارة + تنبيه قبل الخبر». The brand is always written in English, «Miran Gold»; everything else is Arabic.
 
 The trading app, the news event and every number are **fictional and illustrative**. Every number carries a «توضيحي» (illustrative) label.
 
@@ -32,14 +34,17 @@ There's no voiceover in the mix. A suggested script, timed to the beats:
 
 | Time | Frames | Line |
 |---|---|---|
-| 0.2–2.9s | 10–172 | نفس الذهب، نفس اليوم… نتيجتان مختلفتان. |
+| 0.2–2.9s | 10–172 | متداولان، نفس الذهب… نتيجتان مختلفتان. |
 | 3.3–5.5s | 196–330 | كلاهما اشترى الذهب. |
-| 8.3–11.5s | 500–690 | ميران جولد نبّهت قبل الخبر. |
-| 11.9–13.3s | 712–800 | ثم صدر الخبر. |
-| 14.2–17.5s | 850–1050 | الفرق ليس في الحظ… بل في الخطة. |
-| 19.8–21.7s | 1190–1300 | تداول بخطة مع ميران جولد. |
+| 5.7–8.0s | 344–480 | الذهب يرتفع… وكلاهما يربح. |
+| 8.3–9.8s | 500–590 | Miran Gold نبّهت: خبر قوي قادم. |
+| 10.0–11.6s | 600–694 | فخرج بربحه قبل الخبر. |
+| 11.9–13.8s | 712–828 | ثم صدر الخبر… وهبط الذهب. |
+| 14.2–16.0s | 850–958 | الفرق ليس في الحظ… بل في الخطة. |
+| 16.1–18.3s | 966–1098 | الخطة: وقف خسارة + تنبيه قبل الخبر. |
+| 20.6–22.5s | 1238–1348 | تداول بخطة مع Miran Gold. |
 
-The end card runs from 21.8s to 26s. If your takes run longer or shorter, change the timings in `TIMING` (below) and re-render: captions, screens, sound and camera all follow.
+The end card runs from 22.6s to 26.8s. If your takes run longer or shorter, change the timings in `TIMING` (below) and re-render: captions, screens, sound and camera all follow.
 
 ## Commands
 
@@ -64,7 +69,7 @@ Rendering uses the Chrome Headless Shell in `/opt/pw-browsers` with SwiftShader 
 Everything you're likely to change is in **`src/data.ts`**:
 
 - **Copy:**
-  - `COPY.ar`: the captions (`hookA`, `hookB`, `entry`, `warning`, `news`, `payoffA`, `payoffB`, `flip`), the scoreboard labels, the CTA and the disclaimer. In each caption block, `gold` / `red` list the words drawn in gold or red.
+  - `COPY.ar`: the captions (`hookA`, `hookB`, `entry`, `rise`, `warning`, `exit`, `news`, `payoffA`, `payoffB`, `flip`), the scoreboard labels, the CTA and the disclaimer. In each caption block, `gold` / `red` list the words drawn in gold or red. Write the brand as `Miran Gold` (Latin): the caption animation keeps a run of Latin words together as one left-to-right unit.
   - `SCREEN_COPY.ar`: every word inside the phones.
   - (`COPY.en` / `SCREEN_COPY.en` are kept for a possible English cut but nothing renders them.)
 - **Prices:** `MARKET.price` is the gold price as `[frame, price]` keyframes joined by a smooth curve. The news drop is the stretch from frame 758 to 776.
@@ -81,10 +86,10 @@ Everything you're likely to change is in **`src/data.ts`**:
 |---|---|
 | Hook | `hookAIn/Out`, `hookBIn/Out` |
 | Scoreboards | `boardsIn`, `boardsOut` |
-| Both buy | `entryIn/Out`, plus `LEFT.tapAt/openedAt`, `SIGNAL.at/filledAt` |
-| The warning | `warningIn/Out`, plus `UPDATE.at/tapAt/closedAt` |
+| Both buy, gold rises | `entryIn/Out`, `riseIn/Out`, plus `LEFT.tapAt/openedAt`, `SIGNAL.at/filledAt` |
+| The alert | `warningIn/Out`, `exitIn/Out`, plus `UPDATE.at/tapAt/closedAt` |
 | The news | `NEWS.at`, `newsIn/Out`, `LEFT.marginCallAt` |
-| Payoff | `payoffAIn/Out`, `payoffBIn/Out` |
+| Payoff and lesson | `payoffAIn/Out`, `payoffBIn/Out` |
 | The switch | `streakStart/End`, `flipStart/End`, `impactAt`, `flipTextIn/Out` |
 | End card | `endCardStart`, `logoAt`, `disclaimerAt`, `ctaAt`, `tapAt`, `holdFrom` |
 | Cover | `coverFrame` |
@@ -104,12 +109,12 @@ After any change: `npm run stills` to check, then `npm run render:all`.
   - On the screen texture: the Dynamic Island, the iOS status bar and the home indicator.
   - No logos.
 - **Screens** (`src/screens/draw.ts`) are drawn per frame into 1206×2622 canvases (402×874 pt at 3×):
-  - One big balance, one thick glowing price line, and one large card at a time with iOS-style scale and fade transitions.
-  - Alerts arrive as **Live Activities**: the Dynamic Island expands (red news on the left; the gold Miran update, then green "protected", on the right).
-  - The margin call is a radial red wipe, with its content landing in order.
+  - One big balance (the live account value, tinted green when up and red when down), one thick glowing price line, and one large card at a time in plain words, with iOS-style scale and fade transitions.
+  - Alerts arrive as **Live Activities**: the Dynamic Island expands (red news on the left; the gold Miran Gold alert, then green "protected", on the right).
+  - The big loss is a radial red wipe, with its content landing in order.
 - **Overlays** (`src/ui`):
   - Captions use a blur-reveal word animation (word by word, never letter by letter, so Arabic letters stay joined) on frosted-glass pills.
-  - The scoreboards are frosted glass; when a balance changes, only the changed digits roll over.
+  - The scoreboards are frosted glass and show the same live account value as the screens.
   - Whichever phone isn't the subject dims (`focus()` in `src/lib/story.ts`), so the eye goes where the story is.
 - **Motion:** every animated value is a pure function of the frame (`src/lib/story.ts`, `camera.ts`), with no `useFrame`.
   - The phones rise into place at the start. The right phone lifts on its good moments; the left sinks after the margin call.
@@ -141,7 +146,7 @@ Built in:
 
 - No "guaranteed", "risk-free", "easy money", "passive income" or "get rich" language.
 - No real people, testimonials, brokers or platforms; the app is generic. No trading method is called a scam: the message is about trading without a plan, a stop loss or market updates.
-- The news event is generic ("High-impact USD news"), with no date and no claim about a real release.
+- The news event is generic («خبر اقتصادي قوي», big economic news), with no date and no claim about a real release.
 - Every result is labelled «توضيحي». The Miran side shows 1% risk, a stop loss set and a modest result (+1.4%). The left phone doesn't magically recover after switching.
 - The risk disclaimer is readable on mute and on screen for about 3.7 seconds.
 
