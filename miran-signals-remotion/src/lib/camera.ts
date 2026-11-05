@@ -54,11 +54,11 @@ export const SHOTS: Record<string, Shot> = {
     name: 'Wide two-shot (hook)',
     at: (t, fmt) => ({
       target: [0, 1.06, 0],
-      az: drift(t, -40, 230, 7, 2),
-      el: drift(t, -40, 230, 6, 3),
-      dist: drift(t, -40, 230, 6.5, 5.85) * ds(fmt),
+      az: drift(t, -48, 276, 7, 2),
+      el: drift(t, -48, 276, 6, 3),
+      dist: drift(t, -48, 276, 6.5, 5.85) * ds(fmt),
       hfov: 20,
-      roll: drift(t, -40, 230, 0.5, 0),
+      roll: drift(t, -48, 276, 0.5, 0),
       focus: fy(fmt),
     }),
   },
@@ -67,11 +67,11 @@ export const SHOTS: Record<string, Shot> = {
     name: 'Two-shot, slow arc (entry)',
     at: (t, fmt) => ({
       target: [0, 1.06, 0],
-      az: drift(t, 150, 520, 3, -3),
-      el: drift(t, 150, 520, 3, 1.5),
-      dist: drift(t, 150, 520, 5.75, 5.5) * ds(fmt),
+      az: drift(t, 180, 624, 3, -3),
+      el: drift(t, 180, 624, 3, 1.5),
+      dist: drift(t, 180, 624, 5.75, 5.5) * ds(fmt),
       hfov: 20,
-      roll: drift(t, 150, 520, 0, -0.3),
+      roll: drift(t, 180, 624, 0, -0.3),
       focus: fy(fmt),
     }),
   },
@@ -79,12 +79,12 @@ export const SHOTS: Record<string, Shot> = {
   favourRight: {
     name: 'Two-shot favouring the right (warning)',
     at: (t, fmt) => ({
-      target: [drift(t, 450, 720, 0.02, 0.06), 1.06, 0],
-      az: drift(t, 450, 720, -3.5, -6),
-      el: drift(t, 450, 720, 2, 1),
-      dist: drift(t, 450, 720, 5.55, 5.45) * ds(fmt),
+      target: [drift(t, 540, 864, 0.02, 0.06), 1.06, 0],
+      az: drift(t, 540, 864, -3.5, -6),
+      el: drift(t, 540, 864, 2, 1),
+      dist: drift(t, 540, 864, 5.55, 5.45) * ds(fmt),
       hfov: 20,
-      roll: drift(t, 450, 720, -0.3, -0.6),
+      roll: drift(t, 540, 864, -0.3, -0.6),
       focus: fy(fmt),
     }),
   },
@@ -92,7 +92,7 @@ export const SHOTS: Record<string, Shot> = {
   news: {
     name: 'Square two-shot, push on the news',
     at: (t, fmt) => {
-      const k = 0.25 * smootherstep((t - 690) / 70) + 0.55 * smoothSteep((t - (NEWS.at - 4)) / 22) + 0.2 * smootherstep((t - (NEWS.at + 18)) / 80);
+      const k = 0.25 * smootherstep((t - 828) / 84) + 0.55 * smoothSteep((t - (NEWS.at - 4)) / 22) + 0.2 * smootherstep((t - (NEWS.at + 18)) / 80);
       return {
         target: [lerp(-0.02, -0.04, k), 1.06, 0],
         az: lerp(0, 1.5, k),
@@ -109,11 +109,11 @@ export const SHOTS: Record<string, Shot> = {
     name: 'Slow pull back (payoff)',
     at: (t, fmt) => ({
       target: [0, 1.06, 0],
-      az: drift(t, 820, 1128, 1, -1),
-      el: drift(t, 820, 1128, 1, 3),
-      dist: drift(t, 820, 1128, 5.3, 5.75) * ds(fmt),
+      az: drift(t, 984, 1354, 1, -1),
+      el: drift(t, 984, 1354, 1, 3),
+      dist: drift(t, 984, 1354, 5.3, 5.75) * ds(fmt),
       hfov: 20,
-      roll: drift(t, 820, 1128, -0.2, 0.2),
+      roll: drift(t, 984, 1354, -0.2, 0.2),
       focus: fy(fmt),
     }),
   },
@@ -121,12 +121,12 @@ export const SHOTS: Record<string, Shot> = {
   hero: {
     name: 'Low 3/4 hero, orbit to front (switch)',
     at: (t, fmt) => ({
-      target: [drift(t, 1108, 1408, -0.16, 0), 1.06, 0],
-      az: drift(t, 1108, 1408, -30, -2),
-      el: drift(t, 1108, 1408, 0.5, 5),
-      dist: drift(t, 1108, 1408, 5.4, 6.05) * ds(fmt),
-      hfov: drift(t, 1108, 1408, 22, 20),
-      roll: drift(t, 1108, 1408, 2.0, 0),
+      target: [drift(t, 1330, 1690, -0.16, 0), 1.06, 0],
+      az: drift(t, 1330, 1690, -30, -2),
+      el: drift(t, 1330, 1690, 0.5, 5),
+      dist: drift(t, 1330, 1690, 5.4, 6.05) * ds(fmt),
+      hfov: drift(t, 1330, 1690, 22, 20),
+      roll: drift(t, 1330, 1690, 2.0, 0),
       focus: fy(fmt),
     }),
   },
@@ -134,11 +134,11 @@ export const SHOTS: Record<string, Shot> = {
 
 /** The edit: which shot runs when, and how each one hands over to the next. */
 export const EDIT: {shot: keyof typeof SHOTS; until: number; blend: number; ease: (x: number) => number}[] = [
-  {shot: 'wide', until: 160, blend: 50, ease: smootherstep},
-  {shot: 'two', until: 450, blend: 60, ease: smootherstep},
-  {shot: 'favourRight', until: 680, blend: 50, ease: smootherstep},
-  {shot: 'news', until: 830, blend: 60, ease: smootherstep},
-  {shot: 'pull', until: 1088, blend: 40, ease: whip},
+  {shot: 'wide', until: 192, blend: 50, ease: smootherstep},
+  {shot: 'two', until: 540, blend: 60, ease: smootherstep},
+  {shot: 'favourRight', until: 816, blend: 50, ease: smootherstep},
+  {shot: 'news', until: 996, blend: 60, ease: smootherstep},
+  {shot: 'pull', until: 1306, blend: 40, ease: whip},
   {shot: 'hero', until: Infinity, blend: 0, ease: smootherstep},
 ];
 

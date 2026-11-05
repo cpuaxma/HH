@@ -25,7 +25,7 @@ export const getCues = (): SoundCue[] => {
   cues.push(cue(LEFT.tapAt, 'tap', 0.4));
   cues.push(cue(LEFT.openedAt, 'notif-left', 0.32));
   // A heartbeat under the calm before the news.
-  for (let at = 610; at < NEWS.at - 40; at += 80) cues.push(cue(at, 'heartbeat', 0.5));
+  for (let at = 732; at < NEWS.at - 48; at += 96) cues.push(cue(at, 'heartbeat', 0.5));
 
   // RIGHT: the Miran signal builds with soft gold chimes, executes, then the market update.
   cues.push(cue(SIGNAL.at, 'signal', 0.34));

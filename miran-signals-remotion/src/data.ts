@@ -2,7 +2,7 @@
  * Everything you are likely to change lives in this file:
  * every line of copy (Arabic; the brand name is always written «Miran Gold»), the numbers and prices, the colours and the timings.
  *
- * Frames are at 60fps (60 frames = 1 second). The reel is 1608 frames (26.8s).
+ * Frames are at 60fps (60 frames = 1 second). The reel is 1930 frames (32.2s).
  *
  * ONE STORY: the same gold market, the same trade, the same news.
  * - Left («بلا خطة»): buys 3 lots on impulse, no stop loss. Looks good… until the news.
@@ -51,63 +51,63 @@ export const MARKET = {
   /**
    * The gold price over the reel, as [frame, price] keyframes joined by a smooth curve
    * (plausible levels for late 2026; illustrative). It drifts up after both traders buy,
-   * then the news candle at NEWS.at drops it $23 in a quarter of a second.
+   * then the news candle at NEWS.at drops it $37 in a third of a second.
    */
   price: [
-    [-600, 3995.5],
-    [-300, 3998.6],
+    [-720, 3995.5],
+    [-360, 3998.6],
     [0, 4000.4],
-    [90, 4001.0],
-    [160, 4000.6],
-    [236, 4002.0],
-    [300, 4003.6],
-    [380, 4005.6],
-    [460, 4007.4],
-    [540, 4008.6],
-    [600, 4009.0],
-    [660, 4008.5],
-    [720, 4008.9],
-    [758, 4009.1],
-    [762, 4007.5],
-    [768, 3997.0],
-    [776, 3986.0],
-    [792, 3988.6],
-    [830, 3986.8],
-    [900, 3989.0],
-    [1000, 3990.6],
-    [1248, 3993.0],
-    [1608, 3994.0],
+    [108, 4001.0],
+    [192, 4000.6],
+    [283, 4002.0],
+    [360, 4003.6],
+    [456, 4005.6],
+    [552, 4007.4],
+    [648, 4008.6],
+    [720, 4009.0],
+    [792, 4008.5],
+    [864, 4008.9],
+    [910, 4009.1],
+    [914, 4006.5],
+    [922, 3988.0],
+    [931, 3972.0],
+    [950, 3974.6],
+    [996, 3972.8],
+    [1080, 3975.0],
+    [1200, 3976.6],
+    [1498, 3979.0],
+    [1930, 3980.0],
   ] as [number, number][],
   /** Tiny live ticks on top of the curve ($). */
   tickNoise: 0.16,
   /** How many frames of history the chart shows. */
-  chartSpan: 420,
+  chartSpan: 504,
 };
 
 /** The shared high-impact news release. Generic: no real date, no real outcome. */
 export const NEWS = {
   /** Frame the news candle starts (the same frame on both phones). */
-  at: 760,
+  at: 912,
 };
 
 // ─── LEFT: trading without a plan ────────────────────────────────────────────
 
-/** The one impulsive trade: 3 lots at 1:200, no stop loss. P&L = lots × 100 oz × price move. */
+/** The one impulsive trade: 1 lot, no stop loss. P&L = lots × 100 oz × price move. */
 export const LEFT = {
   side: 'BUY',
-  lots: 3.0,
+  lots: 1.0,
   leverage: '1:200',
   entry: 4002.0,
   /** Frame "Buy" is tapped, and the frame the trade opens. */
-  tapAt: 224,
-  openedAt: 232,
-  /** Margin call: equity $5,200 on $6,003 margin (87%); the trade is closed at 3,986. */
-  closePrice: 3986.0,
-  pnl: -4800,
-  marginCallAt: 790,
+  tapAt: 269,
+  openedAt: 278,
+  /** The news candle takes it to 3,972 with no stop loss: 1 × 100 × −$30 = −$3,000. */
+  closePrice: 3972.0,
+  pnl: -3000,
+  marginCallAt: 948,
   startBalance: 10000,
-  finalBalance: 5200,
-  finalChangePct: -48,
+  finalBalance: 7000,
+  finalChangePct: -30,
 };
 
 // ─── RIGHT: trading with Miran Gold ──────────────────────────────────────────
@@ -121,17 +121,17 @@ export const SIGNAL = {
   lots: 0.2,
   riskPct: 1,
   /** The signal card lands (it builds line by line). */
-  at: 206,
+  at: 247,
   lineGap: 8,
-  filledAt: 240,
+  filledAt: 288,
 };
 
 /** The Miran market update before the news: take profit now. */
 export const UPDATE = {
-  at: 512,
+  at: 614,
   /** "Take profit now" is tapped; the trade closes at 4,009: 0.20 × 100 × $7 = +$140. */
-  tapAt: 586,
-  closedAt: 600,
+  tapAt: 703,
+  closedAt: 720,
   closePrice: 4009.0,
   profit: 140,
 };
@@ -262,7 +262,7 @@ export const SCREEN_COPY: Record<Lang, ScreenCopy> = {
     newsBanner: 'خبر اقتصادي قوي',
     newsBody: 'صدر الآن',
     marginCall: 'خسارة كبيرة',
-    closedLoss: 'خسرت نصف رصيدك تقريباً',
+    closedLoss: 'خسرت 30% من رصيدك',
     brand: 'Miran Gold',
     waiting: 'بانتظار إشارة Miran Gold',
     signalTitle: 'إشارة Miran Gold',
@@ -301,7 +301,7 @@ export const SCREEN_COPY: Record<Lang, ScreenCopy> = {
     newsBanner: 'Big economic news',
     newsBody: 'Released just now',
     marginCall: 'A big loss',
-    closedLoss: 'You lost almost half your balance',
+    closedLoss: 'You lost 30% of your balance',
     brand: 'Miran Gold',
     waiting: 'Waiting for a Miran Gold signal',
     signalTitle: 'Miran Gold signal',
@@ -330,62 +330,62 @@ export const SCREEN_COPY: Record<Lang, ScreenCopy> = {
 
 export const TIMING = {
   fps: 60,
-  durationInFrames: 1608,
+  durationInFrames: 1930,
 
   // 1. Hook (0–180): wide two-shot, both phones at $10,000.
-  hookAIn: 10,
-  hookAOut: 90,
-  hookBIn: 96,
-  hookBOut: 172,
+  hookAIn: 12,
+  hookAOut: 108,
+  hookBIn: 115,
+  hookBOut: 206,
   /** The scoreboards under the phones (label + balance) are on screen in this window. */
-  boardsIn: 30,
-  boardsOut: 1104,
+  boardsIn: 36,
+  boardsOut: 1325,
 
   // 2. The entry (180–480): both buy gold, and gold rises (both are winning).
-  entryIn: 196,
-  entryOut: 330,
-  riseIn: 344,
-  riseOut: 480,
+  entryIn: 235,
+  entryOut: 396,
+  riseIn: 413,
+  riseOut: 576,
 
   // 3. The warning (480–720): the Miran alert; the right side takes its profit.
-  warningIn: 500,
-  warningOut: 590,
-  exitIn: 600,
-  exitOut: 694,
+  warningIn: 600,
+  warningOut: 708,
+  exitIn: 720,
+  exitOut: 833,
 
   // 4. The news (720–850): the same candle on both phones at NEWS.at.
-  newsIn: 712,
-  newsOut: 828,
+  newsIn: 854,
+  newsOut: 994,
 
   // 5. The payoff and the lesson (850–1110): both results side by side.
-  payoffAIn: 850,
-  payoffAOut: 958,
-  payoffBIn: 966,
-  payoffBOut: 1098,
+  payoffAIn: 1020,
+  payoffAOut: 1150,
+  payoffBIn: 1159,
+  payoffBOut: 1318,
 
   // 6. The switch (1110–1360): a gold streak, the left phone flips to Miran Gold.
-  streakStart: 1114,
-  streakEnd: 1152,
-  flipStart: 1160,
-  flipEnd: 1214,
-  impactAt: 1214,
+  streakStart: 1337,
+  streakEnd: 1382,
+  flipStart: 1392,
+  flipEnd: 1457,
+  impactAt: 1457,
   impactFrames: 3,
   /** Both phones pulse gold together from here (period in frames). */
-  syncPulseFrom: 1248,
+  syncPulseFrom: 1498,
   syncPulsePeriod: 36,
-  flipTextIn: 1238,
-  flipTextOut: 1348,
+  flipTextIn: 1486,
+  flipTextOut: 1618,
 
   // 7. End card (1358–1608).
-  endCardStart: 1358,
-  logoAt: 1378,
-  disclaimerAt: 1388,
-  ctaAt: 1418,
-  tapAt: 1450,
+  endCardStart: 1630,
+  logoAt: 1654,
+  disclaimerAt: 1666,
+  ctaAt: 1702,
+  tapAt: 1740,
   /** Everything is still from here to the end (the held last second). */
-  holdFrom: 1548,
+  holdFrom: 1858,
 
-  coverFrame: 1000,
+  coverFrame: 1200,
 };
 
 // ─── Layout ──────────────────────────────────────────────────────────────────

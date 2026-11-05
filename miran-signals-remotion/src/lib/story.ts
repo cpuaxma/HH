@@ -199,8 +199,8 @@ export const leftTradeOpen = (t: number) => t >= LEFT.openedAt && t < LEFT.margi
 /**
  * What each account is worth right now: the ONE number the viewer follows (on the screen and
  * on the scoreboard). It follows the smooth price curve (no tick noise, so the digits don't
- * flicker): the left climbs to about $12,100 while gold rises, then the news candle crashes it
- * to $5,200; the right gains $140 and keeps it.
+ * flicker): the left climbs to about $10,700 while gold rises, then the news candle crashes it
+ * to $7,000; the right gains $140 and keeps it.
  */
 export const leftValue = (t: number) => {
   const live = (f: number) => LEFT.startBalance + (priceCurve(f) - LEFT.entry) * LEFT.lots * 100;
