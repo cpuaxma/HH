@@ -109,11 +109,11 @@ export const SHOTS: Record<string, Shot> = {
     name: 'Slow pull back (payoff)',
     at: (t, fmt) => ({
       target: [0, 1.06, 0],
-      az: drift(t, 820, 1080, 1, -1),
-      el: drift(t, 820, 1080, 1, 3),
-      dist: drift(t, 820, 1080, 5.3, 5.75) * ds(fmt),
+      az: drift(t, 820, 1128, 1, -1),
+      el: drift(t, 820, 1128, 1, 3),
+      dist: drift(t, 820, 1128, 5.3, 5.75) * ds(fmt),
       hfov: 20,
-      roll: drift(t, 820, 1080, -0.2, 0.2),
+      roll: drift(t, 820, 1128, -0.2, 0.2),
       focus: fy(fmt),
     }),
   },
@@ -121,12 +121,12 @@ export const SHOTS: Record<string, Shot> = {
   hero: {
     name: 'Low 3/4 hero, orbit to front (switch)',
     at: (t, fmt) => ({
-      target: [drift(t, 1060, 1360, -0.16, 0), 1.06, 0],
-      az: drift(t, 1060, 1360, -30, -2),
-      el: drift(t, 1060, 1360, 0.5, 5),
-      dist: drift(t, 1060, 1360, 5.4, 6.05) * ds(fmt),
-      hfov: drift(t, 1060, 1360, 22, 20),
-      roll: drift(t, 1060, 1360, 2.0, 0),
+      target: [drift(t, 1108, 1408, -0.16, 0), 1.06, 0],
+      az: drift(t, 1108, 1408, -30, -2),
+      el: drift(t, 1108, 1408, 0.5, 5),
+      dist: drift(t, 1108, 1408, 5.4, 6.05) * ds(fmt),
+      hfov: drift(t, 1108, 1408, 22, 20),
+      roll: drift(t, 1108, 1408, 2.0, 0),
       focus: fy(fmt),
     }),
   },
@@ -138,7 +138,7 @@ export const EDIT: {shot: keyof typeof SHOTS; until: number; blend: number; ease
   {shot: 'two', until: 450, blend: 60, ease: smootherstep},
   {shot: 'favourRight', until: 680, blend: 50, ease: smootherstep},
   {shot: 'news', until: 830, blend: 60, ease: smootherstep},
-  {shot: 'pull', until: 1040, blend: 40, ease: whip},
+  {shot: 'pull', until: 1088, blend: 40, ease: whip},
   {shot: 'hero', until: Infinity, blend: 0, ease: smootherstep},
 ];
 

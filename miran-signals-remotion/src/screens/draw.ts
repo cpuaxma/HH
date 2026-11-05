@@ -4,13 +4,15 @@
 // thick price line, and ONE large card at a time. iOS details (Dynamic Island, status bar,
 // home indicator) make the phones read as iPhones; the app itself is fictional.
 //
-// - Left («بلا خطة»): an impulsive Buy of 3 lots with no stop loss; the news candle turns the
-//   whole screen red; margin call. After its flip it is connected to Miran Gold.
-// - Right («مع ميران جولد»): the Miran signal (entry, stop loss, target, 1% risk), the market
-//   update before the news (take profit now), then "Protected" when the news hits.
+// Plain words only, no trading jargon (no lots, leverage, price levels or "margin call"):
+// - Left («بلا خطة»): buys gold with no stop loss ("no limit on the loss"); its balance climbs
+//   with gold, then the news candle crashes it: "a big loss". After its flip it is connected
+//   to Miran Gold.
+// - Right («مع Miran Gold»): the Miran signal (buy gold, with a stop loss, small risk), the
+//   Miran alert before the news (take profit now), then "Protected" when the news hits.
 import {LEFT, Lang, NEWS, RIGHT, SCREEN_COPY, SIGNAL, TIMING, UPDATE} from '../data';
 import {clamp01, easeIn, easeInOut, easeOut, ramp, springAt} from '../lib/ease';
-import {chartRange, leftBalance, leftDanger, leftIsMiran, leftOpenPnl, price, rightBalance, rightOpenPnl} from '../lib/story';
+import {chartRange, leftBalance, leftDanger, leftIsMiran, leftValue, price, rightValue} from '../lib/story';
 import {MARKET} from '../data';
 import {C, H, IconKind, W, emblem, fit, goldGradient, icon, measure, money, rr, signedMoney, softShadow, tagPill, text} from './kit';
 
@@ -25,9 +27,7 @@ const SC = () => SCREEN_COPY[LANG];
 const PAD = 26;
 /** x of the reading start / end (right / left in Arabic). */
 const sx = () => (SC().rtl ? W - PAD : PAD);
-const ex = () => (SC().rtl ? PAD : W - PAD);
 const aStart = (): CanvasTextAlign => (SC().rtl ? 'right' : 'left');
-const aEnd = (): CanvasTextAlign => (SC().rtl ? 'left' : 'right');
 
 /** Localised text that fits in maxW, anchored at x with `align`. */
 const say = (ctx: CanvasRenderingContext2D, s: string, x: number, y: number, o: {weight?: number; size?: number; color?: string | CanvasGradient; align?: CanvasTextAlign; maxW?: number} = {}) => {
@@ -42,7 +42,6 @@ const num = (ctx: CanvasRenderingContext2D, s: string, x: number, y: number, o: 
   text(ctx, s, x, y, {weight: o.weight ?? 700, size: o.size ?? 18, color: o.color ?? C.text, align: o.align ?? aStart(), rtl: false});
 
 const usd = (n: number) => `$${money(n, 0)}`;
-const priceLabel = (p: number) => p.toLocaleString('en-US', {minimumFractionDigits: 0, maximumFractionDigits: 0});
 
 // ─── iOS chrome ──────────────────────────────────────────────────────────────
 
@@ -285,7 +284,7 @@ const balanceBlock = (
 
 type Level = {price: number; color: string; label: string; alpha: number};
 
-const CHART = {top: 268, bottom: 520, left: PAD, right: W - PAD - 70};
+const CHART = {top: 268, bottom: 520, left: PAD, right: W - PAD - 16};
 
 const chart = (ctx: CanvasRenderingContext2D, t: number, lineColor: string, levels: Level[], newsColor: string) => {
   const span = MARKET.chartSpan;
@@ -390,11 +389,6 @@ const chart = (ctx: CanvasRenderingContext2D, t: number, lineColor: string, leve
   ctx.arc(lx, ly, 8 + 18 * ph, 0, Math.PI * 2);
   ctx.fillStyle = hexA(lineColor, 0.4 * (1 - ph));
   ctx.fill();
-  const tagY = Math.max(CHART.top, Math.min(CHART.bottom, ly));
-  rr(ctx, CHART.right + 6, tagY - 14, 62, 28, 8);
-  ctx.fillStyle = lineColor;
-  ctx.fill();
-  num(ctx, priceLabel(price(t)), CHART.right + 37, tagY + 6, {size: 15, color: '#0b0f19', align: 'center'});
 };
 
 const hexA = (hex: string, a: number) => {
@@ -448,13 +442,6 @@ const withT = (ctx: CanvasRenderingContext2D, k: {alpha: number; dy: number; s: 
   ctx.restore();
 };
 
-/** A labelled row: label at the start, value (LTR number or text) at the end. */
-const row = (ctx: CanvasRenderingContext2D, y: number, label: string, value: string, color: string, isNum = true, size = 24) => {
-  say(ctx, label, sx() + (SC().rtl ? -4 : 4), y, {weight: 500, size: 21, color: '#C9CDD6', maxW: 170});
-  if (isNum) num(ctx, value, ex() + (SC().rtl ? 4 : -4), y, {size, color, align: aEnd()});
-  else say(ctx, value, ex() + (SC().rtl ? 4 : -4), y, {weight: 700, size, color, align: aEnd(), maxW: 170});
-};
-
 // ─── LEFT: trading without a plan ────────────────────────────────────────────
 
 const RED = '#FF4D4D';
@@ -468,10 +455,8 @@ let LEFT_ACTS: Activity[] = [];
 const leftTicket = (ctx: CanvasRenderingContext2D, t: number) => {
   cardBox(ctx);
   const rtl = SC().rtl;
-  say(ctx, SC().noPlan, sx() + (rtl ? -6 : 6), CARD.y + 50, {weight: 500, size: 18, color: '#9AA1B0'});
-  // Lot size.
-  num(ctx, `3.00 ${SC().lots === 'lots' ? 'lots' : ''}`.trim(), W / 2, CARD.y + 120, {size: 44, align: 'center'});
-  if (SC().lots !== 'lots') say(ctx, SC().lots, W / 2, CARD.y + 152, {weight: 500, size: 18, color: '#9AA1B0', align: 'center'});
+  say(ctx, SC().noPlan, W / 2, CARD.y + 52, {weight: 500, size: 20, color: '#9AA1B0', align: 'center'});
+  say(ctx, SC().signalHead, W / 2, CARD.y + 128, {weight: 700, size: 44, align: 'center', maxW: 320});
   // Sell and Buy buttons (Buy on the reading-end side for LTR, start for RTL: like the app's order).
   const press = Math.sin(Math.PI * clamp01((t - LEFT.tapAt) / 10));
   const bw = 156;
@@ -497,36 +482,28 @@ const leftTicket = (ctx: CanvasRenderingContext2D, t: number) => {
   ctx.restore();
 };
 
-/** The open trade: Buy 3.00 lots, stop loss: none. */
+/** The open trade: "Buy gold", and a big red "No stop loss · no limit on the loss". */
 const leftPosition = (ctx: CanvasRenderingContext2D) => {
   cardBox(ctx);
   const rtl = SC().rtl;
-  // "Buy 3.00 lots"
-  const bw = say(ctx, SC().buy, sx() + (rtl ? -6 : 6), CARD.y + 62, {weight: 700, size: 32, color: GREEN, maxW: 120});
-  const nx = rtl ? sx() - 6 - bw - 14 : sx() + 6 + bw + 14;
-  const lotsStr = SC().lots === 'lots' ? '3.00 lots' : '3.00';
-  const lw = num(ctx, lotsStr, nx, CARD.y + 62, {size: 32});
-  if (SC().lots !== 'lots') say(ctx, SC().lots, rtl ? nx - lw - 10 : nx + lw + 10, CARD.y + 62, {weight: 700, size: 32, maxW: 80});
-  // The big red "Stop loss: none".
-  const y = CARD.y + 98;
-  rr(ctx, CARD.x + 16, y, CARD.w - 32, 96, 22);
+  say(ctx, SC().signalHead, sx() + (rtl ? -6 : 6), CARD.y + 64, {weight: 700, size: 34, color: GREEN, maxW: 300});
+  const y = CARD.y + 100;
+  const h = 150;
+  rr(ctx, CARD.x + 16, y, CARD.w - 32, h, 24);
   ctx.fillStyle = 'rgba(255,77,77,0.14)';
   ctx.fill();
   ctx.lineWidth = 2;
   ctx.strokeStyle = 'rgba(255,77,77,0.7)';
   ctx.stroke();
-  const ix = rtl ? CARD.x + CARD.w - 16 - 46 : CARD.x + 16 + 46;
+  const ix = rtl ? CARD.x + CARD.w - 16 - 52 : CARD.x + 16 + 52;
   ctx.beginPath();
-  ctx.arc(ix, y + 48, 25, 0, Math.PI * 2);
+  ctx.arc(ix, y + h / 2, 30, 0, Math.PI * 2);
   ctx.fillStyle = RED;
   ctx.fill();
-  icon(ctx, 'x', ix, y + 48, 22, '#2a0507', 4);
-  const tx = rtl ? ix - 40 : ix + 40;
-  say(ctx, SC().stopLoss, tx, y + 40, {weight: 500, size: 19, color: '#F2C2C2', maxW: 230});
-  say(ctx, SC().none, tx, y + 76, {weight: 700, size: 30, color: RED, maxW: 230});
-  // Leverage, small.
-  say(ctx, `${LANG === 'ar' ? 'الرافعة' : 'Leverage'}`, sx() + (rtl ? -6 : 6), CARD.y + 244, {weight: 500, size: 18, color: '#9AA1B0', maxW: 160});
-  num(ctx, LEFT.leverage, ex() + (rtl ? 6 : -6), CARD.y + 244, {size: 20, color: '#E0B04A', align: aEnd()});
+  icon(ctx, 'x', ix, y + h / 2, 26, '#2a0507', 4.5);
+  const tx = rtl ? ix - 46 : ix + 46;
+  say(ctx, SC().noStop, tx, y + 66, {weight: 700, size: 31, color: RED, maxW: 250});
+  say(ctx, SC().noStopBody, tx, y + 106, {weight: 600, size: 22, color: '#F2C2C2', maxW: 250});
 };
 
 /** The margin call takeover: the whole screen says it. */
@@ -597,11 +574,10 @@ const drawBlind = (ctx: CanvasRenderingContext2D, t: number) => {
     return;
   }
   header(ctx, 'blind');
-  const open = leftOpenPnl(t);
-  const balColor = C.text;
-  balanceBlock(ctx, leftBalance(t), balColor, open, ramp(t, LEFT.openedAt, LEFT.openedAt + 10));
+  const v = leftValue(t);
+  balanceBlock(ctx, v, valueColor(v, LEFT.startBalance), null, 0);
   const lineColor = mixHex('#ECE7DC', RED, ramp(t, NEWS.at, NEWS.at + 8));
-  chart(ctx, t, lineColor, [{price: LEFT.entry, color: '#ECE7DC', label: SC().entry, alpha: ramp(t, LEFT.openedAt, LEFT.openedAt + 12)}], RED);
+  chart(ctx, t, lineColor, [], RED);
   withT(ctx, tr(t, -100, LEFT.openedAt - 2, 10), () => leftTicket(ctx, t));
   withT(ctx, tr(t, LEFT.openedAt), () => leftPosition(ctx));
   if (t >= LEFT.marginCallAt) marginCall(ctx, t);
@@ -664,25 +640,18 @@ const signalCard = (ctx: CanvasRenderingContext2D, t: number) => {
   ctx.globalAlpha *= line(1);
   say(ctx, SC().signalHead, sx() + (rtl ? -6 : 6), CARD.y + 98, {weight: 700, size: 34, color: GREEN, maxW: 300});
   ctx.restore();
-  const rows: [string, string, string][] = [
-    [SC().entry, priceLabel(SIGNAL.entry), C.text],
-    [SC().stopLoss, priceLabel(SIGNAL.sl), RED],
-    [SC().target, priceLabel(SIGNAL.tp), GREEN],
-    [SC().risk, `${SIGNAL.riskPct}%`, GOLD],
-  ];
-  rows.forEach(([l, v, c], i) => {
+  // Two plain ticks instead of price levels: the plan, in words.
+  [SC().withStop, `${SC().smallRisk} (${SIGNAL.riskPct}%)`].forEach((label, i) => {
     ctx.save();
     ctx.globalAlpha *= line(i + 2);
-    const y = CARD.y + 140 + i * 36;
-    row(ctx, y, l, v, c);
-    if (i < rows.length - 1) {
-      ctx.strokeStyle = 'rgba(255,255,255,0.07)';
-      ctx.lineWidth = 1;
-      ctx.beginPath();
-      ctx.moveTo(CARD.x + 22, y + 13);
-      ctx.lineTo(CARD.x + CARD.w - 22, y + 13);
-      ctx.stroke();
-    }
+    const y = CARD.y + 162 + i * 56;
+    const ix = rtl ? sx() - 20 : sx() + 20;
+    ctx.beginPath();
+    ctx.arc(ix, y - 9, 17, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(63,208,138,0.2)';
+    ctx.fill();
+    icon(ctx, 'check', ix, y - 9, 16, GREEN, 3);
+    say(ctx, label, rtl ? ix - 30 : ix + 30, y, {weight: 700, size: 26, color: C.text, maxW: 290});
     ctx.restore();
   });
 };
@@ -762,27 +731,9 @@ const protectedCard = (ctx: CanvasRenderingContext2D, t: number) => {
 const drawMiranRight = (ctx: CanvasRenderingContext2D, t: number) => {
   background(ctx, 'miran', 0);
   header(ctx, 'miran');
-  const bal = rightBalance(t);
-  balanceBlock(
-    ctx,
-    bal,
-    mixHex('#F5F1E8', GREEN, ramp(t, UPDATE.closedAt, UPDATE.closedAt + 16)),
-    rightOpenPnl(t),
-    ramp(t, SIGNAL.filledAt, SIGNAL.filledAt + 10) * (1 - ramp(t, UPDATE.closedAt, UPDATE.closedAt + 8)),
-    {from: RIGHT.startBalance, to: RIGHT.finalBalance, at: UPDATE.closedAt, t},
-  );
-  const lv = ramp(t, SIGNAL.filledAt, SIGNAL.filledAt + 16) * (1 - ramp(t, UPDATE.closedAt, UPDATE.closedAt + 14));
-  chart(
-    ctx,
-    t,
-    GOLD,
-    [
-      {price: SIGNAL.tp, color: GREEN, label: 'TP', alpha: lv},
-      {price: SIGNAL.entry, color: '#ECE7DC', label: SC().entry, alpha: lv},
-      {price: SIGNAL.sl, color: RED, label: 'SL', alpha: lv},
-    ],
-    GOLD,
-  );
+  const v = rightValue(t);
+  balanceBlock(ctx, v, valueColor(v, RIGHT.startBalance), null, 0);
+  chart(ctx, t, GOLD, [], GOLD);
   withT(ctx, tr(t, -100, SIGNAL.at - 4, 10), () => waitingCard(ctx, t));
   withT(ctx, tr(t, SIGNAL.at, UPDATE.at - 6, 10), () => signalCard(ctx, t));
   withT(ctx, tr(t, UPDATE.at, UPDATE.closedAt - 2, 10), () => updateCard(ctx, t));
@@ -811,6 +762,10 @@ const drawMiranLeft = (ctx: CanvasRenderingContext2D, t: number) => {
 };
 
 // ─── Exports ─────────────────────────────────────────────────────────────────
+
+/** The balance is tinted by how the account is doing: green when up, red when down. */
+const valueColor = (v: number, start: number) =>
+  v >= start ? mixHex('#F5F1E8', GREEN, clamp01((v - start) / 140)) : mixHex('#F5F1E8', RED, clamp01((start - v) / 400));
 
 const mixHex = (a: string, b: string, k: number) => {
   const pa = [1, 3, 5].map((i) => parseInt(a.slice(i, i + 2), 16));

@@ -17,7 +17,7 @@ export const getCues = (): SoundCue[] => {
   const cues: SoundCue[] = [];
 
   // Captions landing: a soft low thock.
-  [TIMING.hookAIn, TIMING.hookBIn, TIMING.entryIn, TIMING.warningIn, TIMING.newsIn, TIMING.payoffAIn, TIMING.payoffBIn, TIMING.flipTextIn].forEach((at) =>
+  [TIMING.hookAIn, TIMING.hookBIn, TIMING.entryIn, TIMING.riseIn, TIMING.warningIn, TIMING.exitIn, TIMING.newsIn, TIMING.payoffAIn, TIMING.payoffBIn, TIMING.flipTextIn].forEach((at) =>
     cues.push(cue(at + 8, 'thock', 0.28)),
   );
 

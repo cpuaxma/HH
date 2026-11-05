@@ -7,7 +7,7 @@ import {BRAND, COLUMN, COPY, FormatId, GOLD_GRADIENT, LAYOUT, LEFT, Lang, RIGHT,
 import {FAMILY} from '../fonts';
 import {clamp01, easeIn, easeInOut, easeOut, hash, ramp, springAt} from '../lib/ease';
 import {projectOnPhone} from '../lib/projection';
-import {PHONE, focus, impact, leftPose, rightPose} from '../lib/story';
+import {PHONE, focus, impact, leftPose, leftValue, rightPose, rightValue} from '../lib/story';
 import {Kinetic, KineticProps, glass} from './Kinetic';
 
 const useFmt = (): FormatId => (useVideoConfig().height > 1500 ? 'vertical' : 'feed');
@@ -30,7 +30,9 @@ export const textBlocks = (fmt: FormatId, lang: Lang): KineticProps[] => {
     at(c.hookA, TIMING.hookAIn, TIMING.hookAOut, false),
     at(c.hookB, TIMING.hookBIn, TIMING.hookBOut, false),
     at(c.entry, TIMING.entryIn, TIMING.entryOut),
+    at(c.rise, TIMING.riseIn, TIMING.riseOut),
     at(c.warning, TIMING.warningIn, TIMING.warningOut),
+    at(c.exit, TIMING.exitIn, TIMING.exitOut),
     at(c.news, TIMING.newsIn, TIMING.newsOut),
     at(c.payoffA, TIMING.payoffAIn, TIMING.payoffAOut, true, 5),
     at(c.payoffB, TIMING.payoffBIn, TIMING.payoffBOut, true, 5),
@@ -119,6 +121,8 @@ type BoardProps = {
   good: boolean;
   start: number;
   final: number;
+  /** The live account value (follows the price while the trade is open). */
+  value: number;
   changeAt: number;
   x: number;
   y: number;
@@ -130,7 +134,7 @@ type BoardProps = {
   dim: number;
 };
 
-const Board: React.FC<BoardProps> = ({label, good, start, final, changeAt, x, y, alpha, enter, scale, rtl, illustrative, dim}) => {
+const Board: React.FC<BoardProps> = ({label, good, start, final, value, changeAt, x, y, alpha, enter, scale, rtl, illustrative, dim}) => {
   const f = useCurrentFrame();
   const changed = ramp(f, changeAt, changeAt + 16, easeOut);
   const pct = ((final - start) / start) * 100;
@@ -139,7 +143,11 @@ const Board: React.FC<BoardProps> = ({label, good, start, final, changeAt, x, y,
   const flash = f >= changeAt ? Math.exp(-(f - changeAt) / 16) : 0;
   const badge = clamp01(springAt(f - (changeAt + 8), {freq: 2.0, damping: 0.62}));
   const pop = 1 + 0.05 * Math.sin(Math.PI * clamp01((f - changeAt) / 18));
-  const numColor = mix(BRAND.text, tone, changed);
+  // While a trade is open the number is tinted by how it's doing (green up, red down);
+  // once the trade closes it settles on the result's colour.
+  const d = value - start;
+  const live = d >= 0 ? mix(BRAND.text, BRAND.up, clamp01(d / 300)) : mix(BRAND.text, '#FF6B6B', clamp01(-d / 400));
+  const numColor = changed > 0 ? mix(BRAND.text, tone, changed) : live;
   const edge = good ? 'rgba(243,210,122,0.55)' : 'rgba(255,107,107,0.5)';
   const glow = good ? `rgba(212,162,76,${0.22 + 0.4 * flash})` : `rgba(255,77,77,${0.18 + 0.5 * flash})`;
   const tagSide: React.CSSProperties = rtl ? {left: 22} : {right: 22};
@@ -174,7 +182,7 @@ const Board: React.FC<BoardProps> = ({label, good, start, final, changeAt, x, y,
           <span style={good ? {backgroundImage: GOLD_GRADIENT, WebkitBackgroundClip: 'text', backgroundClip: 'text', color: 'transparent'} : {color: '#FF8080'}}>{label}</span>
         </div>
         <div style={{display: 'flex', alignItems: 'center', gap: 12, direction: 'ltr', whiteSpace: 'nowrap', color: numColor, height: 74}}>
-          <NumberSwap from={money0(start)} to={money0(final)} at={changeAt} size={60} lineH={74} />
+          <span style={{fontSize: 60, fontWeight: 700, lineHeight: '74px', fontVariantNumeric: 'tabular-nums', color: changed > 0 ? numColor : live}}>{money0(value)}</span>
           {badge > 0 ? (
             <span
               style={{
@@ -244,6 +252,7 @@ const Boards: React.FC<{fmt: FormatId; lang: Lang}> = ({fmt, lang}) => {
         good={false}
         start={LEFT.startBalance}
         final={LEFT.finalBalance}
+        value={leftValue(f)}
         changeAt={LEFT.marginCallAt}
         x={clampX(a.x, COLUMN.x - 40, 534)}
         y={L.boardTop}
@@ -259,6 +268,7 @@ const Boards: React.FC<{fmt: FormatId; lang: Lang}> = ({fmt, lang}) => {
         good
         start={RIGHT.startBalance}
         final={RIGHT.finalBalance}
+        value={rightValue(f)}
         changeAt={UPDATE.closedAt}
         x={clampX(b.x, 546, COLUMN.x + COLUMN.width + 10)}
         y={L.boardTop}
@@ -403,7 +413,7 @@ const EndCard: React.FC<{fmt: FormatId; lang: Lang}> = ({fmt, lang}) => {
             color: 'transparent',
           }}
         >
-          {lang === 'ar' ? 'ميران جولد' : 'Miran Gold'}
+          Miran Gold
         </div>
         <div style={{position: 'relative', marginTop: vertical ? 44 : 26}}>
           <div

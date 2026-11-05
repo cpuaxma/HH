@@ -31,12 +31,26 @@ export const WEIGHT = 700;
 const strip = (w: string) => w.replace(/[.,،؛؟?!…:"«»()]/g, '');
 export type Tone = 'gold' | 'red' | null;
 
+const isLatin = (w: string) => /[A-Za-z]/.test(w) && !/[\u0600-\u06FF]/.test(w);
+
+/**
+ * Splits a line into the words that animate one by one. A run of Latin words ("Miran Gold")
+ * stays ONE unit: laid out word by word in a right-to-left row, it would read "Gold Miran".
+ */
+export const tokenize = (line: string): string[] =>
+  line.split(' ').reduce<string[]>((out, w) => {
+    const last = out[out.length - 1];
+    if (last !== undefined && isLatin(last) && isLatin(w)) out[out.length - 1] = `${last} ${w}`;
+    else out.push(w);
+    return out;
+  }, []);
+
 /** Tone of each word: phrases in `gold` / `red` are matched word by word (punctuation ignored). */
 export const tonesFor = (words: string[], gold: string[] = [], red: string[] = []): Tone[] => {
   const out: Tone[] = words.map(() => null);
   const mark = (list: string[], tone: Tone) =>
     list.forEach((phrase) => {
-      const parts = phrase.split(' ');
+      const parts = tokenize(phrase);
       for (let i = 0; i + parts.length <= words.length; i++) {
         if (parts.every((p, j) => strip(words[i + j]) === p)) parts.forEach((_, j) => (out[i + j] = tone));
       }
@@ -55,6 +69,16 @@ export const toneStyle = (tone: Tone): React.CSSProperties =>
 
 /** A word, with any run of Western digits (and %, $, commas) isolated in <bdi>. */
 export const Word: React.FC<{w: string}> = ({w}) => {
+  if (isLatin(w)) {
+    // Keep trailing punctuation OUTSIDE the LTR run, so it lands at the sentence end (left in Arabic).
+    const [, core, tail] = w.match(/^(.*?[A-Za-z0-9])([^A-Za-z0-9]*)$/) ?? [w, w, ''];
+    return (
+      <>
+        <bdi dir="ltr">{core}</bdi>
+        {tail}
+      </>
+    );
+  }
   const parts = w.split(/([$]?[0-9][0-9,.]*%?)/).filter(Boolean);
   return <>{parts.map((p, i) => (/[0-9]/.test(p) ? <bdi key={i}>{p}</bdi> : <React.Fragment key={i}>{p}</React.Fragment>))}</>;
 };
@@ -99,7 +123,7 @@ export const Kinetic: React.FC<KineticProps> = ({block, lang, inAt, outAt, top, 
       }}
     >
       {block.lines.map((line, li) => {
-        const words = line.split(' ');
+        const words = tokenize(line);
         const tones = tonesFor(words, block.gold, block.red);
         // The glass pill grows from its centre, then shrinks away.
         const bIn = springAt(frame - (inAt - 8 + li * 4), {freq: 1.6, damping: 0.86});

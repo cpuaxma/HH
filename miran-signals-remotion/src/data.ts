@@ -1,12 +1,12 @@
 /**
  * Everything you are likely to change lives in this file:
- * every line of copy (Arabic and English), the numbers and prices, the colours and the timings.
+ * every line of copy (Arabic; the brand name is always written «Miran Gold»), the numbers and prices, the colours and the timings.
  *
- * Frames are at 60fps (60 frames = 1 second). The reel is 1560 frames (26s).
+ * Frames are at 60fps (60 frames = 1 second). The reel is 1608 frames (26.8s).
  *
  * ONE STORY: the same gold market, the same trade, the same news.
  * - Left («بلا خطة»): buys 3 lots on impulse, no stop loss. Looks good… until the news.
- * - Right («مع ميران جولد»): the Miran signal (entry, stop loss, target, 1% risk), then a Miran
+ * - Right («مع Miran Gold»): the Miran signal (entry, stop loss, target, 1% risk), then a Miran
  *   market update before the news: take profit. When the news candle hits, it is protected.
  *
  * The trading app and every number are fictional and illustrative; every number on screen
@@ -75,8 +75,8 @@ export const MARKET = {
     [830, 3986.8],
     [900, 3989.0],
     [1000, 3990.6],
-    [1200, 3993.0],
-    [1560, 3994.0],
+    [1248, 3993.0],
+    [1608, 3994.0],
   ] as [number, number][],
   /** Tiny live ticks on top of the curve ($). */
   tickNoise: 0.16,
@@ -152,7 +152,9 @@ type Copy = {
   hookA: Block;
   hookB: Block;
   entry: Block;
+  rise: Block;
   warning: Block;
+  exit: Block;
   news: Block;
   payoffA: Block;
   payoffB: Block;
@@ -167,17 +169,19 @@ type Copy = {
 
 export const COPY: Record<Lang, Copy> = {
   ar: {
-    hookA: {lines: ['نفس الذهب. نفس اليوم.'], gold: ['الذهب']},
+    hookA: {lines: ['متداولان. نفس الذهب.'], gold: ['الذهب']},
     hookB: {lines: ['نتيجتان مختلفتان.'], gold: ['مختلفتان']},
     entry: {lines: ['كلاهما اشترى الذهب.'], gold: ['الذهب']},
-    warning: {lines: ['ميران جولد نبّهت قبل الخبر.'], gold: ['ميران جولد']},
-    news: {lines: ['ثم صدر الخبر.'], red: ['الخبر']},
-    payoffA: {lines: ['الفرق ليس في الحظ…']},
-    payoffB: {lines: ['بل في الخطة.'], gold: ['الخطة']},
-    flip: {lines: ['تداول بخطة مع ميران جولد.'], gold: ['ميران جولد']},
+    rise: {lines: ['الذهب يرتفع… وكلاهما يربح.'], gold: ['يربح']},
+    warning: {lines: ['Miran Gold نبّهت: خبر قوي قادم.'], gold: ['Miran Gold']},
+    exit: {lines: ['فخرج بربحه قبل الخبر.'], gold: ['بربحه']},
+    news: {lines: ['ثم صدر الخبر… وهبط الذهب.'], red: ['الخبر', 'وهبط']},
+    payoffA: {lines: ['الفرق ليس في الحظ… بل في الخطة.'], gold: ['الخطة']},
+    payoffB: {lines: ['الخطة: وقف خسارة + تنبيه قبل الخبر.'], gold: ['الخطة']},
+    flip: {lines: ['تداول بخطة مع Miran Gold.'], gold: ['Miran Gold']},
     labelLeft: 'بلا خطة',
-    labelRight: 'مع ميران جولد',
-    cta: 'انضم إلى إشارات ميران جولد',
+    labelRight: 'مع Miran Gold',
+    cta: 'انضم إلى إشارات Miran Gold',
     disclaimer: 'التداول ينطوي على مخاطر عالية وقد تخسر رأس مالك. النتائج المعروضة توضيحية وليست ضماناً لأرباح مستقبلية.',
     illustrative: 'توضيحي',
   },
@@ -185,10 +189,12 @@ export const COPY: Record<Lang, Copy> = {
     hookA: {lines: ['Same gold. Same day.'], gold: ['gold']},
     hookB: {lines: ['Two different results.'], gold: ['different']},
     entry: {lines: ['Both bought gold.'], gold: ['gold']},
-    warning: {lines: ['Miran Gold warned before the news.'], gold: ['Miran Gold']},
+    rise: {lines: ['Gold rises… both are winning.'], gold: ['winning']},
+    warning: {lines: ['Miran Gold: big news coming.'], gold: ['Miran Gold']},
+    exit: {lines: ['So it took the profit first.'], gold: ['profit']},
     news: {lines: ['Then the news hit.'], red: ['news']},
-    payoffA: {lines: ["It isn't luck…"]},
-    payoffB: {lines: ["It's the plan."], gold: ['plan']},
+    payoffA: {lines: ["It isn't luck… it's the plan."], gold: ['plan']},
+    payoffB: {lines: ['The plan: a stop loss + a heads-up.'], gold: ['plan']},
     flip: {lines: ['Trade with a plan with Miran Gold.'], gold: ['Miran Gold']},
     labelLeft: 'No plan',
     labelRight: 'With Miran Gold',
@@ -210,6 +216,8 @@ export type ScreenCopy = {
   stopLoss: string;
   none: string;
   noPlan: string;
+  noStop: string;
+  noStopBody: string;
   newsBanner: string;
   newsBody: string;
   marginCall: string;
@@ -218,6 +226,8 @@ export type ScreenCopy = {
   waiting: string;
   signalTitle: string;
   signalHead: string;
+  withStop: string;
+  smallRisk: string;
   entry: string;
   target: string;
   risk: string;
@@ -238,37 +248,41 @@ export type ScreenCopy = {
 export const SCREEN_COPY: Record<Lang, ScreenCopy> = {
   ar: {
     rtl: true,
-    pair: 'الذهب · XAU/USD',
-    balance: 'الرصيد',
+    pair: 'الذهب',
+    balance: 'رصيدك',
     openTrade: 'الصفقة المفتوحة',
     buy: 'شراء',
     sell: 'بيع',
     lots: 'لوت',
     stopLoss: 'وقف الخسارة',
     none: 'لا يوجد',
-    noPlan: 'بدون خطة · بدون تنبيهات',
-    newsBanner: 'خبر أمريكي قوي',
+    noPlan: 'صفقة جديدة',
+    noStop: 'بدون وقف خسارة',
+    noStopBody: 'لا حدّ للخسارة',
+    newsBanner: 'خبر اقتصادي قوي',
     newsBody: 'صدر الآن',
-    marginCall: 'نداء الهامش',
-    closedLoss: 'تم إغلاق الصفقة بخسارة',
-    brand: 'ميران جولد',
-    waiting: 'بانتظار إشارة ميران جولد',
-    signalTitle: 'إشارة ميران جولد',
+    marginCall: 'خسارة كبيرة',
+    closedLoss: 'خسرت نصف رصيدك تقريباً',
+    brand: 'Miran Gold',
+    waiting: 'بانتظار إشارة Miran Gold',
+    signalTitle: 'إشارة Miran Gold',
     signalHead: 'شراء الذهب',
+    withStop: 'مع وقف خسارة',
+    smallRisk: 'مخاطرة صغيرة',
     entry: 'الدخول',
     target: 'الهدف',
     risk: 'المخاطرة',
     executed: 'تم التنفيذ',
-    updateTitle: 'تحديث السوق',
-    updateBody: 'خبر أمريكي قوي خلال 10 دقائق',
+    updateTitle: 'تنبيه من Miran Gold',
+    updateBody: 'خبر قوي بعد 10 دقائق',
     updateAction: 'خذ الربح الآن',
     profitTaken: 'تم أخذ الربح',
-    noOpen: 'لا صفقات مفتوحة قبل الخبر',
+    noOpen: 'خرجت قبل الخبر',
     protectedTitle: 'محمي',
-    protectedBody: 'الربح محفوظ',
+    protectedBody: 'ربحك محفوظ',
     newsReleased: 'صدر الخبر',
-    connected: 'تم الربط مع ميران جولد',
-    nextSignal: 'الصفقة القادمة: وقف خسارة + مخاطرة 1%',
+    connected: 'تم الربط مع Miran Gold',
+    nextSignal: 'الصفقة القادمة: بخطة ووقف خسارة',
     illustrative: 'توضيحي',
   },
   en: {
@@ -281,29 +295,33 @@ export const SCREEN_COPY: Record<Lang, ScreenCopy> = {
     lots: 'lots',
     stopLoss: 'Stop loss',
     none: 'None',
-    noPlan: 'No plan · no alerts',
-    newsBanner: 'High-impact USD news',
+    noPlan: 'New trade',
+    noStop: 'No stop loss',
+    noStopBody: 'No limit on the loss',
+    newsBanner: 'Big economic news',
     newsBody: 'Released just now',
-    marginCall: 'Margin call',
-    closedLoss: 'Trade closed at a loss',
+    marginCall: 'A big loss',
+    closedLoss: 'You lost almost half your balance',
     brand: 'Miran Gold',
     waiting: 'Waiting for a Miran Gold signal',
     signalTitle: 'Miran Gold signal',
     signalHead: 'Buy gold',
+    withStop: 'Stop loss set',
+    smallRisk: 'Small risk',
     entry: 'Entry',
     target: 'Target',
     risk: 'Risk',
     executed: 'Executed',
-    updateTitle: 'Market update',
-    updateBody: 'High-impact USD news in 10 min',
+    updateTitle: 'Miran Gold alert',
+    updateBody: 'Big news in 10 min',
     updateAction: 'Take profit now',
     profitTaken: 'Profit taken',
-    noOpen: 'No open trades before the news',
+    noOpen: 'Out before the news',
     protectedTitle: 'Protected',
     protectedBody: 'Profit kept',
     newsReleased: 'News released',
     connected: 'Connected to Miran Gold',
-    nextSignal: 'Next trade: stop loss + 1% risk',
+    nextSignal: 'Next trade: with a plan and a stop loss',
     illustrative: 'Illustrative',
   },
 };
@@ -312,7 +330,7 @@ export const SCREEN_COPY: Record<Lang, ScreenCopy> = {
 
 export const TIMING = {
   fps: 60,
-  durationInFrames: 1560,
+  durationInFrames: 1608,
 
   // 1. Hook (0–180): wide two-shot, both phones at $10,000.
   hookAIn: 10,
@@ -321,47 +339,51 @@ export const TIMING = {
   hookBOut: 172,
   /** The scoreboards under the phones (label + balance) are on screen in this window. */
   boardsIn: 30,
-  boardsOut: 1056,
+  boardsOut: 1104,
 
-  // 2. The entry (180–480): both buy gold.
+  // 2. The entry (180–480): both buy gold, and gold rises (both are winning).
   entryIn: 196,
   entryOut: 330,
+  riseIn: 344,
+  riseOut: 480,
 
-  // 3. The warning (480–720): the Miran market update; the right side takes profit.
+  // 3. The warning (480–720): the Miran alert; the right side takes its profit.
   warningIn: 500,
-  warningOut: 690,
+  warningOut: 590,
+  exitIn: 600,
+  exitOut: 694,
 
   // 4. The news (720–850): the same candle on both phones at NEWS.at.
   newsIn: 712,
-  newsOut: 800,
+  newsOut: 828,
 
-  // 5. The payoff (850–1060): both results side by side.
+  // 5. The payoff and the lesson (850–1110): both results side by side.
   payoffAIn: 850,
-  payoffAOut: 940,
-  payoffBIn: 946,
-  payoffBOut: 1050,
+  payoffAOut: 958,
+  payoffBIn: 966,
+  payoffBOut: 1098,
 
-  // 6. The switch (1060–1310): a gold streak, the left phone flips to Miran Gold.
-  streakStart: 1066,
-  streakEnd: 1104,
-  flipStart: 1112,
-  flipEnd: 1166,
-  impactAt: 1166,
+  // 6. The switch (1110–1360): a gold streak, the left phone flips to Miran Gold.
+  streakStart: 1114,
+  streakEnd: 1152,
+  flipStart: 1160,
+  flipEnd: 1214,
+  impactAt: 1214,
   impactFrames: 3,
   /** Both phones pulse gold together from here (period in frames). */
-  syncPulseFrom: 1200,
+  syncPulseFrom: 1248,
   syncPulsePeriod: 36,
-  flipTextIn: 1190,
-  flipTextOut: 1300,
+  flipTextIn: 1238,
+  flipTextOut: 1348,
 
-  // 7. End card (1310–1560).
-  endCardStart: 1310,
-  logoAt: 1330,
-  disclaimerAt: 1340,
-  ctaAt: 1370,
-  tapAt: 1402,
+  // 7. End card (1358–1608).
+  endCardStart: 1358,
+  logoAt: 1378,
+  disclaimerAt: 1388,
+  ctaAt: 1418,
+  tapAt: 1450,
   /** Everything is still from here to the end (the held last second). */
-  holdFrom: 1500,
+  holdFrom: 1548,
 
   coverFrame: 1000,
 };

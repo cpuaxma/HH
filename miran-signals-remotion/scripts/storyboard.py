@@ -4,27 +4,21 @@ from PIL import Image, ImageDraw, ImageFont
 
 out, d = sys.argv[1], sys.argv[2]
 SHOTS = [
-    (110, '1 HOOK', 'Wide two-shot: both phones at $10,000, the same gold chart. "Same gold. Same day."'),
-    (150, '1 HOOK', '"Two different results." Scoreboards under the phones: X no plan / check with Miran Gold (illustrative).'),
-    (216, '2 ENTRY', 'Left: a Sell/Buy ticket, 3.00 lots, "no plan, no alerts" - Buy gets tapped. Right: the Miran signal card builds.'),
-    (300, '2 ENTRY', '"Both bought gold." Left: Buy 3.00 lots, STOP LOSS: NONE. Right: entry 4,002, SL 3,997, target 4,012, risk 1%.'),
-    (470, '2 ENTRY', 'Gold drifts up. The left looks great (+$2,000 open) while the right is up +$100: the temptation.'),
-    (545, '3 WARNING', 'Camera favours the right: the Miran market update - high-impact USD news in 10 min, take profit now.'),
-    (640, '3 WARNING', 'Profit taken: +$140, the right board turns green ($10,140). The left is still holding, no alerts.'),
-    (740, '4 NEWS', '"Then the news hit." Heartbeat under the calm.'),
-    (770, '4 NEWS', 'The same news candle hits both charts on the same frame: jolt + push. The left screen floods red.'),
-    (830, '4 NEWS', 'Left: MARGIN CALL, -$4,800, board $5,200 (-48%). Right: PROTECTED, profit kept +$140.'),
-    (900, '5 PAYOFF', 'Slow pull back, both results side by side. "It isn\'t luck..."'),
-    (1000, '5 PAYOFF', '"...it\'s the plan." (cover frame)'),
-    (1088, '6 SWITCH', 'Boards fade; low 3/4 hero. A gold bar streaks across (real motion blur).'),
-    (1140, '6 SWITCH', 'The left phone flips 360 degrees: the back, camera plateau and three lenses.'),
-    (1166, '6 SWITCH', 'Impact frame on the landing: navy/gold two-tone, 3 frames.'),
-    (1240, '6 SWITCH', 'Left now connected to Miran Gold (its $5,200 stays: no magic recovery). "Trade with a plan with Miran Gold."'),
-    (1430, '7 END', 'Navy, gold particles, logo, gold CTA; risk disclaimer on screen 3.5s+.'),
-    (1545, '7 END', 'Held last second.'),
+    (60, '1 HOOK', '"Two traders. The same gold." Both phones at $10,000. Scoreboards: X no plan / check with Miran Gold.'),
+    (130, '1 HOOK', '"Two different results."'),
+    (270, '2 BOTH BUY', '"Both bought gold." Left: Buy gold - NO STOP LOSS, no limit on the loss. Right: Miran signal - with a stop loss, small risk (1%).'),
+    (420, '2 GOLD RISES', '"Gold rises... and both are winning." The left balance climbs fast (green) - the temptation.'),
+    (548, '3 THE ALERT', '"Miran Gold warned: big news coming." Right: Miran Gold alert, big news in 10 min - take profit now. Left dims.'),
+    (652, '3 THE ALERT', '"So it took its profit before the news." Right: +$140, out before the news. Left still holding.'),
+    (772, '4 THE NEWS', '"Then the news came out... and gold dropped." Same candle on both charts. Left floods red, balance crashing.'),
+    (850, '4 THE NEWS', 'Left: A BIG LOSS -$4,800, you lost almost half your balance. Right: PROTECTED, profit kept.'),
+    (905, '5 THE LESSON', '"The difference isn\'t luck... it\'s the plan." Boards: $5,200 (-48%) vs $10,140 (+1.4%).'),
+    (1040, '5 THE LESSON', '"The plan: a stop loss + an alert before the news." (the one thing to learn)'),
+    (1290, '6 SWITCH', 'After the streak and the flip, the left is connected to Miran Gold. "Trade with a plan with Miran Gold."'),
+    (1480, '7 END', 'Logo, "Miran Gold", gold CTA, risk disclaimer.'),
 ]
 W, H = 360, 640
-cols = 9
+cols = 6
 rows = (len(SHOTS) + cols - 1) // cols
 CAP = 110
 sheet = Image.new('RGB', (cols * (W + 14) + 14, rows * (H + CAP + 14) + 14), (10, 14, 24))

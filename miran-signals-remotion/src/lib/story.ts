@@ -196,6 +196,26 @@ export const leftOpenPnl = (t: number) => {
 
 export const leftTradeOpen = (t: number) => t >= LEFT.openedAt && t < LEFT.marginCallAt;
 
+/**
+ * What each account is worth right now: the ONE number the viewer follows (on the screen and
+ * on the scoreboard). It follows the smooth price curve (no tick noise, so the digits don't
+ * flicker): the left climbs to about $12,100 while gold rises, then the news candle crashes it
+ * to $5,200; the right gains $140 and keeps it.
+ */
+export const leftValue = (t: number) => {
+  const live = (f: number) => LEFT.startBalance + (priceCurve(f) - LEFT.entry) * LEFT.lots * 100;
+  if (t < LEFT.openedAt) return LEFT.startBalance;
+  if (t < LEFT.marginCallAt) return live(t);
+  return count(t, LEFT.marginCallAt, live(LEFT.marginCallAt), LEFT.finalBalance, 22);
+};
+
+export const rightValue = (t: number) => {
+  const live = (f: number) => RIGHT.startBalance + (priceCurve(f) - SIGNAL.entry) * SIGNAL.lots * 100;
+  if (t < SIGNAL.filledAt) return RIGHT.startBalance;
+  if (t < UPDATE.closedAt) return live(t);
+  return count(t, UPDATE.closedAt, live(UPDATE.closedAt), RIGHT.finalBalance, 18);
+};
+
 /** Right balance: $10,000, then +$140 when the profit is taken before the news. */
 export const rightBalance = (t: number) => count(t, UPDATE.closedAt, RIGHT.startBalance, RIGHT.finalBalance, 18);
 
