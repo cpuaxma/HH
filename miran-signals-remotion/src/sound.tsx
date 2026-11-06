@@ -5,7 +5,7 @@
 // There is no voiceover in the mix: README.md has a suggested script with timings.
 import {Audio} from '@remotion/media';
 import {Sequence, staticFile} from 'remotion';
-import {LEFT, NEWS, SIGNAL, TIMING, UPDATE} from './data';
+import {Captions, LEFT, NEWS, SIGNAL, TIMING, UPDATE} from './data';
 
 /** Overall level of the effects (0–1). Each cue's volume is multiplied by this. */
 export const SFX_MASTER = 0.7;
@@ -13,11 +13,14 @@ export const SFX_MASTER = 0.7;
 export type SoundCue = {at: number; sfx: string; volume: number};
 const cue = (at: number, sfx: string, volume: number): SoundCue => ({at: Math.round(at), sfx, volume});
 
-export const getCues = (): SoundCue[] => {
+export const getCues = (captions: Captions = 'full'): SoundCue[] => {
   const cues: SoundCue[] = [];
 
   // Captions landing: a soft low thock.
-  [TIMING.hookAIn, TIMING.hookBIn, TIMING.entryIn, TIMING.riseIn, TIMING.warningIn, TIMING.exitIn, TIMING.newsIn, TIMING.payoffAIn, TIMING.payoffBIn, TIMING.flipTextIn].forEach((at) =>
+  (captions === 'minimal'
+    ? [TIMING.hookAIn, TIMING.hookBIn, TIMING.flipTextIn]
+    : [TIMING.hookAIn, TIMING.hookBIn, TIMING.entryIn, TIMING.riseIn, TIMING.warningIn, TIMING.exitIn, TIMING.newsIn, TIMING.payoffAIn, TIMING.payoffBIn, TIMING.flipTextIn]
+  ).forEach((at) =>
     cues.push(cue(at + 8, 'thock', 0.28)),
   );
 
@@ -60,9 +63,9 @@ export const getCues = (): SoundCue[] => {
   return cues.sort((a, b) => a.at - b.at);
 };
 
-export const SoundTrack: React.FC = () => (
+export const SoundTrack: React.FC<{captions?: Captions}> = ({captions = 'full'}) => (
   <>
-    {getCues().map((c, i) => (
+    {getCues(captions).map((c, i) => (
       <Sequence key={i} from={c.at} layout="none" name={`sfx ${c.sfx}`}>
         <Audio src={staticFile(`sfx/${c.sfx}.wav`)} volume={c.volume * SFX_MASTER} />
       </Sequence>

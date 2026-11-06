@@ -3,7 +3,7 @@
 import {measureText} from '@remotion/layout-utils';
 import React from 'react';
 import {AbsoluteFill, Img, staticFile, useCurrentFrame, useVideoConfig} from 'remotion';
-import {BRAND, COLUMN, COPY, FormatId, GOLD_GRADIENT, LAYOUT, LEFT, Lang, RIGHT, SAFE, TIMING, UPDATE} from '../data';
+import {BRAND, COLUMN, COPY, Captions, FormatId, GOLD_GRADIENT, LAYOUT, LEFT, Lang, RIGHT, SAFE, TIMING, UPDATE} from '../data';
 import {FAMILY} from '../fonts';
 import {clamp01, easeIn, easeInOut, easeOut, hash, ramp, springAt} from '../lib/ease';
 import {projectOnPhone} from '../lib/projection';
@@ -13,7 +13,7 @@ import {Kinetic, KineticProps, glass} from './Kinetic';
 const useFmt = (): FormatId => (useVideoConfig().height > 1500 ? 'vertical' : 'feed');
 
 /** All the kinetic text blocks, in order (one short line each). */
-export const textBlocks = (fmt: FormatId, lang: Lang): KineticProps[] => {
+export const textBlocks = (fmt: FormatId, lang: Lang, captions: Captions = 'full'): KineticProps[] => {
   const L = LAYOUT[fmt];
   const c = COPY[lang];
   const at = (block: KineticProps['block'], inAt: number, outAt: number, backing = true, stagger = 4): KineticProps => ({
@@ -26,9 +26,12 @@ export const textBlocks = (fmt: FormatId, lang: Lang): KineticProps[] => {
     backing,
     stagger,
   });
+  const hook = [at(c.hookA, TIMING.hookAIn, TIMING.hookAOut, false), at(c.hookB, TIMING.hookBIn, TIMING.hookBOut, false)];
+  const flip = at(c.flip, TIMING.flipTextIn, TIMING.flipTextOut, false, 4);
+  // 'minimal': only the opening hook and the closing line; the voiceover tells the story.
+  if (captions === 'minimal') return [...hook, flip];
   return [
-    at(c.hookA, TIMING.hookAIn, TIMING.hookAOut, false),
-    at(c.hookB, TIMING.hookBIn, TIMING.hookBOut, false),
+    ...hook,
     at(c.entry, TIMING.entryIn, TIMING.entryOut),
     at(c.rise, TIMING.riseIn, TIMING.riseOut),
     at(c.warning, TIMING.warningIn, TIMING.warningOut),
@@ -36,13 +39,13 @@ export const textBlocks = (fmt: FormatId, lang: Lang): KineticProps[] => {
     at(c.news, TIMING.newsIn, TIMING.newsOut),
     at(c.payoffA, TIMING.payoffAIn, TIMING.payoffAOut, true, 5),
     at(c.payoffB, TIMING.payoffBIn, TIMING.payoffBOut, true, 5),
-    at(c.flip, TIMING.flipTextIn, TIMING.flipTextOut, false, 4),
+    flip,
   ];
 };
 
-const TextLayer: React.FC<{fmt: FormatId; lang: Lang}> = ({fmt, lang}) => (
+const TextLayer: React.FC<{fmt: FormatId; lang: Lang; captions: Captions}> = ({fmt, lang, captions}) => (
   <AbsoluteFill>
-    {textBlocks(fmt, lang).map((b, i) => (
+    {textBlocks(fmt, lang, captions).map((b, i) => (
       <Kinetic key={i} {...b} />
     ))}
   </AbsoluteFill>
@@ -539,14 +542,14 @@ const SafeZones: React.FC<{fmt: FormatId}> = ({fmt}) => {
   );
 };
 
-export const Overlays: React.FC<{showSafeZones?: boolean; lang: Lang}> = ({showSafeZones, lang}) => {
+export const Overlays: React.FC<{showSafeZones?: boolean; lang: Lang; captions?: Captions}> = ({showSafeZones, lang, captions = 'full'}) => {
   const fmt = useFmt();
   const f = useCurrentFrame();
   const hideForImpact = impact(f) > 0;
   return (
     <>
       {hideForImpact ? null : <Boards fmt={fmt} lang={lang} />}
-      {hideForImpact ? null : <TextLayer fmt={fmt} lang={lang} />}
+      {hideForImpact ? null : <TextLayer fmt={fmt} lang={lang} captions={captions} />}
       <ImpactBurst fmt={fmt} />
       <EndCard fmt={fmt} lang={lang} />
       <Finish />

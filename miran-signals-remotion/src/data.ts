@@ -42,6 +42,9 @@ export const GOLD_GRADIENT = `linear-gradient(100deg, ${BRAND.goldA} 0%, ${BRAND
 
 // ─── Language ────────────────────────────────────────────────────────────────
 
+/** 'full': every caption; 'minimal': just the opening hook and the closing line (for a voiceover cut). */
+export type Captions = 'full' | 'minimal';
+
 export type Lang = 'ar' | 'en';
 
 // ─── The market (one generic gold market, the same on both phones) ───────────

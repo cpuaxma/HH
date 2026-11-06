@@ -1,7 +1,7 @@
 import {ThreeCanvas} from '@remotion/three';
 import {useEffect, useState} from 'react';
 import {AbsoluteFill, staticFile, useCurrentFrame, useDelayRender, useVideoConfig} from 'remotion';
-import {BRAND, FormatId, Lang, TIMING} from './data';
+import {BRAND, Captions, FormatId, Lang, TIMING} from './data';
 import {fontsReady} from './fonts';
 import {setScreenLang} from './screens/draw';
 import {setLogoImage} from './screens/kit';
@@ -17,6 +17,8 @@ export type ReelProps = {
   sfx?: boolean;
   /** Language of every string (the picture is the same). */
   lang?: Lang;
+  /** Which kinetic captions to show ('minimal' keeps only the hook and the closing line). */
+  captions?: Captions;
 };
 
 export const useFormat = (): FormatId => (useVideoConfig().height > 1500 ? 'vertical' : 'feed');
@@ -44,7 +46,7 @@ const useAssetsReady = () => {
   return ready;
 };
 
-export const Reel: React.FC<ReelProps> = ({showSafeZones, sfx = true, lang = 'ar'}) => {
+export const Reel: React.FC<ReelProps> = ({showSafeZones, sfx = true, lang = 'ar', captions = 'full'}) => {
   const {width, height} = useVideoConfig();
   const frame = useCurrentFrame();
   const fmt = useFormat();
@@ -71,8 +73,8 @@ export const Reel: React.FC<ReelProps> = ({showSafeZones, sfx = true, lang = 'ar
           </ThreeCanvas>
         </AbsoluteFill>
       ) : null}
-      {ready ? <Overlays showSafeZones={showSafeZones} lang={lang} /> : null}
-      {sfx ? <SoundTrack /> : null}
+      {ready ? <Overlays showSafeZones={showSafeZones} lang={lang} captions={captions} /> : null}
+      {sfx ? <SoundTrack captions={captions} /> : null}
     </AbsoluteFill>
   );
 };
