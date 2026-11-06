@@ -38,7 +38,9 @@ const page_url = 'file://' + path.resolve(__dirname, '..', page_file) + '?t=0' +
 
   // render(t) with still=false steps the timeline exactly like playback (one-frame flashes included)
   await page.evaluate(() => { lastT = -1; });
-  for (let k = 0; k <= frames; k++) {
+  // a page with LOOP = true is a seamless loop: its last frame would repeat frame 0, so leave it out
+  const loop = await page.evaluate(() => typeof LOOP !== 'undefined' && LOOP === true);
+  for (let k = 0; k < frames + (loop ? 0 : 1); k++) {
     await page.evaluate(t => render(t), k / fps);
     const png = await page.screenshot({ type: 'png' });
     if (!ff.stdin.write(png)) await new Promise(r => ff.stdin.once('drain', r));

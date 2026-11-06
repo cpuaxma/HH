@@ -6,13 +6,14 @@
 <title>Sashimi Plate Drop</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700&display=swap" rel="stylesheet">
 <style>
   :root {
     --kraft: #efdcc0;
     --sun: #e8705a;
     --brush: #e0634a;
     --charcoal: #3a3330;
+    --ink: #1d1816;
     --plate: #0d0d0d;
     --granite: #141414;
   }
@@ -25,8 +26,8 @@
   }
   body.record { cursor: none; }
 
-  #stage { position: fixed; inset: 0; display: grid; place-items: center; }
-  #stage.waiting #mat { visibility: hidden; }
+  #stage { position: fixed; inset: 0; display: grid; place-items: center; overflow: hidden; }
+  #stage.waiting > * { visibility: hidden; }
 
   /* The mat keeps the scan's 1660:1172 ratio and fits inside 92% of the viewport */
   #mat {
@@ -35,6 +36,9 @@
     aspect-ratio: 1660 / 1172;
     will-change: transform, opacity;
   }
+  @keyframes matIn { from { opacity: 0; transform: scale(.96); } to { opacity: 1; transform: none; } }
+  body.intro #mat { animation: matIn .6s cubic-bezier(.2,.7,.2,1) both; }
+
   .art {
     position: absolute; inset: 0; overflow: hidden;
     border-radius: .25%;
@@ -47,17 +51,14 @@
   .sun-glow {
     border-radius: 50%;
     background: radial-gradient(closest-side, rgba(255,180,150,.34), rgba(255,150,120,.16) 80%, rgba(255,150,120,0) 100%);
-    mix-blend-mode: screen; opacity: 0; will-change: opacity;
+    mix-blend-mode: screen;
   }
   .logo-glow {
     border-radius: 50%;
     background: radial-gradient(closest-side, rgba(255,196,130,.85), rgba(255,150,90,.38) 45%, rgba(255,150,90,0) 100%);
     mix-blend-mode: screen; opacity: 0; will-change: opacity;
   }
-  .qr-crop {
-    background-repeat: no-repeat;
-    opacity: 0; will-change: transform, opacity;
-  }
+  .qr-crop { background-repeat: no-repeat; opacity: 0; will-change: transform, opacity; }
   .qr-shadow {
     border-radius: 2%;
     background: radial-gradient(closest-side, rgba(0,0,0,.55), rgba(0,0,0,0));
@@ -81,19 +82,56 @@
   .shadow { border-radius: 50%; opacity: 0; will-change: transform, opacity; }
   .shadow.soft { background: radial-gradient(closest-side, rgba(0,0,0,1) 68%, rgba(0,0,0,.45) 84%, rgba(0,0,0,0) 100%); }
   .shadow.contact { background: radial-gradient(closest-side, rgba(0,0,0,1) 92%, rgba(0,0,0,0) 100%); }
+  .stick-shadow { left: 0; top: 0; opacity: 0; will-change: transform, opacity; }
 
-  /* Plate: three rasterised SVG layers (blurred, sharp, sheen texture), animated with transform/opacity only */
+  /* Plate: rasterised SVG layers (blurred, sharp, underside, sheen texture), animated with transform/opacity only */
   .plate { position: absolute; opacity: 0; will-change: transform, opacity; pointer-events: none; }
   .plate img { position: absolute; inset: 0; width: 100%; height: 100%; display: block; will-change: opacity; }
   .sheen { position: absolute; inset: 0; overflow: hidden; border-radius: 50%; mix-blend-mode: screen; opacity: 0; }
-  .band, .tex {
-    position: absolute; inset: 0; width: 100%; height: 100%;
-    will-change: transform;
-  }
+  .band, .tex { position: absolute; inset: 0; width: 100%; height: 100%; will-change: transform; }
   .band {
     -webkit-mask-image: linear-gradient(90deg, transparent 40%, #000 48.5%, #000 51.5%, transparent 60%);
             mask-image: linear-gradient(90deg, transparent 40%, #000 48.5%, #000 51.5%, transparent 60%);
   }
+  .stick { position: absolute; left: 0; top: 0; opacity: 0; will-change: transform, opacity; pointer-events: none; display: block; }
+
+  /* End card: the sun spreads to fill the frame, then shrinks back into the print */
+  #wipe {
+    position: absolute; left: 0; top: 0; border-radius: 50%;
+    background: radial-gradient(circle at 42% 40%, #e5846f 0%, #dc7a66 48%, #cf6b57 100%);
+    opacity: 0; will-change: transform, opacity; pointer-events: none;
+  }
+  #card {
+    position: absolute; inset: 0;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 2.1em; padding: 0 6vmin; text-align: center; color: var(--ink); pointer-events: none;
+    font-size: 1vmin;
+  }
+  @media (orientation: portrait) { #card { font-size: 1.2vmin; } }
+  .ci { opacity: 0; will-change: transform, opacity; }
+  .badge {
+    width: 25em; height: 25em; border-radius: 50%; background: var(--kraft);
+    display: grid; place-items: center; margin-bottom: 1.4em;
+    box-shadow: 0 1.4em 3.4em rgba(70,20,10,.35), inset 0 0 0 .6em rgba(255,255,255,.28);
+  }
+  .badge .logo {
+    width: 94%; height: 94%; border-radius: 50%; background-repeat: no-repeat;
+    -webkit-mask-image: radial-gradient(closest-side, #000 78%, transparent 100%);
+            mask-image: radial-gradient(closest-side, #000 78%, transparent 100%);
+  }
+  .kicker { font: 600 2.2em/1 Poppins, system-ui, sans-serif; letter-spacing: .34em; text-transform: uppercase; padding-left: .34em; }
+  .headline { font: 700 8.2em/1.02 Poppins, system-ui, sans-serif; letter-spacing: -.02em; }
+  .sub { font: 500 2.9em/1.35 Poppins, system-ui, sans-serif; color: rgba(29,24,22,.86); }
+  .where {
+    font: 600 2.5em/1.4 Poppins, system-ui, sans-serif; letter-spacing: .02em;
+    margin-top: .48em; padding-top: .88em; border-top: .11em solid rgba(29,24,22,.32);
+  }
+  .ig {
+    display: inline-flex; align-items: center; gap: .46em; margin-top: .38em;
+    font: 600 2.6em/1 Poppins, system-ui, sans-serif; color: var(--kraft);
+    background: var(--ink); padding: .62em 1.23em .62em 1em; border-radius: 99em;
+  }
+  .ig svg { width: 1.15em; height: 1.15em; }
 
   #replay {
     position: fixed; right: max(16px, 2.2vmin); bottom: max(16px, 2.2vmin);
@@ -125,13 +163,33 @@
       <div id="petals"></div>
       <div class="ripple" id="ripple1"></div>
       <div class="ripple" id="ripple2"></div>
+      <div class="ripple" id="ripple3"></div>
+      <img class="stick-shadow" id="stickShadowSoft0" alt="">
+      <img class="stick-shadow" id="stickShadowSharp0" alt="">
+      <img class="stick-shadow" id="stickShadowSoft1" alt="">
+      <img class="stick-shadow" id="stickShadowSharp1" alt="">
       <div class="shadow soft" id="shadowSoft"></div>
       <div class="shadow contact" id="shadowContact"></div>
     </div>
     <div class="plate" id="plate">
       <img id="plateBlur" alt="">
       <img id="plateSharp" alt="">
+      <img id="plateBack" alt="">
       <div class="sheen" id="sheen"><div class="band" id="band"><img class="tex" id="tex" alt=""></div></div>
+    </div>
+    <img class="stick" id="stick0" alt="">
+    <img class="stick" id="stick1" alt="">
+  </div>
+  <div id="wipe"></div>
+  <div id="card" aria-hidden="true">
+    <div class="ci badge"><div class="logo" id="cardLogo"></div></div>
+    <div class="ci kicker">Fusion Sushi · Since 2009</div>
+    <h1 class="ci headline">Classic sushi.<br>Bold fusion.</h1>
+    <div class="ci sub">Sushi burgers &amp; mouth-watering pizzas</div>
+    <div class="ci where">Mansourieh • Tripoli • Faraya • Jal el Dib</div>
+    <div class="ci ig">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4.2"/><circle cx="17.4" cy="6.6" r="1" fill="currentColor" stroke="none"/></svg>
+      sashimi.fusion.lb
     </div>
   </div>
 </div>
@@ -149,26 +207,40 @@ const SUN  = { x: 0.506, y: 0.459, r: 0.262 };       // centre of the red sun; r
 const PLATE_D = 0.46;                                 // plate outer diameter, fraction of mat width
 const PLATE_BOX = PLATE_D * 1000 / 880;               // the plate SVG draws an r=440 disc in a 1000 box (margin for blur)
 const LOGO = { x: 0.084, y: 0.135, d: 0.24 };         // glow centre + glow diameter (fraction of width)
+const LOGO_CROP = { l: 0.0151, t: 0.0239, w: 0.1566, h: 0.2218 };   // logo region of the scan, for the end card
 const QR   = { l: 0.852, t: 0.760, w: 0.148, h: 0.240 };
 
-// Timeline (seconds)
-const END = 4.5;          // last animated beat
-const DURATION = 6.0;     // length used by the video exporter (END + a still hold)
+// Chopsticks: final centre (fractions of mat W/H), final yaw (deg, 90 = tip pointing down),
+// drop start time, where they fall in from (fractions of W/H), spin while falling, tilt at release, slide after landing
+const STICK_LEN = 0.37;                                // fraction of mat width
+const STICKS = [
+  { x: 0.792, y: 0.468, yaw: 96,  start: 4.70, dx: -0.10, dy: -0.32, spin: -30, tilt:  17, slide: 0.022 },
+  { x: 0.823, y: 0.474, yaw: 99.5, start: 4.98, dx:  0.07, dy: -0.36, spin:  24, tilt: -15, slide: 0.016 },
+];
+
+// One seamless loop: frame 0 (empty mat) is also the frame after the last one
+const LOOP = true;
+const DURATION = 12.0;
+const COVER = 7.62;       // from here until the wipe shrinks, the end card fully covers the mat
+const STATIC_T = 6.8;     // frame shown for prefers-reduced-motion
 
 // ---------------------------------------------------------------------------
 const $ = id => document.getElementById(id);
-const stage = $('stage'), mat = $('mat'), art = $('art');
+const stage = $('stage'), mat = $('mat');
 const els = {
   sunGlow: $('sunGlow'), logoGlow: $('logoGlow'),
   qrCrop: $('qrCrop'), qrShadow: $('qrShadow'), qrRing: $('qrRing'),
-  ripple1: $('ripple1'), ripple2: $('ripple2'),
+  ripple1: $('ripple1'), ripple2: $('ripple2'), ripple3: $('ripple3'),
   shadowSoft: $('shadowSoft'), shadowContact: $('shadowContact'),
-  plate: $('plate'), plateBlur: $('plateBlur'), plateSharp: $('plateSharp'),
+  plate: $('plate'), plateBlur: $('plateBlur'), plateSharp: $('plateSharp'), plateBack: $('plateBack'),
   sheen: $('sheen'), band: $('band'), tex: $('tex'),
+  wipe: $('wipe'),
 };
+const stickEls = [0, 1].map(i => ({ stick: $('stick' + i), soft: $('stickShadowSoft' + i), sharp: $('stickShadowSharp' + i) }));
+const cardItems = [...document.querySelectorAll('#card .ci')];
 
 const params = new URLSearchParams(location.search);
-const RECORD = params.get('record') === '1' || params.has('record') && params.get('record') !== '0';
+const RECORD = params.has('record') && params.get('record') !== '0';
 const STILL = params.has('t') ? parseFloat(params.get('t')) || 0 : null;   // ?t=2.4 freezes on one frame
 const REDUCED = matchMedia('(prefers-reduced-motion: reduce)').matches;
 if (RECORD) document.body.classList.add('record');
@@ -295,21 +367,94 @@ function plateSVG(mode, blur = 0) {
 }
 const svgURL = s => 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(s);
 
+// Underside of the plate, seen mid-flip: black glaze with an unglazed stoneware foot ring
+function plateBackSVG() {
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000" width="1000" height="1000">
+    <defs>
+      <filter id="wave" filterUnits="userSpaceOnUse" x="0" y="0" width="1000" height="1000">
+        <feTurbulence type="fractalNoise" baseFrequency="0.0065" numOctaves="1" seed="3" result="w"/>
+        <feDisplacementMap in="SourceGraphic" in2="w" scale="11" xChannelSelector="R" yChannelSelector="G"/>
+      </filter>
+      <radialGradient id="ub" cx="455" cy="445" r="470" gradientUnits="userSpaceOnUse">
+        <stop offset="0" stop-color="#1e1e1e"/><stop offset=".55" stop-color="#121212"/><stop offset="1" stop-color="#060606"/>
+      </radialGradient>
+      <linearGradient id="lip" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0" stop-color="#5a5a5a"/><stop offset=".45" stop-color="#1a1a1a"/><stop offset="1" stop-color="#000"/>
+      </linearGradient>
+      <linearGradient id="foot" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0" stop-color="#8a7a6c"/><stop offset=".5" stop-color="#6a5c50"/><stop offset="1" stop-color="#4a4038"/>
+      </linearGradient>
+      <filter id="soft" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="14"/></filter>
+      <filter id="clay" filterUnits="userSpaceOnUse" x="0" y="0" width="1000" height="1000">
+        <feTurbulence type="fractalNoise" baseFrequency=".7" numOctaves="2" seed="21"/>
+        <feColorMatrix values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 2.2 -1"/>
+        <feComposite in2="SourceAlpha" operator="in"/>
+      </filter>
+    </defs>
+    <g filter="url(#wave)">
+      <circle cx="500" cy="500" r="440" fill="url(#ub)"/>
+      <circle cx="500" cy="500" r="437.5" fill="none" stroke="url(#lip)" stroke-width="5"/>
+      <circle cx="500" cy="500" r="330" fill="none" stroke="#000" stroke-opacity=".35" stroke-width="40" filter="url(#soft)"/>
+      <circle cx="500" cy="500" r="248" fill="#0a0a0a"/>
+      <circle cx="500" cy="500" r="262" fill="none" stroke="url(#foot)" stroke-width="26"/>
+      <circle cx="500" cy="500" r="262" fill="none" stroke="#000" stroke-width="26" filter="url(#clay)" opacity=".45"/>
+      <circle cx="500" cy="500" r="275" fill="none" stroke="#000" stroke-opacity=".6" stroke-width="2.5"/>
+      <circle cx="500" cy="500" r="249" fill="none" stroke="#000" stroke-opacity=".7" stroke-width="2.5"/>
+    </g>
+  </svg>`;
+}
+
+// Chopstick: black lacquer with a brush-orange band at the back end. Drawn along x, tip at x=1000.
+const STICK_PATH = 'M10 7 L990 13.6 Q998 20 990 26.4 L10 33 Q2 20 10 7 Z';
+function stickSVG() {
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 40" width="1000" height="40">
+    <defs>
+      <linearGradient id="lac" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#3a3a3a"/><stop offset=".3" stop-color="#121212"/>
+        <stop offset=".65" stop-color="#050505"/><stop offset="1" stop-color="#181818"/>
+      </linearGradient>
+      <linearGradient id="red" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#f28a72"/><stop offset=".35" stop-color="#e0634a"/>
+        <stop offset=".7" stop-color="#b9452f"/><stop offset="1" stop-color="#d0583f"/>
+      </linearGradient>
+      <linearGradient id="hl" x1="0" y1="0" x2="1" y2="0">
+        <stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset=".25" stop-color="#fff" stop-opacity=".35"/>
+        <stop offset=".8" stop-color="#fff" stop-opacity=".2"/><stop offset="1" stop-color="#fff" stop-opacity="0"/>
+      </linearGradient>
+      <clipPath id="c"><path d="${STICK_PATH}"/></clipPath>
+    </defs>
+    <path d="${STICK_PATH}" fill="url(#lac)"/>
+    <g clip-path="url(#c)">
+      <rect x="0" y="0" width="175" height="40" fill="url(#red)"/>
+      <rect x="175" y="0" width="7" height="40" fill="#efdcc0" opacity=".9"/>
+      <rect x="40" y="0" width="4" height="40" fill="#efdcc0" opacity=".55"/>
+      <path d="M14 13 L985 16.8" stroke="url(#hl)" stroke-width="2.4" stroke-linecap="round"/>
+    </g>
+  </svg>`;
+}
+function stickShadowSVG(blur) {   // padded viewBox so the blur has room: -30..1030 x -30..70
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="-30 -30 1060 100" width="1060" height="100">
+    <filter id="b" x="-10%" y="-200%" width="120%" height="500%"><feGaussianBlur stdDeviation="${blur}"/></filter>
+    <path d="${STICK_PATH}" fill="#000" filter="url(#b)"/>
+  </svg>`;
+}
+
 // ---------------------------------------------------------------------------
-// Petals: dark charcoal teardrops drifting down-right, looping
+// Petals: dark charcoal teardrops drifting down-right. Every motion repeats a whole number of
+// times per loop, so the last frame flows back into the first.
+// k = crossings per loop, m = sway cycles, n = turns, ff = tumble cycles
 // ---------------------------------------------------------------------------
 const PETAL_PATH = 'M10 0 C15.5 7 19 14.5 18 21 C17 26.5 13.6 30 10 30 C6.4 30 3 26.5 2 21 C1 14.5 4.5 7 10 0 Z';
-// x0/y-phase fractions of the mat; size fraction of mat width; period = seconds per loop
 const PETALS = [
-  { x0: 0.02, ph: 0.10, s: 0.022, per: 11.0, tx: 0.34, sway: 0.020, sf: 0.70, r0:  20, spin:  24, ff: 1.10 },
-  { x0: 0.16, ph: 0.55, s: 0.017, per: 13.5, tx: 0.30, sway: 0.016, sf: 0.55, r0: 140, spin: -18, ff: 0.85 },
-  { x0: 0.30, ph: 0.28, s: 0.025, per: 10.0, tx: 0.38, sway: 0.024, sf: 0.62, r0:  75, spin:  30, ff: 1.30 },
-  { x0: 0.44, ph: 0.80, s: 0.019, per: 12.5, tx: 0.32, sway: 0.018, sf: 0.80, r0: 210, spin: -26, ff: 0.95 },
-  { x0: 0.58, ph: 0.40, s: 0.021, per: 14.0, tx: 0.28, sway: 0.014, sf: 0.50, r0: 300, spin:  20, ff: 1.20 },
-  { x0: 0.70, ph: 0.05, s: 0.016, per: 11.8, tx: 0.30, sway: 0.020, sf: 0.75, r0:  45, spin: -32, ff: 1.05 },
-  { x0: -0.10, ph: 0.68, s: 0.020, per: 12.8, tx: 0.40, sway: 0.022, sf: 0.66, r0: 170, spin:  22, ff: 0.90 },
-  { x0: 0.82, ph: 0.92, s: 0.023, per: 10.6, tx: 0.26, sway: 0.016, sf: 0.58, r0: 260, spin: -20, ff: 1.15 },
-  { x0: 0.08, ph: 0.35, s: 0.015, per: 15.0, tx: 0.36, sway: 0.012, sf: 0.90, r0:  95, spin:  36, ff: 1.40 },
+  { x0: 0.02, ph: 0.10, s: 0.022, k: 1, tx: 0.34, sway: 0.020, m: 2, r0:  20, n:  1, ff: 13 },
+  { x0: 0.16, ph: 0.55, s: 0.017, k: 1, tx: 0.30, sway: 0.016, m: 1, r0: 140, n: -1, ff: 10 },
+  { x0: 0.30, ph: 0.28, s: 0.025, k: 1, tx: 0.38, sway: 0.024, m: 2, r0:  75, n:  1, ff: 15 },
+  { x0: 0.44, ph: 0.80, s: 0.019, k: 1, tx: 0.32, sway: 0.018, m: 3, r0: 210, n: -1, ff: 11 },
+  { x0: 0.58, ph: 0.40, s: 0.021, k: 1, tx: 0.28, sway: 0.014, m: 1, r0: 300, n:  1, ff: 14 },
+  { x0: 0.70, ph: 0.05, s: 0.016, k: 2, tx: 0.30, sway: 0.020, m: 3, r0:  45, n: -2, ff: 12 },
+  { x0: -0.10, ph: 0.68, s: 0.020, k: 1, tx: 0.40, sway: 0.022, m: 2, r0: 170, n:  1, ff: 11 },
+  { x0: 0.82, ph: 0.92, s: 0.023, k: 1, tx: 0.26, sway: 0.016, m: 1, r0: 260, n: -1, ff: 14 },
+  { x0: 0.08, ph: 0.35, s: 0.015, k: 2, tx: 0.36, sway: 0.012, m: 4, r0:  95, n:  2, ff: 17 },
 ];
 const petalEls = PETALS.map(() => {
   const d = document.createElement('div');
@@ -328,31 +473,51 @@ function place(el, cxW, cyH, wW, hW = wW) {   // centre (fractions of W,H), size
   el.style.left = ((cxW - wW / 2) * 100) + '%';
   el.style.top = ((cyH - hW * MAT_RATIO / 2) * 100) + '%';
 }
+function crop(el, c) {                          // show region c of the scan inside el
+  el.style.backgroundImage = 'url(sashimi_placemat.png)';
+  el.style.backgroundSize = `${100 / c.w}% ${100 / c.h}%`;
+  el.style.backgroundPosition = `${c.l / (1 - c.w) * 100}% ${c.t / (1 - c.h) * 100}%`;
+}
 place(els.plate, SUN.x, SUN.y, PLATE_BOX);
 place(els.sunGlow, SUN.x, SUN.y, SUN.r * 2.0);
 place(els.logoGlow, LOGO.x, LOGO.y, LOGO.d);
-place(els.ripple1, SUN.x, SUN.y, PLATE_D);
-place(els.ripple2, SUN.x, SUN.y, PLATE_D);
+for (const r of [els.ripple1, els.ripple2, els.ripple3]) place(r, SUN.x, SUN.y, PLATE_D);
 place(els.shadowSoft, SUN.x, SUN.y, PLATE_D * 1.14);
 place(els.shadowContact, SUN.x, SUN.y, PLATE_D * 1.035);
 for (const el of [els.qrCrop, els.qrShadow, els.qrRing]) {
   el.style.left = QR.l * 100 + '%'; el.style.top = QR.t * 100 + '%';
   el.style.width = QR.w * 100 + '%'; el.style.height = QR.h * 100 + '%';
 }
-els.qrCrop.style.backgroundImage = 'url(sashimi_placemat.png)';
-els.qrCrop.style.backgroundSize = `${100 / QR.w}% ${100 / QR.h}%`;
-els.qrCrop.style.backgroundPosition = `${QR.l / (1 - QR.w) * 100}% ${QR.t / (1 - QR.h) * 100}%`;
+crop(els.qrCrop, QR);
+crop($('cardLogo'), LOGO_CROP);
 
-let matW = 1, matH = 1, startDy = -1000;
+let matW = 1, matH = 1, startDy = -1000, vmin = 10, coverScale = 6, stickLen = 100;
 function measure() {
   matW = mat.offsetWidth; matH = mat.offsetHeight;        // layout size, unaffected by transforms
-  const plateCentreY = (innerHeight - matH) / 2 + SUN.y * matH;
-  const boxH = PLATE_BOX * matW;
-  startDy = -(plateCentreY + 1.25 * boxH / 2 + 40);        // fully above the frame at scale 1.25
+  vmin = Math.min(innerWidth, innerHeight) / 100;
+  const matLeft = (innerWidth - matW) / 2, matTop = (innerHeight - matH) / 2;
+  const plateCentreY = matTop + SUN.y * matH;
+  startDy = -(plateCentreY + 1.25 * PLATE_BOX * matW / 2 + 40);   // fully above the frame at scale 1.25
   PETALS.forEach((p, i) => {
     petalEls[i].style.width = p.s * matW + 'px';
     petalEls[i].style.height = p.s * 1.5 * matW + 'px';
   });
+  // chopsticks and their shadows, centred on their resting spot
+  stickLen = STICK_LEN * matW;
+  STICKS.forEach((s, i) => {
+    const e = stickEls[i], cx = s.x * matW, cy = s.y * matH;
+    const h = stickLen * 0.04;
+    Object.assign(e.stick.style, { width: stickLen + 'px', height: h + 'px', left: cx - stickLen / 2 + 'px', top: cy - h / 2 + 'px' });
+    for (const sh of [e.soft, e.sharp]) {
+      const w = stickLen * 1.06, hh = stickLen * 0.1;
+      Object.assign(sh.style, { width: w + 'px', height: hh + 'px', left: cx - w / 2 + 'px', top: cy - hh / 2 + 'px' });
+    }
+  });
+  // the wipe starts as the printed sun and grows until it covers the farthest corner
+  const r = SUN.r * matW, sx = matLeft + SUN.x * matW, sy = matTop + SUN.y * matH;
+  Object.assign(els.wipe.style, { width: 2 * r + 'px', height: 2 * r + 'px', left: sx - r + 'px', top: sy - r + 'px' });
+  const far = Math.max(Math.hypot(sx, sy), Math.hypot(innerWidth - sx, sy), Math.hypot(sx, innerHeight - sy), Math.hypot(innerWidth - sx, innerHeight - sy));
+  coverScale = far / r * 1.04;
 }
 
 // ---------------------------------------------------------------------------
@@ -360,99 +525,188 @@ function measure() {
 // ---------------------------------------------------------------------------
 const clamp = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
 const seg = (t, a, b) => clamp((t - a) / (b - a));
+const inQuad = x => x * x;
 const outQuad = x => 1 - (1 - x) * (1 - x);
 const outCubic = x => 1 - Math.pow(1 - x, 3);
+const inOutCubic = x => x < .5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2;
 const inOutSine = x => -(Math.cos(Math.PI * x) - 1) / 2;
 const outBack = (x, c1 = 1.2) => { const c3 = c1 + 1; return 1 + c3 * Math.pow(x - 1, 3) + c1 * Math.pow(x - 1, 2); };
 const frac = x => x - Math.floor(x);
 const bump = x => (x <= 0 || x >= 1) ? 0 : Math.sin(Math.PI * x);
+const live = (x) => x > 0 && x < 1;
+const DEG = Math.PI / 180;
+
+// One chopstick's fall: drop with gravity at a tilt, the low end touches first, the stick pivots flat,
+// the other end slaps down with two small rebounds, then it slides a touch along its length.
+function stickPose(t, s) {
+  const tau = t - s.start;
+  const Lh = stickLen / 2, P = stickLen * 3;
+  const z0 = P * (1 - 1 / 1.55);                      // starts ~1.55x bigger: close to the camera
+  const T0 = Math.abs(s.tilt), sign = Math.sign(s.tilt);
+  const Tc = T0 * 0.75;                               // tilt when the low end touches
+  const zc = Lh * Math.sin(Tc * DEG);
+  const Tf = 0.52, Tp = 0.15, Tb1 = 0.22, Tb2 = 0.14;
+  let z = 0, tilt = 0, k = 1;
+  if (tau < Tf) {
+    const q = Math.max(tau, 0) / Tf;
+    z = zc + (z0 - zc) * (1 - q * q);                 // gravity
+    tilt = T0 - (T0 - Tc) * q;
+    k = q;
+  } else if (tau < Tf + Tp) {
+    const p = (tau - Tf) / Tp;
+    tilt = Tc * (1 - p * p);                          // pivots around the touching end
+    z = Lh * Math.sin(tilt * DEG);
+  } else if (tau < Tf + Tp + Tb1) {
+    const b = (tau - Tf - Tp) / Tb1;
+    z = 0.035 * Lh * Math.sin(Math.PI * b);
+    tilt = -0.22 * Tc * Math.sin(Math.PI * b);
+  } else if (tau < Tf + Tp + Tb1 + Tb2) {
+    const b = (tau - Tf - Tp - Tb1) / Tb2;
+    z = 0.01 * Lh * Math.sin(Math.PI * b);
+    tilt = 0.07 * Tc * Math.sin(Math.PI * b);
+  }
+  tilt *= sign;
+  const slide = s.slide * stickLen * outCubic(seg(tau, Tf + Tp, Tf + Tp + 0.7));
+  const yaw = s.yaw + s.spin * (1 - outCubic(clamp(tau / (Tf + Tp + 0.25))));
+  const dx = s.dx * matW * (1 - k) + slide * Math.cos(yaw * DEG);
+  const dy = s.dy * matH * (1 - k) + slide * Math.sin(yaw * DEG);
+  return { tau, z, z0, P, tilt, yaw, dx, dy };
+}
 
 // ---------------------------------------------------------------------------
-// render(t): the whole frame as a pure function of time
+// render(t): the whole frame as a pure function of time, t in [0, DURATION)
+//
+//  0.0–0.5   empty mat, petals drifting (same as the last frame)
+//  0.5–1.9   plate drops in: scale 1.25 -> 1, ease-out-back, blur clears, shadow tightens
+//  1.45–2.55 ripple rings; 1.9–2.25 settle bounce
+//  2.6–3.8   plate lifts, flips once (underside shows), lands with a small ripple
+//  3.95–5.0  specular sweep across the rim
+//  4.7–6.2   chopsticks fall and settle beside the plate
+//  5.9–7.0   logo glow, QR pulse
+//  7.0–7.75  the sun spreads to fill the frame; 7.6–10.7 end card
+//  10.65–11.5 the sun shrinks back into the print, leaving the empty mat
 // ---------------------------------------------------------------------------
 let lastT = -1;
 let petalClock = null;   // when set (reduced motion), petals freeze at this time
 
 function render(t) {
   lastT = t;
+  t = ((t % DURATION) + DURATION) % DURATION;
   const u = matW / 1000;   // 1 "design px" at a 1000px-wide mat
+  const shown = t < COVER;  // plate + chopsticks are cleared while the end card covers the mat
 
-  // 1. 0.0–0.6  placemat fades + scales in, sun brightens
-  const m = seg(t, 0, 0.6);
-  mat.style.opacity = outQuad(m);
-  mat.style.transform = `scale(${0.96 + 0.04 * outCubic(m)})`;
-  els.sunGlow.style.opacity = inOutSine(seg(t, 0.1, 0.9));
-
-  // 2. 0.6–1.0  petals fade in, then drift for good
-  const pf = inOutSine(seg(t, 0.6, 1.0));
-  const pt = petalClock ?? t;
+  // petals
+  const pt = petalClock ?? t, ph = 2 * Math.PI * pt / DURATION;
   PETALS.forEach((p, i) => {
-    const k = frac(p.ph + pt / p.per);                         // 0..1 through one loop
-    const x = (p.x0 + k * p.tx) * matW + Math.sin(pt * p.sf + i * 1.7) * p.sway * matW;
+    const k = frac(p.ph + p.k * pt / DURATION);
+    const x = (p.x0 + k * p.tx) * matW + Math.sin(ph * p.m + i * 1.7) * p.sway * matW;
     const y = (-0.08 + k * 1.16) * matH;
-    const rot = p.r0 + pt * p.spin + Math.sin(pt * p.sf * 1.3 + i) * 14;
-    const c = Math.cos(pt * p.ff * 2 + i * 2.1);
+    const rot = p.r0 + 360 * p.n * pt / DURATION + Math.sin(ph * p.m + i) * 14;
+    const c = Math.cos(ph * p.ff + i * 2.1);
     const flip = (c < 0 ? -1 : 1) * (0.3 + 0.7 * Math.abs(c));  // tumbling
-    const edge = Math.min(1, k * 12, (1 - k) * 12);              // soft at the loop seam (off-mat anyway)
-    const el = petalEls[i];
-    el.style.transform = `translate(${x}px, ${y}px) rotate(${rot}deg) scaleX(${flip})`;
-    el.style.opacity = 0.92 * pf * edge;
+    const edge = Math.min(1, k * 12, (1 - k) * 12);
+    petalEls[i].style.transform = `translate(${x}px, ${y}px) rotate(${rot}deg) scaleX(${flip})`;
+    petalEls[i].style.opacity = 0.92 * edge;
   });
 
-  // 3. 1.0–2.4  plate descends: scale 1.25 -> 1 with ease-out-back, blur clears, shadow tightens
-  const d = seg(t, 1.0, 2.4);
-  const h = 1 - outBack(Math.pow(d, 2.2));                // "height": 1 high, 0 on the mat, <0 = settle overshoot
-  const hp = Math.max(h, 0);
-  let y = hp * startDy;
-  const s = 1 + 0.25 * h;
-  const settle = seg(t, 2.4, 2.78);                       // tiny 2px settle bounce
-  y -= 2 * u * Math.sin(Math.PI * settle) * (1 - settle * 0.4) * (settle > 0 && settle < 1 ? 1 : 0);
-  const rot = -6 * Math.pow(hp, 1.5);
-  els.plate.style.opacity = t < 1.0 ? 0 : outQuad(seg(t, 1.0, 1.2));
-  els.plate.style.transform = `translate3d(0, ${y}px, 0) rotate(${rot}deg) scale(${s})`;
-  els.plateSharp.style.opacity = inOutSine(seg(t, 1.2, 1.98));
-  els.plateBlur.style.opacity = 1 - seg(t, 1.95, 2.15);
+  // plate drop
+  const d = seg(t, 0.5, 1.9);
+  const hDrop = 1 - outBack(Math.pow(d, 2.2));       // "height": 1 high, 0 on the mat, <0 = settle overshoot
+  const hpd = Math.max(hDrop, 0);
+  const settle = seg(t, 1.9, 2.25);
+  // flip
+  const lift = outCubic(seg(t, 2.6, 3.05)) * (1 - inQuad(seg(t, 3.1, 3.6)));
+  const squash = bump(seg(t, 3.6, 3.82));
+  const angle = 360 * inOutCubic(seg(t, 2.7, 3.55));
+  const front = Math.cos(angle * DEG) >= 0;
 
-  const appear = seg(t, 1.0, 1.35);
-  els.shadowSoft.style.opacity = appear * (0.35 - 0.28 * Math.pow(hp, 0.7));
+  let y = hpd * startDy - 0.035 * matH * lift;
+  if (live(settle)) y -= 2 * u * Math.sin(Math.PI * settle) * (1 - settle * 0.4);
+  const s = 1 + 0.25 * hDrop + 0.16 * lift - 0.012 * squash;
+  const rot = -6 * Math.pow(hpd, 1.5);
+  const P = PLATE_BOX * matW * 3;
+  els.plate.style.opacity = (t < 0.5 || !shown) ? 0 : outQuad(seg(t, 0.5, 0.7));
+  els.plate.style.transform =
+    `translate3d(0, ${y}px, 0) rotate(${rot}deg) perspective(${P}px) rotate3d(1, 0.35, 0, ${angle}deg) scale(${s})`;
+  els.plateSharp.style.opacity = front ? inOutSine(seg(t, 0.7, 1.45)) : 0;
+  els.plateBlur.style.opacity = front ? 1 - seg(t, 1.45, 1.62) : 0;
+  els.plateBack.style.opacity = front ? 0 : 1;
+
+  const hp = Math.max(hpd, lift * 0.45);
+  const edgeOn = 0.55 + 0.45 * Math.abs(Math.cos(angle * DEG));
+  const appear = shown ? seg(t, 0.5, 0.85) : 0;
+  els.shadowSoft.style.opacity = appear * (0.35 - 0.28 * Math.pow(hp, 0.7)) * edgeOn;
   els.shadowSoft.style.transform =
-    `translate(${2 + 9 * hp}%, ${2.6 + 12 * hp}%) scale(${1 + 0.75 * hp + 0.02 * Math.min(h, 0)})`;
-  const c = outQuad(seg(t, 1.72, 2.02));
+    `translate(${2 + 9 * hp}%, ${2.6 + 12 * hp}%) scale(${1 + 0.75 * hp + 0.02 * Math.min(hDrop, 0)})`;
+  const c = outQuad(seg(t, 1.22, 1.52)) * (1 - clamp(lift * 3)) * (shown ? 1 : 0);
   els.shadowContact.style.opacity = 0.5 * c;
   els.shadowContact.style.transform = `translate(${0.6 + 2 * (1 - c)}%, ${0.8 + 2.6 * (1 - c)}%) scale(${1.07 - 0.07 * c})`;
 
-  // 4. ripple rings from under the plate (impact ~2.1s, rings run to 3.2s)
-  const r1 = seg(t, 2.1, 3.2), r2 = seg(t, 2.28, 3.2);
+  // ripples: landing (two rings) and the flip landing (one smaller ring)
+  const r1 = seg(t, 1.45, 2.55), r2 = seg(t, 1.62, 2.55), r3 = seg(t, 3.6, 4.4);
   els.ripple1.style.transform = `scale(${0.97 + 0.78 * outCubic(r1)})`;
-  els.ripple1.style.opacity = (r1 > 0 && r1 < 1) ? 0.85 * Math.min(1, r1 * 10) * Math.pow(1 - r1, 1.3) : 0;
+  els.ripple1.style.opacity = live(r1) ? 0.85 * Math.min(1, r1 * 10) * Math.pow(1 - r1, 1.3) : 0;
   els.ripple2.style.transform = `scale(${0.97 + 0.48 * outCubic(r2)})`;
-  els.ripple2.style.opacity = (r2 > 0 && r2 < 1) ? 0.5 * Math.min(1, r2 * 10) * Math.pow(1 - r2, 1.5) : 0;
+  els.ripple2.style.opacity = live(r2) ? 0.5 * Math.min(1, r2 * 10) * Math.pow(1 - r2, 1.5) : 0;
+  els.ripple3.style.transform = `scale(${0.97 + 0.42 * outCubic(r3)})`;
+  els.ripple3.style.opacity = live(r3) ? 0.55 * Math.min(1, r3 * 10) * Math.pow(1 - r3, 1.4) : 0;
 
-  // 5. 3.2–4.5  specular sweep across the rim, logo glow, QR pulse
-  const sw = seg(t, 3.2, 4.25);
+  // specular sweep across the rim
+  const sw = seg(t, 3.95, 5.0);
   const bx = (-72 + 144 * inOutSine(sw)).toFixed(3);
-  els.sheen.style.opacity = (sw > 0 && sw < 1) ? 1 : 0;
+  els.sheen.style.opacity = live(sw) ? 1 : 0;
   els.band.style.transform = `rotate(30deg) translateX(${bx}%)`;
   els.tex.style.transform = `translateX(${-bx}%) rotate(-30deg)`;   // keeps the texture fixed to the plate
 
-  const lg = seg(t, 3.3, 4.5);
-  els.logoGlow.style.opacity = 0.75 * Math.pow(bump(lg), 2);
+  // chopsticks
+  STICKS.forEach((st, i) => {
+    const e = stickEls[i], p = stickPose(t, st);
+    const vis = shown && p.tau > 0;
+    e.stick.style.opacity = vis ? clamp(p.tau / 0.12) : 0;
+    e.stick.style.transform =
+      `perspective(${p.P}px) translate3d(${p.dx}px, ${p.dy}px, ${p.z}px) rotate(${p.yaw}deg) rotateY(${p.tilt}deg)`;
+    const hz = p.z / p.z0, off = p.z * 0.22;
+    const sh = `translate(${p.dx + off}px, ${p.dy + off * 1.15}px) rotate(${p.yaw}deg) scaleX(${Math.cos(p.tilt * DEG)}) scale(${1 + 0.18 * hz})`;
+    const a = vis ? clamp(p.tau / 0.2) : 0;
+    e.soft.style.opacity = a * 0.32 * Math.pow(1 - hz, 2);
+    e.soft.style.transform = sh;
+    e.sharp.style.opacity = a * 0.55 * (1 - clamp(hz * 4));
+    e.sharp.style.transform = sh;
+  });
 
-  const q = seg(t, 3.65, 4.45), qb = bump(q);
+  // logo glow, QR pulse
+  els.logoGlow.style.opacity = 0.75 * Math.pow(bump(seg(t, 5.9, 7.0)), 2);
+  const q = seg(t, 6.05, 6.85), qb = bump(q);
   els.qrCrop.style.opacity = qb > 0 ? 1 : 0;
   els.qrCrop.style.transform = `scale(${1 + 0.055 * qb})`;
   els.qrShadow.style.opacity = 0.55 * qb;
   els.qrShadow.style.transform = `translate(1.5%, 2.5%) scale(${1 + 0.1 * qb})`;
-  els.qrRing.style.opacity = (q > 0 && q < 1) ? 0.9 * Math.min(1, q * 6) * (1 - q) : 0;
+  els.qrRing.style.opacity = live(q) ? 0.9 * Math.min(1, q * 6) * (1 - q) : 0;
   els.qrRing.style.transform = `scale(${0.96 + 0.2 * outCubic(q)})`;
+
+  // end card: sun wipe out, text in, text out, sun wipe back
+  let ws, wo;
+  if (t < 10.65) { ws = 1 + (coverScale - 1) * inOutCubic(seg(t, 7.0, 7.75)); wo = seg(t, 7.0, 7.14); }
+  else { ws = coverScale + (1 - coverScale) * inOutCubic(seg(t, 10.65, 11.45)); wo = 1 - seg(t, 11.22, 11.5); }
+  els.wipe.style.opacity = wo;
+  els.wipe.style.transform = `scale(${ws})`;
+  const out = seg(t, 10.25, 10.6);
+  cardItems.forEach((el, i) => {
+    const a = outCubic(seg(t, 7.6 + i * 0.12, 8.2 + i * 0.12));
+    el.style.opacity = a * (1 - out);
+    const lift = (1 - a) * 3.2 * vmin - outQuad(out) * 1.6 * vmin;
+    el.style.transform = i === 0
+      ? `translateY(${lift}px) scale(${0.86 + 0.14 * a - 0.04 * out})`
+      : `translateY(${lift}px)`;
+  });
 }
 
 // ---------------------------------------------------------------------------
-// Playback
+// Playback: loops forever; Replay restarts from the empty mat
 // ---------------------------------------------------------------------------
 let t0 = 0, raf = 0;
 function frame(now) {
-  render((now - t0) / 1000);
+  render(((now - t0) / 1000) % DURATION);
   raf = requestAnimationFrame(frame);
 }
 function play() {
@@ -470,20 +724,26 @@ if (RECORD) addEventListener('pointerdown', play);
 addEventListener('resize', () => {
   measure();
   if (STILL !== null) render(STILL);
-  else if (REDUCED) render(END);
+  else if (REDUCED) render(STATIC_T);
 });
 
 (async function init() {
   els.plateSharp.src = svgURL(plateSVG('plate'));
   els.plateBlur.src = svgURL(plateSVG('plate', 18));
+  els.plateBack.src = svgURL(plateBackSVG());
   els.tex.src = svgURL(plateSVG('sheen'));
-  const imgs = [$('print'), els.plateSharp, els.plateBlur, els.tex];
+  const stickURL = svgURL(stickSVG()), softURL = svgURL(stickShadowSVG(9)), sharpURL = svgURL(stickShadowSVG(2.2));
+  stickEls.forEach(e => { e.stick.src = stickURL; e.soft.src = softURL; e.sharp.src = sharpURL; });
+  const imgs = [...document.querySelectorAll('#stage img')];
   await Promise.all(imgs.map(i => i.decode().catch(() => {})));
-  if (document.fonts) await document.fonts.ready.catch(() => {});
+  if (document.fonts) {
+    await Promise.all(['500', '600', '700'].map(w => document.fonts.load(`${w} 40px Poppins`).catch(() => {})));
+    await document.fonts.ready.catch(() => {});
+  }
   measure();
   if (STILL !== null) render(STILL);
-  else if (REDUCED) { petalClock = 2.0; render(END); }
-  else render(0);
+  else if (REDUCED) { petalClock = 2.0; render(STATIC_T); }
+  else { render(0); if (!RECORD) document.body.classList.add('intro'); }
   stage.classList.remove('waiting');
   play();
 })();
