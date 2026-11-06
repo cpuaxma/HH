@@ -3,9 +3,12 @@
 A 32-second Arabic reel (32.2s: 1080×1920 and 1080×1350, 60fps, 1930 frames) built in Remotion with `@remotion/three` (React Three Fiber). Two iPhone-style 3D phones in a navy studio make **the same gold trade on the same day**, and the same news candle hits both:
 
 - **Left «بلا خطة»** (no plan). Buys gold with **no stop loss** («لا حدّ للخسارة», no limit on the loss) and no alerts. It buys 1 lot. Its balance climbs to about $10,700 while gold rises, close to the right's. Then the news candle drops gold about $107, the screen floods red and the account is wiped out: **«خسارة كاملة» −$10,000, $10,000 → $0 (−100%)**.
-- **Right «مع Miran Gold»** (with Miran Gold). It copies a Miran Gold signal («إشارة للنسخ», then «تم النسخ»): buy gold, **with a stop loss, small risk (1%)**. Before the news, a **Miran Gold alert** (big news in 10 minutes: take profit now) closes the trade at **+$140**. When the news hits it is **protected: $10,000 → $10,140 (+1.4%)**.
-- Then the left phone flips and connects to Miran Gold: «من الآن: تداول بخطة», «إشارات للنسخ + تنبيهات الأخبار». It shows no balance (it was wiped out, and there's no magic recovery).
-- The end card says what Miran Gold shares: «إشارات للنسخ • تنبيهات الأخبار».
+- **Right «مع Miran Gold»** (with Miran Gold). It copies a Miran Gold signal automatically («إشارة للنسخ», then «نُسخت تلقائياً»): buy gold, **with a stop loss, small risk (1%)**. Before the news, a **Miran Gold alert** (big news in 10 minutes: take profit now) closes the trade at **+$140**. When the news hits it is **protected: $10,000 → $10,140 (+1.4%)**.
+- Then the left phone flips and connects to Miran Gold: «من الآن: تداول بخطة», switches on «النسخ التلقائي», «إشارات + أخبار + نسخ تلقائي». It shows no balance (it was wiped out, and there's no magic recovery).
+- Automatic copy trading: the right phone switches «النسخ التلقائي» on before its first signal (the signal is then «نُسخت تلقائياً»), and the left switches it on after its flip.
+- The end card says what Miran Gold offers: «إشارات • تنبيهات الأخبار • نسخ تلقائي».
+- The phones look different: the no-plan phone is silver with a cool steel screen, the Miran Gold phone is gold with a warm gold-black screen (`STUDIO.finish` in `src/data.ts`). The left turns gold during its flip.
+- The delivered cut (`MiranSignalsClean`, `CLEAN=1 bash scripts/render-all.sh`) has no story captions on top: only the opening line and «تداول بخطة مع Miran Gold». The voiceover tells the story.
 
 Big scoreboards under the phones (✕ «بلا خطة» / ✓ «مع Miran Gold» with the live account value) are on screen for the whole story, so it reads even without looking at the screens.
 
@@ -36,16 +39,16 @@ There's no voiceover in the mix. A suggested script, timed to the beats (on-scre
 | Time | Frames | Line |
 |---|---|---|
 | 0.2–3.6s | 12–216 | متداولان… نفس الذهب، ونتيجتان مختلفتان تماماً. |
-| 3.9–6.8s | 235–408 | الأول اشترى وحده… والثاني نسخ إشارة Miran Gold. |
+| 3.9–6.8s | 235–408 | الأول اشترى وحده… والثاني نسخ الإشارة تلقائياً. |
 | 6.9–9.9s | 413–594 | الذهب يرتفع، والحسابان في الربح… حتى الآن. |
 | 10.0–12.0s | 600–720 | ثم تنبيه من Miran Gold: خبر قوي قادم. |
 | 12.1–14.1s | 726–846 | فخرج الثاني بربحه قبل الخبر. |
 | 14.2–16.9s | 854–1014 | صدر الخبر… وخسر الأول كل رصيده. |
 | 17.0–19.2s | 1020–1150 | الفرق ليس في الحظ… بل في الخطة. |
-| 19.3–22.0s | 1159–1318 | إشارات تنسخها… وتنبيهات قبل الأخبار. |
+| 19.3–22.0s | 1159–1318 | إشارات، وتنبيهات بالأخبار، ونسخ تلقائي. |
 | 22.2–24.0s | 1332–1440 | فماذا لو تداول الأول بخطة؟ |
-| 24.8–27.0s | 1486–1618 | تداول بخطة… مع Miran Gold. |
-| 27.4–29.0s | 1644–1740 | انضم إلى إشارات Miran Gold. |
+| 24.8–27.0s | 1486–1618 | فعّل النسخ التلقائي… مع Miran Gold. |
+| 27.4–29.0s | 1644–1740 | انضم إلى Miran Gold اليوم. |
 | 29.2–32.0s | 1752–1920 | التداول ينطوي على مخاطر عالية، والنتائج المعروضة توضيحية. |
 
 The end card runs from 27.2s to 32.2s. If your takes run longer or shorter, change the timings in `TIMING` (below) and re-render: captions, screens, sound and camera all follow.

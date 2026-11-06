@@ -31,6 +31,11 @@ export const getCues = (captions: Captions = 'full'): SoundCue[] => {
   for (let at = 732; at < NEWS.at - 48; at += 96) cues.push(cue(at, 'heartbeat', 0.5));
 
   // RIGHT: the Miran signal builds with soft gold chimes, executes, then the market update.
+  // Automatic copy trading switched on: the right before its first signal, the left after its flip.
+  cues.push(cue(TIMING.rightAutoAt - 2, 'tap', 0.4));
+  cues.push(cue(TIMING.rightAutoAt + 4, 'gtick-1', 0.32));
+  cues.push(cue(TIMING.leftAutoAt - 2, 'tap', 0.45));
+  cues.push(cue(TIMING.leftAutoAt + 4, 'gtick-1', 0.36));
   cues.push(cue(SIGNAL.at, 'signal', 0.34));
   for (let i = 0; i < 6; i++) cues.push(cue(SIGNAL.at + i * SIGNAL.lineGap, `chime-${i}`, 0.22));
   cues.push(cue(SIGNAL.filledAt, 'gtick-0', 0.45));

@@ -165,20 +165,25 @@ const illus = (ctx: CanvasRenderingContext2D, y: number) => {
 
 // ─── Backgrounds ─────────────────────────────────────────────────────────────
 
+/** Default card colour for the screen being drawn (set by `background`). */
+let CARD_FILL = 'rgba(26,31,44,0.96)';
+
 const background = (ctx: CanvasRenderingContext2D, mode: 'blind' | 'miran', danger: number) => {
   const g = ctx.createLinearGradient(0, 0, 0, H);
+  // Each phone has its own look: Miran Gold is warm black and gold, the no-plan app cool steel.
+  CARD_FILL = mode === 'miran' ? 'rgba(40,32,19,0.96)' : 'rgba(30,38,54,0.96)';
   if (mode === 'miran') {
-    g.addColorStop(0, '#111a31');
-    g.addColorStop(1, '#0a0f1e');
+    g.addColorStop(0, '#231b0d');
+    g.addColorStop(1, '#0d0a05');
   } else {
-    g.addColorStop(0, '#14161c');
-    g.addColorStop(1, '#0b0c10');
+    g.addColorStop(0, '#1c2433');
+    g.addColorStop(1, '#0b0f17');
   }
   ctx.fillStyle = g;
   ctx.fillRect(0, 0, W, H);
   if (mode === 'miran') {
-    const rg = ctx.createRadialGradient(W / 2, 0, 10, W / 2, 0, 420);
-    rg.addColorStop(0, 'rgba(212,162,76,0.22)');
+    const rg = ctx.createRadialGradient(W / 2, 0, 10, W / 2, 0, 460);
+    rg.addColorStop(0, 'rgba(212,162,76,0.3)');
     rg.addColorStop(1, 'rgba(212,162,76,0)');
     ctx.fillStyle = rg;
     ctx.fillRect(0, 0, W, H);
@@ -409,7 +414,7 @@ const cardBox = (ctx: CanvasRenderingContext2D, o: {fill?: string; border?: stri
   softShadow(ctx, CARD.x, y, CARD.w, h, 0.5, 8);
   if (o.glow) softShadow(ctx, CARD.x, y, CARD.w, h, 0.6, 0, o.glow);
   rr(ctx, CARD.x, y, CARD.w, h, 30);
-  ctx.fillStyle = o.fill ?? 'rgba(26,31,44,0.96)';
+  ctx.fillStyle = o.fill ?? CARD_FILL;
   ctx.fill();
   if (o.border) {
     ctx.lineWidth = 2;
@@ -595,15 +600,52 @@ const RIGHT_ACTS = (): Activity[] => [
   {at: NEWS.at + 4, until: NEWS.at + 150, color: GREEN, icon: 'shield', title: SC().newsReleased, sub: SC().noOpen},
 ];
 
-/** Waiting for the signal. */
+/** An iOS-style switch, `on` from 0 (off, grey) to 1 (on, green); a press dips it slightly. */
+const toggle = (ctx: CanvasRenderingContext2D, cx: number, cy: number, on: number, press: number) => {
+  const w = 86;
+  const h = 48;
+  ctx.save();
+  ctx.translate(cx, cy);
+  ctx.scale(1 - 0.06 * press, 1 - 0.06 * press);
+  rr(ctx, -w / 2, -h / 2, w, h, h / 2);
+  ctx.fillStyle = mixHex('#3A4052', GREEN, on);
+  ctx.fill();
+  const r = h / 2 - 4;
+  const kx = -w / 2 + 4 + r + (w - 8 - 2 * r) * (SC().rtl ? 1 - on : on);
+  ctx.beginPath();
+  ctx.arc(kx, 0, r, 0, Math.PI * 2);
+  ctx.fillStyle = '#fff';
+  ctx.shadowColor = 'rgba(0,0,0,0.35)';
+  ctx.shadowBlur = 8;
+  ctx.fill();
+  ctx.restore();
+};
+
+/** One row: the automatic copy-trading label with its switch, flicked on at `at`. */
+const autoCopyRow = (ctx: CanvasRenderingContext2D, t: number, at: number, y: number) => {
+  const rtl = SC().rtl;
+  const on = ramp(t, at, at + 10, easeOut);
+  const press = Math.sin(Math.PI * clamp01((t - at + 4) / 12));
+  rr(ctx, CARD.x + 22, y - 40, CARD.w - 44, 80, 22);
+  ctx.fillStyle = `rgba(63,208,138,${0.05 + 0.1 * on})`;
+  ctx.fill();
+  ctx.strokeStyle = `rgba(63,208,138,${0.15 + 0.45 * on})`;
+  ctx.lineWidth = 2;
+  ctx.stroke();
+  say(ctx, SC().autoCopy, rtl ? CARD.x + CARD.w - 46 : CARD.x + 46, y + 9, {weight: 700, size: 26, color: C.text, maxW: 220});
+  toggle(ctx, rtl ? CARD.x + 92 : CARD.x + CARD.w - 92, y, on, press);
+};
+
+/** Waiting for the signal, with automatic copy trading switched on. */
 const waitingCard = (ctx: CanvasRenderingContext2D, t: number) => {
   cardBox(ctx, {border: 'rgba(212,162,76,0.35)'});
-  emblem(ctx, W / 2, CARD.y + 92, 44);
-  say(ctx, SC().waiting, W / 2, CARD.y + 186, {weight: 600, size: 22, align: 'center', maxW: 320});
+  emblem(ctx, W / 2, CARD.y + 60, 34);
+  autoCopyRow(ctx, t, TIMING.rightAutoAt, CARD.y + 150);
+  say(ctx, SC().waiting, W / 2, CARD.y + 230, {weight: 600, size: 20, color: '#C9CDD6', align: 'center', maxW: 320});
   for (let i = 0; i < 3; i++) {
     const p = 0.35 + 0.65 * Math.max(0, Math.sin((t / 8 - i * 0.9) % (Math.PI * 2)));
     ctx.beginPath();
-    ctx.arc(W / 2 - 22 + i * 22, CARD.y + 226, 5.5, 0, Math.PI * 2);
+    ctx.arc(W / 2 - 22 + i * 22, CARD.y + 258, 5, 0, Math.PI * 2);
     ctx.fillStyle = hexA(GOLD, p);
     ctx.fill();
   }
@@ -755,9 +797,10 @@ const drawMiranLeft = (ctx: CanvasRenderingContext2D, t: number) => {
   const k = tr(t, (TIMING.flipStart + TIMING.flipEnd) / 2 + 4);
   withT(ctx, k, () => {
     cardBox(ctx, {border: GOLD, glow: '#C8963E'});
-    emblem(ctx, W / 2, CARD.y + 80, 50);
-    say(ctx, SC().connected, W / 2, CARD.y + 176, {weight: 700, size: 26, color: goldGradient(ctx, 40, 0, W - 40, 0), align: 'center', maxW: 340});
-    say(ctx, SC().nextSignal, W / 2, CARD.y + 226, {weight: 600, size: 19, color: '#D5D8DF', align: 'center', maxW: 340});
+    emblem(ctx, W / 2, CARD.y + 50, 30);
+    say(ctx, SC().connected, W / 2, CARD.y + 118, {weight: 700, size: 24, color: goldGradient(ctx, 40, 0, W - 40, 0), align: 'center', maxW: 340});
+    autoCopyRow(ctx, t, TIMING.leftAutoAt, CARD.y + 186);
+    say(ctx, SC().nextSignal, W / 2, CARD.y + 258, {weight: 600, size: 18, color: '#D5D8DF', align: 'center', maxW: 340});
   });
   chrome(ctx, t);
   homeIndicator(ctx);

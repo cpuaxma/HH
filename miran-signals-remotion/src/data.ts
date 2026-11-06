@@ -186,7 +186,7 @@ export const COPY: Record<Lang, Copy> = {
     flip: {lines: ['تداول بخطة مع Miran Gold.'], gold: ['Miran Gold']},
     labelLeft: 'بلا خطة',
     labelRight: 'مع Miran Gold',
-    tagline: 'إشارات للنسخ • تنبيهات الأخبار',
+    tagline: 'إشارات • تنبيهات الأخبار • نسخ تلقائي',
     cta: 'انضم إلى إشارات Miran Gold',
     disclaimer: 'التداول ينطوي على مخاطر عالية وقد تخسر رأس مالك. النتائج المعروضة توضيحية وليست ضماناً لأرباح مستقبلية.',
     illustrative: 'توضيحي',
@@ -204,7 +204,7 @@ export const COPY: Record<Lang, Copy> = {
     flip: {lines: ['Trade with a plan with Miran Gold.'], gold: ['Miran Gold']},
     labelLeft: 'No plan',
     labelRight: 'With Miran Gold',
-    tagline: 'Copy signals • News alerts',
+    tagline: 'Signals • News alerts • Auto copy',
     cta: 'Join Miran Gold signals',
     disclaimer: 'Trading involves high risk and you may lose your capital. Results shown are illustrative and not a guarantee of future profits.',
     illustrative: 'Illustrative',
@@ -239,6 +239,8 @@ export type ScreenCopy = {
   target: string;
   risk: string;
   executed: string;
+  /** Label of the automatic copy-trading switch. */
+  autoCopy: string;
   updateTitle: string;
   updateBody: string;
   updateAction: string;
@@ -282,7 +284,8 @@ export const SCREEN_COPY: Record<Lang, ScreenCopy> = {
     entry: 'الدخول',
     target: 'الهدف',
     risk: 'المخاطرة',
-    executed: 'تم النسخ',
+    executed: 'نُسخت تلقائياً',
+    autoCopy: 'النسخ التلقائي',
     updateTitle: 'تنبيه من Miran Gold',
     updateBody: 'خبر قوي بعد 10 دقائق',
     updateAction: 'خذ الربح الآن',
@@ -292,7 +295,7 @@ export const SCREEN_COPY: Record<Lang, ScreenCopy> = {
     protectedBody: 'ربحك محفوظ',
     newsReleased: 'صدر الخبر',
     connected: 'تم الربط مع Miran Gold',
-    nextSignal: 'إشارات للنسخ + تنبيهات الأخبار',
+    nextSignal: 'إشارات + أخبار + نسخ تلقائي',
     fromNow: 'من الآن',
     withPlan: 'تداول بخطة',
     illustrative: 'توضيحي',
@@ -323,7 +326,8 @@ export const SCREEN_COPY: Record<Lang, ScreenCopy> = {
     entry: 'Entry',
     target: 'Target',
     risk: 'Risk',
-    executed: 'Copied',
+    executed: 'Auto-copied',
+    autoCopy: 'Auto copy trading',
     updateTitle: 'Miran Gold alert',
     updateBody: 'Big news in 10 min',
     updateAction: 'Take profit now',
@@ -333,7 +337,7 @@ export const SCREEN_COPY: Record<Lang, ScreenCopy> = {
     protectedBody: 'Profit kept',
     newsReleased: 'News released',
     connected: 'Connected to Miran Gold',
-    nextSignal: 'Copy signals + news alerts',
+    nextSignal: 'Signals + news + auto copy',
     fromNow: 'From now on',
     withPlan: 'With a plan',
     illustrative: 'Illustrative',
@@ -380,6 +384,10 @@ export const TIMING = {
   // 6. The switch (1110–1360): a gold streak, the left phone flips to Miran Gold.
   streakStart: 1337,
   streakEnd: 1382,
+  /** The right phone switches automatic copy trading on (before the first signal). */
+  rightAutoAt: 150,
+  /** After its flip, the left phone switches automatic copy trading on. */
+  leftAutoAt: 1505,
   flipStart: 1392,
   flipEnd: 1457,
   impactAt: 1457,
@@ -481,5 +489,11 @@ export const STUDIO = {
   /** The phones: a warm natural-titanium frame (iPhone-style "desert" tone) and matte back glass. */
   titanium: '#9C968D',
   backGlass: '#8F8A83',
+  /** Each phone has its own finish so they never look alike: the no-plan phone is cool silver,
+   * the Miran Gold phone is gold. The left turns gold during its flip (it has joined). */
+  finish: {
+    left: {frame: '#C4CBD6', back: '#D3D8E0'},
+    right: {frame: '#E2B45C', back: '#C79B52'},
+  },
   keyLight: '#FFE6BD',
 };

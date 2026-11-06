@@ -163,6 +163,8 @@ export type PhoneProps = {
   pose: (t: number) => PhonePose;
   /** Screen brightness (emissive intensity) at time t. */
   brightness: (t: number) => number;
+  /** Body colours at time t: the frame metal and the back glass. */
+  finish: (t: number) => {frame: THREE.Color; back: THREE.Color};
 };
 
 /** One camera lens: titanium ring, black surround, coated glass and an iris ring. */
@@ -176,7 +178,7 @@ const Lens: React.FC<{s: ReturnType<typeof useShared>; x: number; y: number}> = 
   </group>
 );
 
-export const Phone: React.FC<PhoneProps> = ({texture, pose, brightness}) => {
+export const Phone: React.FC<PhoneProps> = ({texture, pose, brightness, finish}) => {
   const s = useShared();
   const group = useRef<THREE.Group>(null);
 
@@ -200,6 +202,11 @@ export const Phone: React.FC<PhoneProps> = ({texture, pose, brightness}) => {
     g.rotation.set(p.rot[0], p.rot[1], p.rot[2], 'YXZ');
     g.scale.setScalar(p.scale);
     screenMat.uniforms.brightness.value = brightness(t);
+    const f = finish(t);
+    s.titanium.color.copy(f.frame);
+    s.titaniumPlain.color.copy(f.frame);
+    s.backGlass.color.copy(f.back);
+    s.plateauGlass.color.copy(f.back).multiplyScalar(0.82);
     screenMat.uniforms.map.value = texture.active.current;
     // The screen's reflection in the glossy floor: the same pose mirrored through y = 0.
     const m = mirror.current;
