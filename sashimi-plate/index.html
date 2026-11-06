@@ -1,0 +1,492 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sashimi Plate Drop</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --kraft: #efdcc0;
+    --sun: #e8705a;
+    --brush: #e0634a;
+    --charcoal: #3a3330;
+    --plate: #0d0d0d;
+    --granite: #141414;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; overflow: hidden; }
+  body {
+    background-color: var(--granite);
+    background-image: radial-gradient(ellipse at 50% 45%, rgba(255,255,255,.045), rgba(0,0,0,0) 55%, rgba(0,0,0,.45) 100%);
+    font-family: Poppins, system-ui, sans-serif;
+  }
+  body.record { cursor: none; }
+
+  #stage { position: fixed; inset: 0; display: grid; place-items: center; }
+  #stage.waiting #mat { visibility: hidden; }
+
+  /* The mat keeps the scan's 1660:1172 ratio and fits inside 92% of the viewport */
+  #mat {
+    position: relative;
+    width: min(92vw, calc(92vh * 1660 / 1172));
+    aspect-ratio: 1660 / 1172;
+    will-change: transform, opacity;
+  }
+  .art {
+    position: absolute; inset: 0; overflow: hidden;
+    border-radius: .25%;
+    box-shadow: 0 .5vmin 1.2vmin rgba(0,0,0,.55), 0 2.4vmin 6vmin rgba(0,0,0,.6);
+    background: var(--kraft);
+  }
+  .art > * { position: absolute; pointer-events: none; }
+  .print { inset: 0; width: 100%; height: 100%; display: block; }
+
+  .sun-glow {
+    border-radius: 50%;
+    background: radial-gradient(closest-side, rgba(255,180,150,.34), rgba(255,150,120,.16) 80%, rgba(255,150,120,0) 100%);
+    mix-blend-mode: screen; opacity: 0; will-change: opacity;
+  }
+  .logo-glow {
+    border-radius: 50%;
+    background: radial-gradient(closest-side, rgba(255,196,130,.85), rgba(255,150,90,.38) 45%, rgba(255,150,90,0) 100%);
+    mix-blend-mode: screen; opacity: 0; will-change: opacity;
+  }
+  .qr-crop {
+    background-repeat: no-repeat;
+    opacity: 0; will-change: transform, opacity;
+  }
+  .qr-shadow {
+    border-radius: 2%;
+    background: radial-gradient(closest-side, rgba(0,0,0,.55), rgba(0,0,0,0));
+    opacity: 0; will-change: transform, opacity;
+  }
+  .qr-ring {
+    border: max(2px, .22vmin) solid var(--brush);
+    border-radius: 3%;
+    opacity: 0; will-change: transform, opacity;
+  }
+
+  .petal { left: 0; top: 0; will-change: transform, opacity; opacity: 0; }
+  .petal svg { display: block; width: 100%; height: 100%; }
+
+  .ripple {
+    border-radius: 50%;
+    background: radial-gradient(closest-side,
+      rgba(224,99,74,0) 84%, rgba(224,99,74,.9) 93%, rgba(224,99,74,0) 100%);
+    opacity: 0; will-change: transform, opacity;
+  }
+  .shadow { border-radius: 50%; opacity: 0; will-change: transform, opacity; }
+  .shadow.soft { background: radial-gradient(closest-side, rgba(0,0,0,1) 68%, rgba(0,0,0,.45) 84%, rgba(0,0,0,0) 100%); }
+  .shadow.contact { background: radial-gradient(closest-side, rgba(0,0,0,1) 92%, rgba(0,0,0,0) 100%); }
+
+  /* Plate: three rasterised SVG layers (blurred, sharp, sheen texture), animated with transform/opacity only */
+  .plate { position: absolute; opacity: 0; will-change: transform, opacity; pointer-events: none; }
+  .plate img { position: absolute; inset: 0; width: 100%; height: 100%; display: block; will-change: opacity; }
+  .sheen { position: absolute; inset: 0; overflow: hidden; border-radius: 50%; mix-blend-mode: screen; opacity: 0; }
+  .band, .tex {
+    position: absolute; inset: 0; width: 100%; height: 100%;
+    will-change: transform;
+  }
+  .band {
+    -webkit-mask-image: linear-gradient(90deg, transparent 40%, #000 48.5%, #000 51.5%, transparent 60%);
+            mask-image: linear-gradient(90deg, transparent 40%, #000 48.5%, #000 51.5%, transparent 60%);
+  }
+
+  #replay {
+    position: fixed; right: max(16px, 2.2vmin); bottom: max(16px, 2.2vmin);
+    display: inline-flex; align-items: center; gap: .5em;
+    padding: .7em 1.15em .7em .95em;
+    font: 600 max(13px, 1.5vmin)/1 Poppins, system-ui, sans-serif; letter-spacing: .02em;
+    color: var(--kraft); background: rgba(20,20,20,.72);
+    border: 1px solid rgba(239,220,192,.28); border-radius: 999px;
+    backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+    cursor: pointer; transition: background .2s, border-color .2s, transform .2s;
+  }
+  #replay:hover { background: rgba(224,99,74,.9); border-color: rgba(224,99,74,1); }
+  #replay:active { transform: scale(.96); }
+  #replay:focus-visible { outline: 2px solid var(--brush); outline-offset: 3px; }
+  #replay svg { width: 1.15em; height: 1.15em; }
+  body.record #replay, body.still #replay { display: none; }
+</style>
+</head>
+<body>
+<div id="stage" class="waiting">
+  <div id="mat">
+    <div class="art" id="art">
+      <img class="print" id="print" src="sashimi_placemat.png" alt="Sashimi Fusion Sushi placemat">
+      <div class="sun-glow" id="sunGlow"></div>
+      <div class="logo-glow" id="logoGlow"></div>
+      <div class="qr-shadow" id="qrShadow"></div>
+      <div class="qr-crop" id="qrCrop"></div>
+      <div class="qr-ring" id="qrRing"></div>
+      <div id="petals"></div>
+      <div class="ripple" id="ripple1"></div>
+      <div class="ripple" id="ripple2"></div>
+      <div class="shadow soft" id="shadowSoft"></div>
+      <div class="shadow contact" id="shadowContact"></div>
+    </div>
+    <div class="plate" id="plate">
+      <img id="plateBlur" alt="">
+      <img id="plateSharp" alt="">
+      <div class="sheen" id="sheen"><div class="band" id="band"><img class="tex" id="tex" alt=""></div></div>
+    </div>
+  </div>
+</div>
+<button id="replay" type="button" aria-label="Replay animation">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/></svg>
+  Replay
+</button>
+
+<script>
+// ---------------------------------------------------------------------------
+// Layout, as fractions of the placemat (measured on the 1660x1172 scan)
+// ---------------------------------------------------------------------------
+const MAT_RATIO = 1660 / 1172;
+const SUN  = { x: 0.506, y: 0.459, r: 0.262 };       // centre of the red sun; r is a fraction of mat width
+const PLATE_D = 0.46;                                 // plate outer diameter, fraction of mat width
+const PLATE_BOX = PLATE_D * 1000 / 880;               // the plate SVG draws an r=440 disc in a 1000 box (margin for blur)
+const LOGO = { x: 0.084, y: 0.135, d: 0.24 };         // glow centre + glow diameter (fraction of width)
+const QR   = { l: 0.852, t: 0.760, w: 0.148, h: 0.240 };
+
+// Timeline (seconds)
+const END = 4.5;          // last animated beat
+const DURATION = 6.0;     // length used by the video exporter (END + a still hold)
+
+// ---------------------------------------------------------------------------
+const $ = id => document.getElementById(id);
+const stage = $('stage'), mat = $('mat'), art = $('art');
+const els = {
+  sunGlow: $('sunGlow'), logoGlow: $('logoGlow'),
+  qrCrop: $('qrCrop'), qrShadow: $('qrShadow'), qrRing: $('qrRing'),
+  ripple1: $('ripple1'), ripple2: $('ripple2'),
+  shadowSoft: $('shadowSoft'), shadowContact: $('shadowContact'),
+  plate: $('plate'), plateBlur: $('plateBlur'), plateSharp: $('plateSharp'),
+  sheen: $('sheen'), band: $('band'), tex: $('tex'),
+};
+
+const params = new URLSearchParams(location.search);
+const RECORD = params.get('record') === '1' || params.has('record') && params.get('record') !== '0';
+const STILL = params.has('t') ? parseFloat(params.get('t')) || 0 : null;   // ?t=2.4 freezes on one frame
+const REDUCED = matchMedia('(prefers-reduced-motion: reduce)').matches;
+if (RECORD) document.body.classList.add('record');
+if (STILL !== null || REDUCED) document.body.classList.add('still');
+
+// ---------------------------------------------------------------------------
+// Granite surround: tiled speckle noise generated once
+// ---------------------------------------------------------------------------
+(function granite() {
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="360" height="360">
+    <filter id="a" x="0" y="0"><feTurbulence type="fractalNoise" baseFrequency=".75" numOctaves="2" seed="4" stitchTiles="stitch"/>
+      <feColorMatrix values="0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 11 -6.4"/></filter>
+    <filter id="b" x="0" y="0"><feTurbulence type="fractalNoise" baseFrequency=".55" numOctaves="2" seed="19" stitchTiles="stitch"/>
+      <feColorMatrix values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 9 -4.9"/></filter>
+    <filter id="c" x="0" y="0"><feTurbulence type="fractalNoise" baseFrequency=".035" numOctaves="3" seed="8" stitchTiles="stitch"/>
+      <feColorMatrix values="0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 .5 -.18"/></filter>
+    <rect width="100%" height="100%" filter="url(#c)" opacity=".10"/>
+    <rect width="100%" height="100%" filter="url(#b)" opacity=".55"/>
+    <rect width="100%" height="100%" filter="url(#a)" opacity=".16"/>
+  </svg>`;
+  const url = `url("data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}")`;
+  document.body.style.backgroundImage = getComputedStyle(document.body).backgroundImage + ', ' + url;
+})();
+
+// ---------------------------------------------------------------------------
+// Plate artwork (SVG, rasterised once as images)
+// viewBox 0..1000, centre 500, outer r 440, well r 273 (62% of the outer diameter)
+// ---------------------------------------------------------------------------
+const R = 440, RW = 273, RIM_MID = (R + RW) / 2, RIM_W = R - RW;
+
+function plateSVG(mode, blur = 0) {
+  const wave = `
+    <filter id="wave" filterUnits="userSpaceOnUse" x="0" y="0" width="1000" height="1000">
+      <feTurbulence type="fractalNoise" baseFrequency="0.0065" numOctaves="1" seed="3" result="w"/>
+      <feDisplacementMap in="SourceGraphic" in2="w" scale="11" xChannelSelector="R" yChannelSelector="G" result="d"/>
+      ${blur ? `<feGaussianBlur in="d" stdDeviation="${blur}"/>` : ''}
+    </filter>`;
+  // shared hammered height-map (same seed in both modes so facets line up)
+  const height = `
+      <feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="2" seed="11" result="n"/>
+      <feGaussianBlur in="n" stdDeviation="2.6" result="h"/>`;
+
+  if (mode === 'sheen') {
+    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000" width="1000" height="1000">
+      <defs>${wave}
+        <filter id="glint" filterUnits="userSpaceOnUse" x="0" y="0" width="1000" height="1000" color-interpolation-filters="sRGB">
+          ${height}
+          <feSpecularLighting in="h" surfaceScale="4.6" specularConstant="1.6" specularExponent="22" lighting-color="#fff4ea" result="s">
+            <feDistantLight azimuth="300" elevation="52"/>
+          </feSpecularLighting>
+          <feComposite in="s" in2="SourceAlpha" operator="in"/>
+        </filter>
+      </defs>
+      <g filter="url(#wave)">
+        <circle cx="500" cy="500" r="${RIM_MID}" fill="none" stroke="#fff" stroke-opacity=".07" stroke-width="${RIM_W}"/>
+        <circle cx="500" cy="500" r="${RIM_MID}" fill="none" stroke="#000" stroke-width="${RIM_W}" filter="url(#glint)"/>
+        <circle cx="500" cy="500" r="${R - 3}" fill="none" stroke="#fff" stroke-opacity=".55" stroke-width="4"/>
+        <circle cx="500" cy="500" r="${RW + 6}" fill="none" stroke="#fff" stroke-opacity=".35" stroke-width="3"/>
+      </g>
+    </svg>`;
+  }
+
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000" width="1000" height="1000">
+    <defs>${wave}
+      <radialGradient id="rim" cx="500" cy="500" r="${R}" gradientUnits="userSpaceOnUse">
+        <stop offset="0"    stop-color="#0d0d0d"/>
+        <stop offset=".62"  stop-color="#0b0b0b"/>
+        <stop offset=".645" stop-color="#030303"/>
+        <stop offset=".70"  stop-color="#111"/>
+        <stop offset=".85"  stop-color="#242424"/>
+        <stop offset=".955" stop-color="#121212"/>
+        <stop offset="1"    stop-color="#040404"/>
+      </radialGradient>
+      <radialGradient id="well" cx="455" cy="445" r="320" gradientUnits="userSpaceOnUse">
+        <stop offset="0" stop-color="#171717"/>
+        <stop offset=".7" stop-color="#0f0f0f"/>
+        <stop offset="1" stop-color="#0a0a0a"/>
+      </radialGradient>
+      <linearGradient id="lip" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0" stop-color="#6a6a6a"/><stop offset=".42" stop-color="#1c1c1c"/><stop offset="1" stop-color="#000"/>
+      </linearGradient>
+      <linearGradient id="wall" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0" stop-color="#000"/><stop offset=".55" stop-color="#121212"/><stop offset="1" stop-color="#4a4a4a"/>
+      </linearGradient>
+      <linearGradient id="broad" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0" stop-color="#fff" stop-opacity=".07"/>
+        <stop offset=".5" stop-color="#fff" stop-opacity="0"/>
+        <stop offset="1" stop-color="#000" stop-opacity=".35"/>
+      </linearGradient>
+      <clipPath id="disc"><circle cx="500" cy="500" r="${R}"/></clipPath>
+      <clipPath id="wellClip"><circle cx="500" cy="500" r="${RW}"/></clipPath>
+      <filter id="soft" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="7"/></filter>
+      <filter id="hammer" filterUnits="userSpaceOnUse" x="0" y="0" width="1000" height="1000" color-interpolation-filters="sRGB">
+        ${height}
+        <feDiffuseLighting in="h" surfaceScale="4.6" diffuseConstant="1" lighting-color="#fff" result="d">
+          <feDistantLight azimuth="225" elevation="35"/>
+        </feDiffuseLighting>
+        <feColorMatrix in="d" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  -1.15 0 0 0 .76" result="dark"/>
+        <feColorMatrix in="d" values="0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  .6 0 0 0 -.38" result="lite"/>
+        <feSpecularLighting in="h" surfaceScale="4.6" specularConstant=".62" specularExponent="28" lighting-color="#c3c8cc" result="s">
+          <feDistantLight azimuth="225" elevation="42"/>
+        </feSpecularLighting>
+        <feMerge result="m"><feMergeNode in="dark"/><feMergeNode in="lite"/><feMergeNode in="s"/></feMerge>
+        <feComposite in="m" in2="SourceAlpha" operator="in"/>
+      </filter>
+      <filter id="grain" filterUnits="userSpaceOnUse" x="0" y="0" width="1000" height="1000">
+        <feTurbulence type="fractalNoise" baseFrequency=".9" numOctaves="2" seed="5"/>
+        <feColorMatrix values="0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 1.5 -.66"/>
+      </filter>
+    </defs>
+    <g filter="url(#wave)">
+      <circle cx="500" cy="500" r="${R}" fill="url(#rim)"/>
+      <circle cx="500" cy="500" r="${RIM_MID}" fill="none" stroke="#000" stroke-width="${RIM_W}" filter="url(#hammer)"/>
+      <circle cx="500" cy="500" r="${RW}" fill="url(#well)"/>
+      <g clip-path="url(#wellClip)">
+        <circle cx="492" cy="490" r="${RW + 4}" fill="none" stroke="#000" stroke-opacity=".9" stroke-width="22" filter="url(#soft)"/>
+      </g>
+      <circle cx="500" cy="500" r="${RW + 2}" fill="none" stroke="url(#wall)" stroke-width="6"/>
+      <circle cx="500" cy="500" r="${R - 2.5}" fill="none" stroke="url(#lip)" stroke-width="5"/>
+      <circle cx="500" cy="500" r="${R}" fill="url(#broad)"/>
+      <rect width="1000" height="1000" filter="url(#grain)" clip-path="url(#disc)" opacity=".1"/>
+    </g>
+  </svg>`;
+}
+const svgURL = s => 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(s);
+
+// ---------------------------------------------------------------------------
+// Petals: dark charcoal teardrops drifting down-right, looping
+// ---------------------------------------------------------------------------
+const PETAL_PATH = 'M10 0 C15.5 7 19 14.5 18 21 C17 26.5 13.6 30 10 30 C6.4 30 3 26.5 2 21 C1 14.5 4.5 7 10 0 Z';
+// x0/y-phase fractions of the mat; size fraction of mat width; period = seconds per loop
+const PETALS = [
+  { x0: 0.02, ph: 0.10, s: 0.022, per: 11.0, tx: 0.34, sway: 0.020, sf: 0.70, r0:  20, spin:  24, ff: 1.10 },
+  { x0: 0.16, ph: 0.55, s: 0.017, per: 13.5, tx: 0.30, sway: 0.016, sf: 0.55, r0: 140, spin: -18, ff: 0.85 },
+  { x0: 0.30, ph: 0.28, s: 0.025, per: 10.0, tx: 0.38, sway: 0.024, sf: 0.62, r0:  75, spin:  30, ff: 1.30 },
+  { x0: 0.44, ph: 0.80, s: 0.019, per: 12.5, tx: 0.32, sway: 0.018, sf: 0.80, r0: 210, spin: -26, ff: 0.95 },
+  { x0: 0.58, ph: 0.40, s: 0.021, per: 14.0, tx: 0.28, sway: 0.014, sf: 0.50, r0: 300, spin:  20, ff: 1.20 },
+  { x0: 0.70, ph: 0.05, s: 0.016, per: 11.8, tx: 0.30, sway: 0.020, sf: 0.75, r0:  45, spin: -32, ff: 1.05 },
+  { x0: -0.10, ph: 0.68, s: 0.020, per: 12.8, tx: 0.40, sway: 0.022, sf: 0.66, r0: 170, spin:  22, ff: 0.90 },
+  { x0: 0.82, ph: 0.92, s: 0.023, per: 10.6, tx: 0.26, sway: 0.016, sf: 0.58, r0: 260, spin: -20, ff: 1.15 },
+  { x0: 0.08, ph: 0.35, s: 0.015, per: 15.0, tx: 0.36, sway: 0.012, sf: 0.90, r0:  95, spin:  36, ff: 1.40 },
+];
+const petalEls = PETALS.map(() => {
+  const d = document.createElement('div');
+  d.className = 'petal';
+  d.innerHTML = `<svg viewBox="0 0 20 30" aria-hidden="true"><path d="${PETAL_PATH}" fill="#3a3330"/><path d="M10 4 C11 12 11 20 10 27" stroke="#2a2422" stroke-width=".8" fill="none" opacity=".6"/></svg>`;
+  $('petals').appendChild(d);
+  return d;
+});
+
+// ---------------------------------------------------------------------------
+// Static placement (percentages of the mat)
+// ---------------------------------------------------------------------------
+function place(el, cxW, cyH, wW, hW = wW) {   // centre (fractions of W,H), size (fractions of W)
+  el.style.width = (wW * 100) + '%';
+  el.style.height = (hW * MAT_RATIO * 100) + '%';
+  el.style.left = ((cxW - wW / 2) * 100) + '%';
+  el.style.top = ((cyH - hW * MAT_RATIO / 2) * 100) + '%';
+}
+place(els.plate, SUN.x, SUN.y, PLATE_BOX);
+place(els.sunGlow, SUN.x, SUN.y, SUN.r * 2.0);
+place(els.logoGlow, LOGO.x, LOGO.y, LOGO.d);
+place(els.ripple1, SUN.x, SUN.y, PLATE_D);
+place(els.ripple2, SUN.x, SUN.y, PLATE_D);
+place(els.shadowSoft, SUN.x, SUN.y, PLATE_D * 1.14);
+place(els.shadowContact, SUN.x, SUN.y, PLATE_D * 1.035);
+for (const el of [els.qrCrop, els.qrShadow, els.qrRing]) {
+  el.style.left = QR.l * 100 + '%'; el.style.top = QR.t * 100 + '%';
+  el.style.width = QR.w * 100 + '%'; el.style.height = QR.h * 100 + '%';
+}
+els.qrCrop.style.backgroundImage = 'url(sashimi_placemat.png)';
+els.qrCrop.style.backgroundSize = `${100 / QR.w}% ${100 / QR.h}%`;
+els.qrCrop.style.backgroundPosition = `${QR.l / (1 - QR.w) * 100}% ${QR.t / (1 - QR.h) * 100}%`;
+
+let matW = 1, matH = 1, startDy = -1000;
+function measure() {
+  matW = mat.offsetWidth; matH = mat.offsetHeight;        // layout size, unaffected by transforms
+  const plateCentreY = (innerHeight - matH) / 2 + SUN.y * matH;
+  const boxH = PLATE_BOX * matW;
+  startDy = -(plateCentreY + 1.25 * boxH / 2 + 40);        // fully above the frame at scale 1.25
+  PETALS.forEach((p, i) => {
+    petalEls[i].style.width = p.s * matW + 'px';
+    petalEls[i].style.height = p.s * 1.5 * matW + 'px';
+  });
+}
+
+// ---------------------------------------------------------------------------
+// Easing helpers
+// ---------------------------------------------------------------------------
+const clamp = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
+const seg = (t, a, b) => clamp((t - a) / (b - a));
+const outQuad = x => 1 - (1 - x) * (1 - x);
+const outCubic = x => 1 - Math.pow(1 - x, 3);
+const inOutSine = x => -(Math.cos(Math.PI * x) - 1) / 2;
+const outBack = (x, c1 = 1.2) => { const c3 = c1 + 1; return 1 + c3 * Math.pow(x - 1, 3) + c1 * Math.pow(x - 1, 2); };
+const frac = x => x - Math.floor(x);
+const bump = x => (x <= 0 || x >= 1) ? 0 : Math.sin(Math.PI * x);
+
+// ---------------------------------------------------------------------------
+// render(t): the whole frame as a pure function of time
+// ---------------------------------------------------------------------------
+let lastT = -1;
+let petalClock = null;   // when set (reduced motion), petals freeze at this time
+
+function render(t) {
+  lastT = t;
+  const u = matW / 1000;   // 1 "design px" at a 1000px-wide mat
+
+  // 1. 0.0–0.6  placemat fades + scales in, sun brightens
+  const m = seg(t, 0, 0.6);
+  mat.style.opacity = outQuad(m);
+  mat.style.transform = `scale(${0.96 + 0.04 * outCubic(m)})`;
+  els.sunGlow.style.opacity = inOutSine(seg(t, 0.1, 0.9));
+
+  // 2. 0.6–1.0  petals fade in, then drift for good
+  const pf = inOutSine(seg(t, 0.6, 1.0));
+  const pt = petalClock ?? t;
+  PETALS.forEach((p, i) => {
+    const k = frac(p.ph + pt / p.per);                         // 0..1 through one loop
+    const x = (p.x0 + k * p.tx) * matW + Math.sin(pt * p.sf + i * 1.7) * p.sway * matW;
+    const y = (-0.08 + k * 1.16) * matH;
+    const rot = p.r0 + pt * p.spin + Math.sin(pt * p.sf * 1.3 + i) * 14;
+    const c = Math.cos(pt * p.ff * 2 + i * 2.1);
+    const flip = (c < 0 ? -1 : 1) * (0.3 + 0.7 * Math.abs(c));  // tumbling
+    const edge = Math.min(1, k * 12, (1 - k) * 12);              // soft at the loop seam (off-mat anyway)
+    const el = petalEls[i];
+    el.style.transform = `translate(${x}px, ${y}px) rotate(${rot}deg) scaleX(${flip})`;
+    el.style.opacity = 0.92 * pf * edge;
+  });
+
+  // 3. 1.0–2.4  plate descends: scale 1.25 -> 1 with ease-out-back, blur clears, shadow tightens
+  const d = seg(t, 1.0, 2.4);
+  const h = 1 - outBack(Math.pow(d, 2.2));                // "height": 1 high, 0 on the mat, <0 = settle overshoot
+  const hp = Math.max(h, 0);
+  let y = hp * startDy;
+  const s = 1 + 0.25 * h;
+  const settle = seg(t, 2.4, 2.78);                       // tiny 2px settle bounce
+  y -= 2 * u * Math.sin(Math.PI * settle) * (1 - settle * 0.4) * (settle > 0 && settle < 1 ? 1 : 0);
+  const rot = -6 * Math.pow(hp, 1.5);
+  els.plate.style.opacity = t < 1.0 ? 0 : outQuad(seg(t, 1.0, 1.2));
+  els.plate.style.transform = `translate3d(0, ${y}px, 0) rotate(${rot}deg) scale(${s})`;
+  els.plateSharp.style.opacity = inOutSine(seg(t, 1.2, 1.98));
+  els.plateBlur.style.opacity = 1 - seg(t, 1.95, 2.15);
+
+  const appear = seg(t, 1.0, 1.35);
+  els.shadowSoft.style.opacity = appear * (0.35 - 0.28 * Math.pow(hp, 0.7));
+  els.shadowSoft.style.transform =
+    `translate(${2 + 9 * hp}%, ${2.6 + 12 * hp}%) scale(${1 + 0.75 * hp + 0.02 * Math.min(h, 0)})`;
+  const c = outQuad(seg(t, 1.72, 2.02));
+  els.shadowContact.style.opacity = 0.5 * c;
+  els.shadowContact.style.transform = `translate(${0.6 + 2 * (1 - c)}%, ${0.8 + 2.6 * (1 - c)}%) scale(${1.07 - 0.07 * c})`;
+
+  // 4. ripple rings from under the plate (impact ~2.1s, rings run to 3.2s)
+  const r1 = seg(t, 2.1, 3.2), r2 = seg(t, 2.28, 3.2);
+  els.ripple1.style.transform = `scale(${0.97 + 0.78 * outCubic(r1)})`;
+  els.ripple1.style.opacity = (r1 > 0 && r1 < 1) ? 0.85 * Math.min(1, r1 * 10) * Math.pow(1 - r1, 1.3) : 0;
+  els.ripple2.style.transform = `scale(${0.97 + 0.48 * outCubic(r2)})`;
+  els.ripple2.style.opacity = (r2 > 0 && r2 < 1) ? 0.5 * Math.min(1, r2 * 10) * Math.pow(1 - r2, 1.5) : 0;
+
+  // 5. 3.2–4.5  specular sweep across the rim, logo glow, QR pulse
+  const sw = seg(t, 3.2, 4.25);
+  const bx = (-72 + 144 * inOutSine(sw)).toFixed(3);
+  els.sheen.style.opacity = (sw > 0 && sw < 1) ? 1 : 0;
+  els.band.style.transform = `rotate(30deg) translateX(${bx}%)`;
+  els.tex.style.transform = `translateX(${-bx}%) rotate(-30deg)`;   // keeps the texture fixed to the plate
+
+  const lg = seg(t, 3.3, 4.5);
+  els.logoGlow.style.opacity = 0.75 * Math.pow(bump(lg), 2);
+
+  const q = seg(t, 3.65, 4.45), qb = bump(q);
+  els.qrCrop.style.opacity = qb > 0 ? 1 : 0;
+  els.qrCrop.style.transform = `scale(${1 + 0.055 * qb})`;
+  els.qrShadow.style.opacity = 0.55 * qb;
+  els.qrShadow.style.transform = `translate(1.5%, 2.5%) scale(${1 + 0.1 * qb})`;
+  els.qrRing.style.opacity = (q > 0 && q < 1) ? 0.9 * Math.min(1, q * 6) * (1 - q) : 0;
+  els.qrRing.style.transform = `scale(${0.96 + 0.2 * outCubic(q)})`;
+}
+
+// ---------------------------------------------------------------------------
+// Playback
+// ---------------------------------------------------------------------------
+let t0 = 0, raf = 0;
+function frame(now) {
+  render((now - t0) / 1000);
+  raf = requestAnimationFrame(frame);
+}
+function play() {
+  if (STILL !== null || REDUCED) return;
+  cancelAnimationFrame(raf);
+  t0 = performance.now();
+  raf = requestAnimationFrame(frame);
+}
+
+$('replay').addEventListener('click', play);
+addEventListener('keydown', e => {
+  if (e.key === 'r' || e.key === 'R' || e.key === ' ' || e.key === 'Enter') { e.preventDefault(); play(); }
+});
+if (RECORD) addEventListener('pointerdown', play);
+addEventListener('resize', () => {
+  measure();
+  if (STILL !== null) render(STILL);
+  else if (REDUCED) render(END);
+});
+
+(async function init() {
+  els.plateSharp.src = svgURL(plateSVG('plate'));
+  els.plateBlur.src = svgURL(plateSVG('plate', 18));
+  els.tex.src = svgURL(plateSVG('sheen'));
+  const imgs = [$('print'), els.plateSharp, els.plateBlur, els.tex];
+  await Promise.all(imgs.map(i => i.decode().catch(() => {})));
+  if (document.fonts) await document.fonts.ready.catch(() => {});
+  measure();
+  if (STILL !== null) render(STILL);
+  else if (REDUCED) { petalClock = 2.0; render(END); }
+  else render(0);
+  stage.classList.remove('waiting');
+  play();
+})();
+</script>
+</body>
+</html>

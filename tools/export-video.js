@@ -2,6 +2,7 @@
 // Usage: node tools/export-video.js [fps=60] [out=exports/hot-pepper-intro.mp4] [page=index.html]
 // e.g.   node tools/export-video.js 30 exports/miran-gold.mp4 miran-gold/index.html
 // The page may carry extra URL options: miran-gold/index.html?nocaptions
+// Set SIZE=1080x1080 (WIDTHxHEIGHT) for a size other than 1080x1920.
 // Needs Node with the `playwright` package (Chromium) and ffmpeg on PATH.
 const { chromium } = require('playwright');
 const { spawn } = require('child_process');
@@ -18,7 +19,8 @@ const page_url = 'file://' + path.resolve(__dirname, '..', page_file) + '?t=0' +
   // behind a proxy, Chromium needs it passed explicitly to reach Google Fonts
   const proxy = process.env.HTTPS_PROXY || process.env.https_proxy;
   const browser = await chromium.launch(proxy ? { proxy: { server: proxy } } : {});
-  const page = await browser.newPage({ viewport: { width: 1080, height: 1920 }, deviceScaleFactor: 1 });
+  const [width, height] = (process.env.SIZE || '1080x1920').split('x').map(Number);
+  const page = await browser.newPage({ viewport: { width, height }, deviceScaleFactor: 1 });
   page.on('pageerror', e => console.error('page error:', e.message));
   await page.goto(page_url);
   await page.waitForFunction(() => !document.querySelector('#stage').classList.contains('waiting'));
