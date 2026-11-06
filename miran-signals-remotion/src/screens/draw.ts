@@ -12,7 +12,7 @@
 //   Miran alert before the news (take profit now), then "Protected" when the news hits.
 import {LEFT, Lang, NEWS, RIGHT, SCREEN_COPY, SIGNAL, TIMING, UPDATE} from '../data';
 import {clamp01, easeIn, easeInOut, easeOut, ramp, springAt} from '../lib/ease';
-import {chartRange, leftBalance, leftDanger, leftIsMiran, leftValue, price, rightValue} from '../lib/story';
+import {chartRange, leftDanger, leftIsMiran, leftValue, price, rightValue} from '../lib/story';
 import {MARKET} from '../data';
 import {C, H, IconKind, W, emblem, fit, goldGradient, icon, measure, money, rr, signedMoney, softShadow, tagPill, text} from './kit';
 
@@ -748,7 +748,9 @@ const drawMiranRight = (ctx: CanvasRenderingContext2D, t: number) => {
 const drawMiranLeft = (ctx: CanvasRenderingContext2D, t: number) => {
   background(ctx, 'miran', 0);
   header(ctx, 'miran');
-  balanceBlock(ctx, leftBalance(t), C.text, null, 0);
+  // No balance here (it was wiped out): the screen says what changes from now on.
+  say(ctx, SC().fromNow, sx(), 146, {weight: 500, size: 17, color: C.meta});
+  say(ctx, SC().withPlan, sx(), 210, {weight: 700, size: 52, color: goldGradient(ctx, 40, 0, W - 40, 0), maxW: W - 2 * PAD});
   chart(ctx, t, GOLD, [], GOLD);
   const k = tr(t, (TIMING.flipStart + TIMING.flipEnd) / 2 + 4);
   withT(ctx, k, () => {

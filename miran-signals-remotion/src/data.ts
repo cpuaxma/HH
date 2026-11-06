@@ -71,15 +71,15 @@ export const MARKET = {
     [792, 4008.5],
     [864, 4008.9],
     [910, 4009.1],
-    [914, 4006.5],
-    [922, 3988.0],
-    [931, 3972.0],
-    [950, 3974.6],
-    [996, 3972.8],
-    [1080, 3975.0],
-    [1200, 3976.6],
-    [1498, 3979.0],
-    [1930, 3980.0],
+    [914, 4004.0],
+    [922, 3950.0],
+    [931, 3898.0],
+    [950, 3902.5],
+    [996, 3900.0],
+    [1080, 3903.0],
+    [1200, 3905.0],
+    [1498, 3908.0],
+    [1930, 3909.0],
   ] as [number, number][],
   /** Tiny live ticks on top of the curve ($). */
   tickNoise: 0.16,
@@ -104,13 +104,13 @@ export const LEFT = {
   /** Frame "Buy" is tapped, and the frame the trade opens. */
   tapAt: 269,
   openedAt: 278,
-  /** The news candle takes it to 3,972 with no stop loss: 1 × 100 × −$30 = −$3,000. */
-  closePrice: 3972.0,
-  pnl: -3000,
+  /** The news candle takes it to 3,902 with no stop loss: 1 × 100 × −$100 = −$10,000 (all of it). */
+  closePrice: 3902.0,
+  pnl: -10000,
   marginCallAt: 948,
   startBalance: 10000,
-  finalBalance: 7000,
-  finalChangePct: -30,
+  finalBalance: 0,
+  finalChangePct: -100,
 };
 
 // ─── RIGHT: trading with Miran Gold ──────────────────────────────────────────
@@ -165,6 +165,8 @@ type Copy = {
   /** Scoreboard labels under the phones. */
   labelLeft: string;
   labelRight: string;
+  /** Under the end-card wordmark: what Miran Gold shares. */
+  tagline: string;
   cta: string;
   disclaimer: string;
   illustrative: string;
@@ -174,16 +176,17 @@ export const COPY: Record<Lang, Copy> = {
   ar: {
     hookA: {lines: ['متداولان. نفس الذهب.'], gold: ['الذهب']},
     hookB: {lines: ['نتيجتان مختلفتان.'], gold: ['مختلفتان']},
-    entry: {lines: ['كلاهما اشترى الذهب.'], gold: ['الذهب']},
+    entry: {lines: ['الأول اشترى وحده… والثاني نسخ إشارة.'], gold: ['نسخ']},
     rise: {lines: ['الذهب يرتفع… وكلاهما يربح.'], gold: ['يربح']},
     warning: {lines: ['Miran Gold نبّهت: خبر قوي قادم.'], gold: ['Miran Gold']},
     exit: {lines: ['فخرج بربحه قبل الخبر.'], gold: ['بربحه']},
     news: {lines: ['ثم صدر الخبر… وهبط الذهب.'], red: ['الخبر', 'وهبط']},
     payoffA: {lines: ['الفرق ليس في الحظ… بل في الخطة.'], gold: ['الخطة']},
-    payoffB: {lines: ['الخطة: وقف خسارة + تنبيه قبل الخبر.'], gold: ['الخطة']},
+    payoffB: {lines: ['الخطة: إشارة للنسخ + تنبيه قبل الخبر.'], gold: ['الخطة']},
     flip: {lines: ['تداول بخطة مع Miran Gold.'], gold: ['Miran Gold']},
     labelLeft: 'بلا خطة',
     labelRight: 'مع Miran Gold',
+    tagline: 'إشارات للنسخ • تنبيهات الأخبار',
     cta: 'انضم إلى إشارات Miran Gold',
     disclaimer: 'التداول ينطوي على مخاطر عالية وقد تخسر رأس مالك. النتائج المعروضة توضيحية وليست ضماناً لأرباح مستقبلية.',
     illustrative: 'توضيحي',
@@ -191,16 +194,17 @@ export const COPY: Record<Lang, Copy> = {
   en: {
     hookA: {lines: ['Same gold. Same day.'], gold: ['gold']},
     hookB: {lines: ['Two different results.'], gold: ['different']},
-    entry: {lines: ['Both bought gold.'], gold: ['gold']},
+    entry: {lines: ['One bought alone… one copied a signal.'], gold: ['copied']},
     rise: {lines: ['Gold rises… both are winning.'], gold: ['winning']},
     warning: {lines: ['Miran Gold: big news coming.'], gold: ['Miran Gold']},
     exit: {lines: ['So it took the profit first.'], gold: ['profit']},
     news: {lines: ['Then the news hit.'], red: ['news']},
     payoffA: {lines: ["It isn't luck… it's the plan."], gold: ['plan']},
-    payoffB: {lines: ['The plan: a stop loss + a heads-up.'], gold: ['plan']},
+    payoffB: {lines: ['The plan: a signal to copy + a news alert.'], gold: ['plan']},
     flip: {lines: ['Trade with a plan with Miran Gold.'], gold: ['Miran Gold']},
     labelLeft: 'No plan',
     labelRight: 'With Miran Gold',
+    tagline: 'Copy signals • News alerts',
     cta: 'Join Miran Gold signals',
     disclaimer: 'Trading involves high risk and you may lose your capital. Results shown are illustrative and not a guarantee of future profits.',
     illustrative: 'Illustrative',
@@ -245,6 +249,9 @@ export type ScreenCopy = {
   newsReleased: string;
   connected: string;
   nextSignal: string;
+  /** After the flip, in place of the balance: "from now on" / "with a plan". */
+  fromNow: string;
+  withPlan: string;
   illustrative: string;
 };
 
@@ -264,18 +271,18 @@ export const SCREEN_COPY: Record<Lang, ScreenCopy> = {
     noStopBody: 'لا حدّ للخسارة',
     newsBanner: 'خبر اقتصادي قوي',
     newsBody: 'صدر الآن',
-    marginCall: 'خسارة كبيرة',
-    closedLoss: 'خسرت 30% من رصيدك',
+    marginCall: 'خسارة كاملة',
+    closedLoss: 'خسرت رصيدك بالكامل',
     brand: 'Miran Gold',
     waiting: 'بانتظار إشارة Miran Gold',
-    signalTitle: 'إشارة Miran Gold',
+    signalTitle: 'إشارة للنسخ',
     signalHead: 'شراء الذهب',
     withStop: 'مع وقف خسارة',
     smallRisk: 'مخاطرة صغيرة',
     entry: 'الدخول',
     target: 'الهدف',
     risk: 'المخاطرة',
-    executed: 'تم التنفيذ',
+    executed: 'تم النسخ',
     updateTitle: 'تنبيه من Miran Gold',
     updateBody: 'خبر قوي بعد 10 دقائق',
     updateAction: 'خذ الربح الآن',
@@ -285,7 +292,9 @@ export const SCREEN_COPY: Record<Lang, ScreenCopy> = {
     protectedBody: 'ربحك محفوظ',
     newsReleased: 'صدر الخبر',
     connected: 'تم الربط مع Miran Gold',
-    nextSignal: 'الصفقة القادمة: بخطة ووقف خسارة',
+    nextSignal: 'إشارات للنسخ + تنبيهات الأخبار',
+    fromNow: 'من الآن',
+    withPlan: 'تداول بخطة',
     illustrative: 'توضيحي',
   },
   en: {
@@ -303,18 +312,18 @@ export const SCREEN_COPY: Record<Lang, ScreenCopy> = {
     noStopBody: 'No limit on the loss',
     newsBanner: 'Big economic news',
     newsBody: 'Released just now',
-    marginCall: 'A big loss',
-    closedLoss: 'You lost 30% of your balance',
+    marginCall: 'Wiped out',
+    closedLoss: 'You lost your whole balance',
     brand: 'Miran Gold',
     waiting: 'Waiting for a Miran Gold signal',
-    signalTitle: 'Miran Gold signal',
+    signalTitle: 'Copy signal',
     signalHead: 'Buy gold',
     withStop: 'Stop loss set',
     smallRisk: 'Small risk',
     entry: 'Entry',
     target: 'Target',
     risk: 'Risk',
-    executed: 'Executed',
+    executed: 'Copied',
     updateTitle: 'Miran Gold alert',
     updateBody: 'Big news in 10 min',
     updateAction: 'Take profit now',
@@ -324,7 +333,9 @@ export const SCREEN_COPY: Record<Lang, ScreenCopy> = {
     protectedBody: 'Profit kept',
     newsReleased: 'News released',
     connected: 'Connected to Miran Gold',
-    nextSignal: 'Next trade: with a plan and a stop loss',
+    nextSignal: 'Copy signals + news alerts',
+    fromNow: 'From now on',
+    withPlan: 'With a plan',
     illustrative: 'Illustrative',
   },
 };

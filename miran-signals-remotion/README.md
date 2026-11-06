@@ -2,13 +2,14 @@
 
 A 32-second Arabic reel (32.2s: 1080×1920 and 1080×1350, 60fps, 1930 frames) built in Remotion with `@remotion/three` (React Three Fiber). Two iPhone-style 3D phones in a navy studio make **the same gold trade on the same day**, and the same news candle hits both:
 
-- **Left «بلا خطة»** (no plan). Buys gold with **no stop loss** («لا حدّ للخسارة», no limit on the loss) and no alerts. It buys 1 lot. Its balance climbs to about $10,700 while gold rises, close to the right's. Then the news candle drops gold $37, the screen floods red and the balance crashes: **«خسارة كبيرة» −$3,000, $10,000 → $7,000 (−30%)**.
-- **Right «مع Miran Gold»** (with Miran Gold). A Miran signal: buy gold, **with a stop loss, small risk (1%)**. Before the news, a **Miran Gold alert** (big news in 10 minutes: take profit now) closes the trade at **+$140**. When the news hits it is **protected: $10,000 → $10,140 (+1.4%)**.
-- Then the left phone flips and connects to Miran Gold. Its $7,000 stays: there's no magic recovery.
+- **Left «بلا خطة»** (no plan). Buys gold with **no stop loss** («لا حدّ للخسارة», no limit on the loss) and no alerts. It buys 1 lot. Its balance climbs to about $10,700 while gold rises, close to the right's. Then the news candle drops gold about $107, the screen floods red and the account is wiped out: **«خسارة كاملة» −$10,000, $10,000 → $0 (−100%)**.
+- **Right «مع Miran Gold»** (with Miran Gold). It copies a Miran Gold signal («إشارة للنسخ», then «تم النسخ»): buy gold, **with a stop loss, small risk (1%)**. Before the news, a **Miran Gold alert** (big news in 10 minutes: take profit now) closes the trade at **+$140**. When the news hits it is **protected: $10,000 → $10,140 (+1.4%)**.
+- Then the left phone flips and connects to Miran Gold: «من الآن: تداول بخطة», «إشارات للنسخ + تنبيهات الأخبار». It shows no balance (it was wiped out, and there's no magic recovery).
+- The end card says what Miran Gold shares: «إشارات للنسخ • تنبيهات الأخبار».
 
 Big scoreboards under the phones (✕ «بلا خطة» / ✓ «مع Miran Gold» with the live account value) are on screen for the whole story, so it reads even without looking at the screens.
 
-Written for the average viewer: no trading jargon on screen (no lots, leverage, price levels or "margin call"), one number per phone, and a caption for every step, ending on the one thing to learn: «الخطة: وقف خسارة + تنبيه قبل الخبر». The brand is always written in English, «Miran Gold»; everything else is Arabic.
+Written for the average viewer: no trading jargon on screen (no lots, leverage, price levels or "margin call"), one number per phone, and a caption for every step, ending on the one thing to learn: «الخطة: إشارة للنسخ + تنبيه قبل الخبر». The brand is always written in English, «Miran Gold»; everything else is Arabic.
 
 The trading app, the news event and every number are **fictional and illustrative**. Every number carries a «توضيحي» (illustrative) label.
 
@@ -30,19 +31,22 @@ Final settings: H.264, CRF 16, yuv420p, preset slow, 60fps. They're on the rende
 
 ## Your voiceover
 
-There's no voiceover in the mix. A suggested script, timed to the beats:
+There's no voiceover in the mix. A suggested script, timed to the beats (on-screen captions are in `COPY.ar`; the narration says a little more):
 
 | Time | Frames | Line |
 |---|---|---|
-| 0.2–3.4s | 12–206 | متداولان، نفس الذهب… نتيجتان مختلفتان. |
-| 3.9–6.6s | 235–396 | كلاهما اشترى الذهب. |
-| 6.9–9.6s | 413–576 | الذهب يرتفع… وكلاهما يربح. |
-| 10.0–11.8s | 600–708 | Miran Gold نبّهت: خبر قوي قادم. |
-| 12.0–13.9s | 720–833 | فخرج بربحه قبل الخبر. |
-| 14.2–16.6s | 854–994 | ثم صدر الخبر… وهبط الذهب. |
+| 0.2–3.6s | 12–216 | متداولان… نفس الذهب، ونتيجتان مختلفتان تماماً. |
+| 3.9–6.8s | 235–408 | الأول اشترى وحده… والثاني نسخ إشارة Miran Gold. |
+| 6.9–9.9s | 413–594 | الذهب يرتفع، والحسابان في الربح… حتى الآن. |
+| 10.0–12.0s | 600–720 | ثم تنبيه من Miran Gold: خبر قوي قادم. |
+| 12.1–14.1s | 726–846 | فخرج الثاني بربحه قبل الخبر. |
+| 14.2–16.9s | 854–1014 | صدر الخبر… وخسر الأول كل رصيده. |
 | 17.0–19.2s | 1020–1150 | الفرق ليس في الحظ… بل في الخطة. |
-| 19.3–22.0s | 1159–1318 | الخطة: وقف خسارة + تنبيه قبل الخبر. |
-| 24.8–27.0s | 1486–1618 | تداول بخطة مع Miran Gold. |
+| 19.3–22.0s | 1159–1318 | إشارات تنسخها… وتنبيهات قبل الأخبار. |
+| 22.2–24.0s | 1332–1440 | فماذا لو تداول الأول بخطة؟ |
+| 24.8–27.0s | 1486–1618 | تداول بخطة… مع Miran Gold. |
+| 27.4–29.0s | 1644–1740 | انضم إلى إشارات Miran Gold. |
+| 29.2–32.0s | 1752–1920 | التداول ينطوي على مخاطر عالية، والنتائج المعروضة توضيحية. |
 
 The end card runs from 27.2s to 32.2s. If your takes run longer or shorter, change the timings in `TIMING` (below) and re-render: captions, screens, sound and camera all follow.
 

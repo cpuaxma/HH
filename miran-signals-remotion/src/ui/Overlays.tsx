@@ -418,7 +418,22 @@ const EndCard: React.FC<{fmt: FormatId; lang: Lang}> = ({fmt, lang}) => {
         >
           Miran Gold
         </div>
-        <div style={{position: 'relative', marginTop: vertical ? 44 : 26}}>
+        <div
+          dir={rtl ? 'rtl' : 'ltr'}
+          style={{
+            marginTop: vertical ? 4 : 0,
+            fontSize: vertical ? 38 : 32,
+            fontWeight: 600,
+            lineHeight: 1.4,
+            color: '#E9E4D8',
+            opacity: clamp01(word * 2) * 0.92,
+            transform: `translateY(${(1 - word) * 30}px)`,
+            whiteSpace: 'nowrap',
+          }}
+        >
+          {c.tagline}
+        </div>
+        <div style={{position: 'relative', marginTop: vertical ? 40 : 22}}>
           <div
             style={{
               position: 'absolute',
