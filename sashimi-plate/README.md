@@ -1,6 +1,6 @@
 # Sashimi Fusion Sushi — plate drop
 
-`index.html` animates a black hammered-ceramic plate being set onto the Sashimi placemat. It is one self-contained file with inline CSS and JS. Apart from the Poppins font on the Replay button, the only asset it loads is `sashimi_placemat.png`, the flat 1660×1172 scan, which must stay next to it.
+`index.html` animates a black hammered-ceramic plate being set onto the Sashimi placemat. It is one self-contained file with inline CSS and JS. Apart from the Poppins font (end card and Replay button), the only asset it loads is `sashimi_placemat.png`, the flat 1660×1172 scan, which must stay next to it.
 
 It is a 12-second seamless loop. The first frame (the empty mat) is also the frame after the last one:
 
@@ -34,7 +34,7 @@ The constants at the top of the script control the layout. Positions are fractio
 - `STICKS` and `STICK_LEN`: where each chopstick lands, its angle, start time, where it falls from, and its spin, tilt and slide.
 - The end-card wording is plain HTML in `#card`.
 
-`render(t)` draws each frame as a pure function of time, so the timings are the `seg(t, start, end)` calls inside it. It animates only `transform` and `opacity`. The plate is SVG built with radial gradients, `feTurbulence` + `feDiffuseLighting`/`feSpecularLighting` for the hammered rim, and `feDisplacementMap` for the wavy edge. It is rasterised once into three images: sharp, blurred and the sheen texture.
+`render(t)` draws each frame as a pure function of time, so the timings are the `seg(t, start, end)` calls inside it. It animates only `transform` and `opacity`. The plate is SVG built with radial gradients, `feTurbulence` + `feDiffuseLighting`/`feSpecularLighting` for the hammered rim, and `feDisplacementMap` for the wavy edge. It is rasterised once into four images: sharp, blurred, underside and the sheen texture. The chopsticks and their shadows are SVG images too, and their fall is worked out in `stickPose()`.
 
 ## Exporting MP4s
 
