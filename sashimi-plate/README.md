@@ -39,3 +39,16 @@ SIZE=1080x1080 node tools/export-video.js 60 sashimi-plate/exports/sashimi-plate
 ```
 
 Each command renders a 6-second clip (4.5s of animation plus a 1.5s hold) frame by frame, so no frames are dropped. `exports/` is git-ignored.
+
+### Higher quality
+
+`SCALE=2` renders at double pixel density, so a 1080×1920 layout becomes a 2160×3840 (4K) video:
+
+```
+SCALE=2 node tools/export-video.js 60 sashimi-plate/exports/sashimi-plate-story-4k.mp4 'sashimi-plate/index.html?record=1'
+SIZE=1080x1080 SCALE=2 node tools/export-video.js 60 sashimi-plate/exports/sashimi-plate-square-4k.mp4 'sashimi-plate/index.html?record=1'
+```
+
+Add `OUT=1080x1920` (or `OUT=1080x1080`) to downsample the 2x render to 1080p while encoding. This supersampled 1080p is noticeably sharper on the plate texture and edges than a plain 1x render, and it is the best file to upload to Instagram and TikTok, which re-compress anything above 1080p.
+
+The placemat scan is 1660px wide, and at 4K it fills about 1990px, so the print itself is slightly upscaled. Swap in a higher-resolution scan of the placemat (about 4000px wide or more) under the same file name to make the 4K master fully sharp. Nothing else needs to change.
