@@ -1,6 +1,6 @@
 # Sashimi Fusion Sushi — counter banner animation
 
-`index.html` animates the Sashimi Fusion Sushi counter banner. It is one self-contained file with inline CSS and JS. The only things it loads are the Poppins font (for the Replay button) and `sashimi_banner.png`, the flat 2374×326 front-on crop of the banner. **Put `sashimi_banner.png` next to `index.html`.** If the file is missing, the page shows a short notice instead.
+`index.html` animates the Sashimi Fusion Sushi counter banner. It is one self-contained file with inline CSS and JS. The only things it loads are the Poppins font (for the Replay button) and `sashimi_banner.png`, the flat 2374×326 front-on crop of the banner, which sits next to it. If that file is missing, the page shows a short notice instead.
 
 Nothing is redrawn. Every moving part is a crop of the same PNG, plus a few coded overlays:
 
@@ -33,20 +33,20 @@ Nothing is redrawn. Every moving part is a crop of the same PNG, plus a few code
 
 The reel and post frames scale to fit the window. Options can be combined, for example `?format=post&record=1`.
 
-## Tuning the layout to the real PNG
+## Layout
 
-The positions in `REGIONS`, at the top of the script, are fractions of the banner's width (`x`, `w`) and height (`y`, `h`). They follow the brief's layout map. The glasses and earring boxes are estimates. Open `index.html?debug=1&t=8` and adjust any box that misses its target:
+The positions at the top of the script were measured on `sashimi_banner.png`. They are fractions of the banner's width (`x`, `w`) and height (`y`, `h`), so they still hold if the PNG is swapped for a sharper copy of the same artwork. Open `index.html?debug=1&t=8` to see the `REGIONS` boxes drawn over the banner. If you replace the artwork, re-measure them:
 
 - `charL` / `charR`: the strips that slide in. Between them, the original PNG is used.
 - `foodL` / `foodR`: the pizza slice and the burger. `FOOD_ORIGIN` sets the squash pivot, which should be the side nearest the mouth.
-- `letters`: "SASHIMI", split into 7 equal columns for the write-on. `tail` is the fish tail, and `TAIL_ORIGIN` is the point it pivots from.
-- `tagline`: "FUSION SUSHI", split into 12 columns for the letter-spacing effect.
+- `letters`: the overall "SASHIMI" box. The write-on uses `LETTER_X` (the column edges of S·A·S·H·i·m·i) and `LETTER_Y` (each letter's top and bottom; the first S and the A reach lower than the rest). `tail` is the fish tail, and `TAIL_ORIGIN` is the point it pivots from.
+- `tagline`: "FUSION SUSHI". `TAG_CUTS` holds the 11 letter columns and `TAG_SPACE` the slot of the word gap, for the letter-spacing effect.
 - `patch`: the area where the logo is painted out before it writes on. It must cover the logo and the tagline.
 - `glassesL/R` and `hoopL/R`: where the glints run.
 
 Other settings: `T` holds the timeline in seconds, `EASE` the curves, and `STROKE_ANGLE` the slant of the brush strokes. `PETAL_POPS` sets where the petals burst from.
 
-The colour keys assume the banner's palette: an off-white logo (#f3eee6) on red (#e8343c / #d62a33) and charcoal (#2a2a33). If parts of the background show up inside the logo layers, or the logo leaves a ghost while it is painted out, adjust the `k-white` and `clean` filters in `buildFilters()`.
+The photographed print reads lighter than the brand colours: coral red #f7646e, muted rose #ab5265 and slate navy #40465d, against the brand's #e8343c and #2a2a33. `PRINT` holds these sampled colours. The coded brush strokes, the starting backdrop and the ink splash use them, so the overlays match the print. The colour keys in `buildFilters()` are tuned to the same print. Its logo's blue channel is at least about 0.63, and the background's stays below about 0.48. If parts of the background show up inside the logo layers, or the logo leaves a ghost while it is painted out, adjust the `k-white` and `clean` thresholds.
 
 ## How it runs
 

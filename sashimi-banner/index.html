@@ -36,6 +36,13 @@
   .crop { position: absolute; background-repeat: no-repeat; }
   .layer { will-change: transform; }
 
+  .edgefade {
+    -webkit-mask-image: linear-gradient(90deg, transparent, #000 5%, #000 95%, transparent);
+            mask-image: linear-gradient(90deg, transparent, #000 5%, #000 95%, transparent);
+    -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat;
+    -webkit-mask-position: 50% 0; mask-position: 50% 0;
+    -webkit-mask-size: 100% 100%; mask-size: 100% 100%;
+  }
   #drift {
     opacity: 0; will-change: opacity; mix-blend-mode: multiply;
     -webkit-mask-image: linear-gradient(90deg, transparent, #000 14%, #000 86%, transparent);
@@ -69,7 +76,12 @@
     -webkit-mask-size: 100% 100%; mask-size: 100% 100%;
   }
   .breathe { position: absolute; inset: 0; will-change: transform; }
-  .food { will-change: transform; }
+  /* soft edge, so the squashed crop blends into the identical pixels underneath */
+  .food {
+    will-change: transform;
+    -webkit-mask-image: radial-gradient(closest-side, #000 62%, transparent 100%);
+            mask-image: radial-gradient(closest-side, #000 62%, transparent 100%);
+  }
 
   .petal, .splash { position: absolute; left: 0; top: 0; opacity: 0; will-change: transform, opacity; pointer-events: none; display: block; }
 
@@ -128,22 +140,31 @@
 // ===========================================================================
 const SRC = 'sashimi_banner.png';
 const REGIONS = {
-  charL:    { x: 0.000, y: 0.00, w: 0.180, h: 1.00 },   // left character (and the background behind her)
+  charL:    { x: 0.000, y: 0.00, w: 0.190, h: 1.00 },   // left character (and the background behind her)
   charR:    { x: 0.780, y: 0.00, w: 0.220, h: 1.00 },   // right character, out to the banner's right edge
-  foodL:    { x: 0.100, y: 0.30, w: 0.070, h: 0.45 },   // sushi pizza slice
-  foodR:    { x: 0.790, y: 0.45, w: 0.070, h: 0.35 },   // sushi burger
-  letters:  { x: 0.330, y: 0.10, w: 0.230, h: 0.65 },   // "SASHIMI", split into 7 equal columns
-  tail:     { x: 0.560, y: 0.10, w: 0.040, h: 0.65 },   // fish tail
-  tagline:  { x: 0.420, y: 0.78, w: 0.120, h: 0.14 },   // "FUSION SUSHI", split into 12 equal columns
-  patch:    { x: 0.320, y: 0.06, w: 0.290, h: 0.90 },   // area where the logo is painted out before it writes on
-  glassesL: { x: 0.050, y: 0.20, w: 0.065, h: 0.20 },
-  hoopL:    { x: 0.025, y: 0.36, w: 0.035, h: 0.16 },
-  glassesR: { x: 0.855, y: 0.20, w: 0.065, h: 0.20 },
-  hoopR:    { x: 0.905, y: 0.36, w: 0.035, h: 0.16 },
+  foodL:    { x: 0.105, y: 0.41, w: 0.065, h: 0.38 },   // sushi pizza slice
+  foodR:    { x: 0.806, y: 0.45, w: 0.058, h: 0.37 },   // sushi burger
+  letters:  { x: 0.325, y: 0.04, w: 0.230, h: 0.81 },   // "SASHIMI" (overall box; columns in LETTERS below)
+  tail:     { x: 0.556, y: 0.12, w: 0.044, h: 0.68 },   // fish tail
+  tagline:  { x: 0.420, y: 0.775, w: 0.118, h: 0.15 },  // "FUSION SUSHI" (columns in TAG_CUTS below)
+  patch:    { x: 0.320, y: 0.02, w: 0.284, h: 0.93 },   // area where the logo is painted out before it writes on
+  glassesL: { x: 0.057, y: 0.11, w: 0.067, h: 0.31 },
+  hoopL:    { x: 0.059, y: 0.47, w: 0.028, h: 0.21 },
+  glassesR: { x: 0.838, y: 0.16, w: 0.076, h: 0.31 },
+  hoopR:    { x: 0.882, y: 0.52, w: 0.028, h: 0.22 },
 };
-const FOOD_ORIGIN = { L: '0% 45%', R: '100% 45%' };    // the side of the food nearest each mouth
-const TAIL_ORIGIN = '0% 55%';                          // where the tail joins the lettering
-const LETTER_COUNT = 7, TAG_COUNT = 12;
+// "SASHIMI" letter columns, measured on the PNG: x edges (fractions of width), and each letter's
+// top / bottom. The first S and the A reach higher and lower than the rest.
+const LETTER_X = [0.3252, 0.3534, 0.3892, 0.4212, 0.4650, 0.4844, 0.5333, 0.5552];
+const LETTER_Y = [[.04, .85], [.04, .85], [.10, .78], [.10, .78], [.10, .78], [.10, .78], [.10, .78]];
+// "FUSION SUSHI" letter columns (11 letters; TAG_SPACE is the slot of the word gap)
+const TAG_CUTS = [0.4204, 0.4313, 0.4425, 0.4530, 0.4577, 0.4705, 0.4844, 0.4973, 0.5091, 0.5198, 0.5316, 0.5379];
+const TAG_SPACE = 6;
+// Colours of the coded strokes, start backdrop and splash, sampled from the PNG. The printed banner
+// reads lighter than the brand values (#e8343c / #2a2a33), so these keep the overlays matching it.
+const PRINT = { red: '#f7646e', red2: '#e8545f', deep: '#c44a5c', navy: '#40465d', ink: '#a8364a' };
+const FOOD_ORIGIN = { L: '5% 15%', R: '95% 12%' };     // the corner of the food at each mouth
+const TAIL_ORIGIN = '0% 55%';                          // where the tail meets the lettering
 const PETAL_POPS = { L: { x: 0.165, y: 0.28, dir: 1 }, R: { x: 0.805, y: 0.28, dir: -1 } };
 
 const EASE = {
@@ -217,7 +238,7 @@ function cropSVG(r, filter, parent, rel, cls = '') {
 
 // ---------------------------------------------------------------------------
 // Filters. Colour keys work because the logo is off-white and the background is red / charcoal.
-//   white: alpha from the blue channel (off-white ~0.9, red / charcoal / gold < 0.3)
+//   white: alpha from the blue channel (logo >= ~0.63; the printed red / navy background stays below ~0.48)
 //   red:   alpha from R - G (heart glasses), output white
 //   gold:  alpha from G - B (hoop earrings), output white
 //   clean: paints the logo out (normalised-convolution fill from the surrounding strokes)
@@ -227,26 +248,28 @@ function buildFilters() {
   const P = px(REGIONS.patch);
   const patch = `filterUnits="userSpaceOnUse" x="${P.x}" y="${P.y}" width="${P.w}" height="${P.h}" color-interpolation-filters="sRGB"`;
   const fill = s => `<feGaussianBlur in="bg" stdDeviation="${s}"/><feColorMatrix values="1 0 0 0 0 0 1 0 0 0 0 0 1 0 0 0 0 0 4 0" result="f${s}"/>`;
+  // Paint the logo out: keep pixels whose blue channel is below the logo's (eroded a few px so the
+  // soft photo edge goes too), then fill the holes from blurred copies of what is left
+  const clean = `
+      <feColorMatrix in="SourceGraphic" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 -12 0 6.7" result="m0"/>
+      <feGaussianBlur in="m0" stdDeviation="4"/>
+      <feComponentTransfer result="m"><feFuncA type="linear" slope="4" intercept="-3"/></feComponentTransfer>
+      <feComposite in="SourceGraphic" in2="m" operator="in" result="bg"/>
+      ${fill(5)}${fill(16)}${fill(40)}
+      <feFlood flood-color="${PRINT.navy}" result="c"/>
+      <feMerge result="clean"><feMergeNode in="c"/><feMergeNode in="f40"/><feMergeNode in="f16"/><feMergeNode in="f5"/><feMergeNode in="bg"/></feMerge>`;
   $('defs').querySelector('defs').innerHTML = `
-    <filter id="k-white" ${all}><feColorMatrix values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 5.5 0 -2.6"/></filter>
+    <filter id="k-white" ${all}><feColorMatrix values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 6 0 -2.95"/></filter>
     <filter id="k-glow" ${all}>
-      <feColorMatrix values="0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 5.5 0 -2.6" result="k"/>
+      <feColorMatrix values="0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 6 0 -2.95" result="k"/>
       <feMorphology in="k" operator="dilate" radius="2" result="d"/>
       <feGaussianBlur in="d" stdDeviation="7" result="g"/>
       <feMerge><feMergeNode in="g"/><feMergeNode in="g"/><feMergeNode in="k"/></feMerge>
     </filter>
     <filter id="k-red" ${all}><feColorMatrix values="0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  4 -4 0 0 -1.2"/><feGaussianBlur stdDeviation="1"/></filter>
     <filter id="k-gold" ${all}><feColorMatrix values="0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 6 -6 0 -1.2"/><feGaussianBlur stdDeviation="1"/></filter>
-    <filter id="k-strokes" ${all}><feColorMatrix values=".78 0 0 0 0  0 .9 0 0 0  0 0 .9 0 0  4 -4 0 0 -1.2"/></filter>
-    <filter id="clean" ${patch}>
-      <feColorMatrix in="SourceGraphic" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 -7 0 3" result="m0"/>
-      <feGaussianBlur in="m0" stdDeviation="2.6"/>
-      <feComponentTransfer result="m"><feFuncA type="linear" slope="4" intercept="-3"/></feComponentTransfer>
-      <feComposite in="SourceGraphic" in2="m" operator="in" result="bg"/>
-      ${fill(5)}${fill(16)}${fill(40)}
-      <feFlood flood-color="#2a2a33" result="c"/>
-      <feMerge><feMergeNode in="c"/><feMergeNode in="f40"/><feMergeNode in="f16"/><feMergeNode in="f5"/><feMergeNode in="bg"/></feMerge>
-    </filter>`;
+    <filter id="k-strokes" ${all}>${clean}<feColorMatrix in="clean" values=".78 0 0 0 0  0 .9 0 0 0  0 0 .9 0 0  4 -4 0 0 -1.2"/></filter>
+    <filter id="clean" ${patch}>${clean}</filter>`;
 }
 
 // ---------------------------------------------------------------------------
@@ -267,7 +290,7 @@ function strokes() {
     const x = -reach - 150 + i * ((W + reach + 300) / n) + (r() - .5) * 40;
     const lo = local([x, H + 70]), hi = local([x + reach, -70]);
     list.push({ x: lo[0], y0: hi[1], y1: lo[1], up: i % 2 === 0, seed: 7 + i * 13,
-      color: ['#e8343c', '#d62a33', '#e8343c', '#b51f28'][i % 4], w: 290 + r() * 40, start: i * (1.0 / n) });
+      color: [PRINT.red, PRINT.red2, PRINT.red, PRINT.deep][i % 4], w: 290 + r() * 40, start: i * (1.0 / n) });
   }
   return list;
 }
@@ -304,8 +327,8 @@ function splashSVG() {
   return `<svg xmlns="${SVGNS}" viewBox="-100 -100 200 200" width="800" height="800">
     <filter id="w" x="-10%" y="-10%" width="120%" height="120%"><feTurbulence type="fractalNoise" baseFrequency=".06" numOctaves="2" seed="9"/>
       <feDisplacementMap in="SourceGraphic" scale="7" xChannelSelector="R" yChannelSelector="G"/></filter>
-    <g filter="url(#w)" fill="#b51f28"><path d="${d}"/>${drops}</g>
-    <g filter="url(#w)" fill="#e8343c" transform="scale(.62) rotate(23)"><path d="${d}"/></g>
+    <g filter="url(#w)" fill="${PRINT.ink}"><path d="${d}"/>${drops}</g>
+    <g filter="url(#w)" fill="${PRINT.red2}" transform="scale(.62) rotate(23)"><path d="${d}"/></g>
   </svg>`;
 }
 
@@ -341,7 +364,7 @@ function build() {
   // banner is revealed through the same strokes a beat later (CSS mask referencing an SVG mask)
   const S = strokes(), rot = `rotate(${STROKE_ANGLE} ${W / 2} ${H / 2})`;
   const C = R.charL.x + R.charL.w, D = R.charR.x;          // the base shows only between the characters
-  el('div', 'abs', back, { width: W + 'px', height: H + 'px', background: 'var(--charcoal)' });
+  el('div', 'abs', back, { width: W + 'px', height: H + 'px', background: PRINT.navy });
   const rotor = el('div', 'abs', back, { width: W + 'px', height: H + 'px', transform: `rotate(${STROKE_ANGLE}deg)`, transformOrigin: '50% 50%' });
   const SP = 40;                                            // padding round each bar for its rough edge
   S.forEach(s => {
@@ -361,7 +384,9 @@ function build() {
   A($('maskFull'), [{ opacity: 0 }, { opacity: 1 }], T.revealEnd - .15, .15);
   const revealed = el('div', 'abs', back, { width: W + 'px', height: H + 'px' });
   const MASK = 'url(#reveal)';
-  cropBG({ x: C - 1, y: 0, w: D - C + 2, h: H }, revealed, undefined, 'layer');
+  // the centre's edges are feathered during the reveal; the feather opens up as the characters land
+  const base = cropBG({ x: C - 1, y: 0, w: D - C + 2, h: H }, revealed, undefined, 'layer edgefade');
+  A(base, [{ maskSize: '100% 100%', WebkitMaskSize: '100% 100%' }, { maskSize: '112% 100%', WebkitMaskSize: '112% 100%' }], T.chars, .85, { easing: EASE.sine });
   const patch = cropSVG(R.patch, 'clean', revealed, undefined, 'layer');   // the logo, painted out
   cue(T.revealEnd + .02, () => { revealed.style.mask = revealed.style.webkitMask = 'none'; },
                          () => { revealed.style.mask = revealed.style.webkitMask = MASK; });
@@ -373,7 +398,7 @@ function build() {
   const driftBox = box(el('div', 'clip', back), { x: C, y: 0, w: D - C, h: H });
   driftBox.id = 'drift'; driftBox.style.right = 'auto'; driftBox.style.bottom = 'auto';
   const drift = cropSVG({ x: 0, y: 0, w: W, h: H }, 'k-strokes', driftBox, { x: C, y: 0 }, 'layer');
-  A(driftBox, [{ opacity: 0 }, { opacity: .45 }], T.idle, 1.6, { easing: EASE.sine });
+  A(driftBox, [{ opacity: 0 }, { opacity: .35 }], T.idle, 1.6, { easing: EASE.sine });
   A(drift, wave(p => ({ transform: `translateX(${(sin(p) * 0.015 * W).toFixed(2)}px)` })), T.idle, 16, { iterations: Infinity, fill: 'none' });
 
   // ---- 5. Ink splash behind the logo
@@ -385,19 +410,21 @@ function build() {
   A(splash, [{ opacity: 0 }, { opacity: .95, offset: .06 }, { opacity: .95, offset: .35 }, { opacity: 0 }], T.impact + .05, 1.6, { fill: 'none' });
 
   // ---- 2. Logo: letters wipe on left to right, tail flicks in, tagline tightens
-  const L = R.letters, cw = L.w / LETTER_COUNT;
-  for (let i = 0; i < LETTER_COUNT; i++) {
-    const c = cropSVG({ x: L.x + i * cw, y: L.y, w: cw + 1, h: L.h }, 'k-white', back, undefined, 'letter');
+  const L = R.letters;
+  for (let i = 0; i < LETTER_X.length - 1; i++) {
+    const [y0, y1] = LETTER_Y[i], x0 = LETTER_X[i] * W, x1 = LETTER_X[i + 1] * W;
+    const c = cropSVG({ x: x0, y: y0 * H, w: x1 - x0 + 1, h: (y1 - y0) * H }, 'k-white', back, undefined, 'letter');
     A(c, [{ clipPath: 'inset(0 100% 0 0)' }, { clipPath: 'inset(0 0% 0 0)' }], T.logo + i * .08, .3, { easing: EASE.wipe });
   }
   const tail = cropSVG(R.tail, 'k-white', back, undefined, 'tail');
   tail.style.transformOrigin = TAIL_ORIGIN;
   A(tail, [{ transform: 'rotate(-12deg)' }, { transform: 'rotate(0deg)' }], T.tail, .4, { easing: EASE.back });
   A(tail, [{ opacity: 0 }, { opacity: 1 }], T.tail, .12);
-  const G = R.tagline, tw = G.w / TAG_COUNT;
-  for (let i = 0; i < TAG_COUNT; i++) {
-    const c = cropSVG({ x: G.x + i * tw, y: G.y, w: tw + .5, h: G.h }, 'k-white', back, undefined, 'tag');
-    const spread = (i - (TAG_COUNT - 1) / 2) * 0.4 * tw;           // 0.4em of letter-spacing, collapsing
+  const G = R.tagline, n = TAG_CUTS.length - 1, em = G.h * 0.75;   // ~ the tagline's font size
+  for (let i = 0; i < n; i++) {
+    const x0 = TAG_CUTS[i] * W, x1 = TAG_CUTS[i + 1] * W, slot = i < TAG_SPACE ? i : i + 1;
+    const c = cropSVG({ x: x0, y: G.y, w: x1 - x0 + .5, h: G.h }, 'k-white', back, undefined, 'tag');
+    const spread = (slot - n / 2) * 0.4 * em;                      // 0.4em of letter-spacing, collapsing
     A(c, [{ transform: `translate(${spread.toFixed(1)}px, 8px)` }, { transform: 'translate(0px, 0px)' }], T.tagline, .55, { easing: EASE.out });
     A(c, [{ opacity: 0 }, { opacity: 1 }], T.tagline, .4, { easing: EASE.sine });
   }
