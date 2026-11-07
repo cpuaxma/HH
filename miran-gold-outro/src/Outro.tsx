@@ -1,7 +1,7 @@
 import React from 'react';
 import {AbsoluteFill, Img, interpolate, Sequence, staticFile, useCurrentFrame, useVideoConfig} from 'remotion';
 import {COLORS, EASE, FONT, GOLD_GRADIENT, MOTION, T} from './theme';
-import {BRAND, BUTTON, DISCLAIMER} from './strings';
+import {Lang, STRINGS} from './strings';
 import {Background, Vignette} from './components/Background';
 import {Grain} from './components/Grain';
 import {HeroLayer} from './components/Hero';
@@ -39,11 +39,11 @@ const At: React.FC<{x: number; y: number; children: React.ReactNode}> = ({x, y, 
 );
 
 /** A short RTL label that enters as one word group (fade, blur, rise). */
-const Label: React.FC<{text: string; size: number; p: number; weight: number; style?: React.CSSProperties}> = ({text, size, p, weight, style}) => {
+const Label: React.FC<{text: string; size: number; p: number; weight: number; dir: 'ltr' | 'rtl'; style?: React.CSSProperties}> = ({text, size, p, weight, dir, style}) => {
   const blur = MOTION.wordBlur * (1 - p);
   return (
     <span
-      dir="rtl"
+      dir={dir}
       style={{
         display: 'inline-block',
         fontFamily: FONT.family,
@@ -80,7 +80,8 @@ const Glint: React.FC<{p: number; width: number; opacity?: number}> = ({p, width
     />
   ) : null;
 
-export const Outro: React.FC = () => {
+export const Outro: React.FC<{lang: Lang}> = ({lang}) => {
+  const S = STRINGS[lang];
   const frame = useCurrentFrame();
   const {width, height, durationInFrames} = useVideoConfig();
   const L = useLayout();
@@ -95,9 +96,10 @@ export const Outro: React.FC = () => {
   const push = interpolate(frame, [0, durationInFrames], [1, 1.035]); // slow push-in keeps the hold alive
   const fade = interpolate(frame, [T.fadeOut, durationInFrames - 1], [0, 1], {...clamp, easing: EASE.inOut});
 
-  // Comet orbit around the logo, drawn counter-clockwise from the top (right → left, like the text).
+  // Comet orbit around the logo, drawn from the top in the reading direction (counter-clockwise for Arabic).
   const R = L.logoSize / 2 + 34 * L.u;
-  const orbit = `M ${L.cx} ${L.logoY - R} A ${R} ${R} 0 1 0 ${L.cx} ${L.logoY + R} A ${R} ${R} 0 1 0 ${L.cx} ${L.logoY - R}`;
+  const sweep = S.dir === 'rtl' ? 0 : 1;
+  const orbit = `M ${L.cx} ${L.logoY - R} A ${R} ${R} 0 1 ${sweep} ${L.cx} ${L.logoY + R} A ${R} ${R} 0 1 ${sweep} ${L.cx} ${L.logoY - R}`;
   const head = ease(frame, T.orbit, 44, EASE.inOut);
   const tail = ease(frame, T.orbit + 16, 44, EASE.inOut);
 
@@ -150,17 +152,18 @@ export const Outro: React.FC = () => {
 
         <At x={L.cx} y={L.brandY}>
           <Label
-            text={BRAND}
+            text={S.brand}
             size={66 * L.u}
             p={brand}
             weight={FONT.key}
-            style={{backgroundImage: GOLD_GRADIENT, WebkitBackgroundClip: 'text', backgroundClip: 'text', color: 'transparent'}}
+            dir={S.dir}
+            style={{letterSpacing: lang === 'en' ? '0.02em' : undefined, backgroundImage: GOLD_GRADIENT, WebkitBackgroundClip: 'text', backgroundClip: 'text', color: 'transparent'}}
           />
         </At>
 
         <At x={L.cx} y={L.buttonY}>
           <div
-            dir="rtl"
+            dir={S.dir}
             style={{
               position: 'relative',
               overflow: 'hidden',
@@ -178,14 +181,14 @@ export const Outro: React.FC = () => {
               transform: `translateY(${(1 - Math.min(1, button)) * 30 * L.u}px) scale(${0.7 + 0.3 * button})`,
             }}
           >
-            {BUTTON}
+            {S.button}
             <Glint p={buttonGlint} width={90 * L.u} />
           </div>
         </At>
       </AbsoluteFill>
 
       <div style={{position: 'absolute', left: 0, right: 0, top: L.disclaimerY, transform: 'translateY(-50%)', textAlign: 'center'}}>
-        <Label text={DISCLAIMER} size={22 * L.u} p={disclaimer} weight={FONT.body} style={{color: 'rgba(245,241,232,0.5)'}} />
+        <Label text={S.disclaimer} size={(lang === 'en' ? 24 : 22) * L.u} p={disclaimer} weight={FONT.body} dir={S.dir} style={{color: 'rgba(245,241,232,0.5)'}} />
       </div>
 
       <Sequence from={T.wipe} durationInFrames={24} name="Light-sweep wipe">

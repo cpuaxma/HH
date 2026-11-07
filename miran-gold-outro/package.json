@@ -4,11 +4,9 @@
   "version": "1.0.0",
   "scripts": {
     "studio": "remotion studio",
-    "render": "remotion render MiranGoldOutro out/miran-gold-outro-9x16.mp4 --codec=h264 --crf=16 && remotion render MiranGoldOutroWide out/miran-gold-outro-16x9.mp4 --codec=h264 --crf=16 && remotion render MiranGoldOutroSquare out/miran-gold-outro-1x1.mp4 --codec=h264 --crf=16",
-    "render:vertical": "remotion render MiranGoldOutro out/miran-gold-outro-9x16.mp4 --codec=h264 --crf=16",
-    "render:wide": "remotion render MiranGoldOutroWide out/miran-gold-outro-16x9.mp4 --codec=h264 --crf=16",
-    "render:square": "remotion render MiranGoldOutroSquare out/miran-gold-outro-1x1.mp4 --codec=h264 --crf=16",
-    "still": "remotion still MiranGoldOutro",
+    "render": "remotion render MiranGoldOutroEN out/miran-gold-outro-en-9x16.mp4 --codec=h264 --crf=16 && remotion render MiranGoldOutroWideEN out/miran-gold-outro-en-16x9.mp4 --codec=h264 --crf=16 && remotion render MiranGoldOutroSquareEN out/miran-gold-outro-en-1x1.mp4 --codec=h264 --crf=16",
+    "render:ar": "remotion render MiranGoldOutroAR out/miran-gold-outro-ar-9x16.mp4 --codec=h264 --crf=16 && remotion render MiranGoldOutroWideAR out/miran-gold-outro-ar-16x9.mp4 --codec=h264 --crf=16 && remotion render MiranGoldOutroSquareAR out/miran-gold-outro-ar-1x1.mp4 --codec=h264 --crf=16",
+    "still": "remotion still MiranGoldOutroEN",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
