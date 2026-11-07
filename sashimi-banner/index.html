@@ -1,0 +1,551 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sashimi Banner Animation</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --red: #e8343c;
+    --red-2: #d62a33;
+    --deep: #b51f28;
+    --charcoal: #2a2a33;
+    --cream: #f3eee6;
+    --gold: #d9a441;
+    --backdrop: #0e0e10;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; overflow: hidden; }
+  body { background: var(--backdrop); font-family: Poppins, system-ui, sans-serif; }
+  body.record { cursor: none; }
+
+  #stage { position: fixed; inset: 0; overflow: hidden; }
+  #stage.waiting > * { visibility: hidden; }
+  #frame { position: absolute; left: 0; top: 0; overflow: hidden; transform-origin: 0 0; background: var(--backdrop); }
+
+  /* Everything inside #banner is laid out in the PNG's own pixels (W x H) and scaled once to fit */
+  #banner { position: absolute; left: 0; top: 0; transform-origin: 0 0; }
+  #camera { position: absolute; inset: 0; transform-origin: 50% 50%; will-change: transform; }
+  .clip { position: absolute; inset: 0; overflow: hidden; }
+  body.post #chars { overflow: visible; }
+  .abs { position: absolute; left: 0; top: 0; }
+  .abs > svg { display: block; overflow: hidden; }
+  .crop { position: absolute; background-repeat: no-repeat; }
+  .layer { will-change: transform; }
+
+  #drift {
+    opacity: 0; will-change: opacity; mix-blend-mode: multiply;
+    -webkit-mask-image: linear-gradient(90deg, transparent, #000 14%, #000 86%, transparent);
+            mask-image: linear-gradient(90deg, transparent, #000 14%, #000 86%, transparent);
+  }
+
+  .letter { clip-path: inset(0 100% 0 0); }
+  .tail, .tag { opacity: 0; will-change: transform, opacity; }
+
+  /* Sweeps: a slanted band mask slides across a keyed layer (mask-position only) */
+  .sweep {
+    -webkit-mask-image: linear-gradient(105deg, transparent 42%, #000 50%, transparent 58%);
+            mask-image: linear-gradient(105deg, transparent 42%, #000 50%, transparent 58%);
+    -webkit-mask-size: 300% 100%; mask-size: 300% 100%;
+    -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat;
+    -webkit-mask-position: 100% 0; mask-position: 100% 0;
+  }
+  .sweep.thin {
+    -webkit-mask-image: linear-gradient(115deg, transparent 45%, #000 49%, #000 51%, transparent 55%);
+            mask-image: linear-gradient(115deg, transparent 45%, #000 49%, #000 51%, transparent 55%);
+  }
+  #shimmer { opacity: .9; }
+
+  .char { will-change: transform, opacity; }
+  /* Feathered edge while a character flies in; dropped once she has landed */
+  .char.feather {
+    -webkit-mask-image: radial-gradient(closest-side, #000 55%, transparent 100%);
+            mask-image: radial-gradient(closest-side, #000 55%, transparent 100%);
+    -webkit-mask-position: 50% 50%; mask-position: 50% 50%;
+    -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat;
+    -webkit-mask-size: 100% 100%; mask-size: 100% 100%;
+  }
+  .breathe { position: absolute; inset: 0; will-change: transform; }
+  .food { will-change: transform; }
+
+  .petal, .splash { position: absolute; left: 0; top: 0; opacity: 0; will-change: transform, opacity; pointer-events: none; display: block; }
+
+  #debug { position: absolute; inset: 0; pointer-events: none; display: none; }
+  body.debug #debug { display: block; }
+  #debug div { position: absolute; border: 3px dashed #39f; color: #39f; font: 700 18px/1 system-ui, sans-serif; padding: 4px; text-shadow: 0 0 3px #000; }
+
+  #missing {
+    position: absolute; inset: 0; display: none; place-items: center; text-align: center; padding: 24px;
+    color: var(--cream); font: 600 16px/1.5 Poppins, system-ui, sans-serif;
+  }
+  #missing code { color: var(--gold); }
+  body.missing #missing { display: grid; }
+
+  #replay {
+    position: fixed; right: max(16px, 2.2vmin); bottom: max(16px, 2.2vmin);
+    display: inline-flex; align-items: center; gap: .5em;
+    padding: .7em 1.15em .7em .95em;
+    font: 600 max(13px, 1.5vmin)/1 Poppins, system-ui, sans-serif; letter-spacing: .02em;
+    color: var(--cream); background: rgba(14,14,16,.72);
+    border: 1px solid rgba(243,238,230,.28); border-radius: 999px;
+    backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+    cursor: pointer; transition: background .2s, border-color .2s, transform .2s;
+  }
+  #replay:hover { background: rgba(232,52,60,.9); border-color: var(--red); }
+  #replay:active { transform: scale(.96); }
+  #replay:focus-visible { outline: 2px solid var(--red); outline-offset: 3px; }
+  #replay svg { width: 1.15em; height: 1.15em; }
+  body.record #replay, body.still #replay, body.missing #replay { display: none; }
+</style>
+</head>
+<body>
+<div id="stage" class="waiting">
+  <div id="frame">
+    <div id="banner" role="img" aria-label="Sashimi Fusion Sushi banner">
+      <div id="camera">
+        <div class="clip" id="back"></div>
+        <div class="clip" id="chars"></div>
+        <div class="clip" id="fx"></div>
+        <div id="debug"></div>
+      </div>
+    </div>
+    <div id="missing"><p><code>sashimi_banner.png</code> was not found.<br>Put the banner PNG next to this <code>index.html</code> and reload.</p></div>
+  </div>
+</div>
+<button id="replay" type="button" aria-label="Replay animation">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/></svg>
+  Replay
+</button>
+<svg id="defs" width="0" height="0" style="position:absolute" aria-hidden="true"><defs></defs></svg>
+
+<script>
+// ===========================================================================
+// Layout map: fractions of the banner's width (x, w) and height (y, h).
+// Run the page with ?debug=1 to see these boxes drawn over the PNG and tune them.
+// ===========================================================================
+const SRC = 'sashimi_banner.png';
+const REGIONS = {
+  charL:    { x: 0.000, y: 0.00, w: 0.180, h: 1.00 },   // left character (and the background behind her)
+  charR:    { x: 0.780, y: 0.00, w: 0.220, h: 1.00 },   // right character, out to the banner's right edge
+  foodL:    { x: 0.100, y: 0.30, w: 0.070, h: 0.45 },   // sushi pizza slice
+  foodR:    { x: 0.790, y: 0.45, w: 0.070, h: 0.35 },   // sushi burger
+  letters:  { x: 0.330, y: 0.10, w: 0.230, h: 0.65 },   // "SASHIMI", split into 7 equal columns
+  tail:     { x: 0.560, y: 0.10, w: 0.040, h: 0.65 },   // fish tail
+  tagline:  { x: 0.420, y: 0.78, w: 0.120, h: 0.14 },   // "FUSION SUSHI", split into 12 equal columns
+  patch:    { x: 0.320, y: 0.06, w: 0.290, h: 0.90 },   // area where the logo is painted out before it writes on
+  glassesL: { x: 0.050, y: 0.20, w: 0.065, h: 0.20 },
+  hoopL:    { x: 0.025, y: 0.36, w: 0.035, h: 0.16 },
+  glassesR: { x: 0.855, y: 0.20, w: 0.065, h: 0.20 },
+  hoopR:    { x: 0.905, y: 0.36, w: 0.035, h: 0.16 },
+};
+const FOOD_ORIGIN = { L: '0% 45%', R: '100% 45%' };    // the side of the food nearest each mouth
+const TAIL_ORIGIN = '0% 55%';                          // where the tail joins the lettering
+const LETTER_COUNT = 7, TAG_COUNT = 12;
+const PETAL_POPS = { L: { x: 0.165, y: 0.28, dir: 1 }, R: { x: 0.805, y: 0.28, dir: -1 } };
+
+const EASE = {
+  snap: 'cubic-bezier(.2,.9,.3,1.2)',
+  snapSoft: 'cubic-bezier(.2,.9,.3,1.06)',   // post: the fly-in is long, so the same overshoot would leave the banner
+  feather: 'cubic-bezier(.6,0,.9,.6)',       // the feathered edge holds until just before landing
+  back: 'cubic-bezier(.34,1.56,.64,1)',
+  out: 'cubic-bezier(.16,1,.3,1)',
+  wipe: 'cubic-bezier(.5,0,.2,1)',
+  sine: 'cubic-bezier(.37,0,.63,1)',
+  camera: 'cubic-bezier(.7,0,.2,1)',
+};
+
+// ===========================================================================
+const params = new URLSearchParams(location.search);
+const FORMAT = ['reel', 'post'].includes(params.get('format')) ? params.get('format') : 'banner';
+const FRAMES = { reel: { w: 1080, h: 1920 }, post: { w: 1080, h: 1080 } };
+const RECORD = params.has('record') && params.get('record') !== '0';
+const STILL = params.has('t') ? parseFloat(params.get('t')) || 0 : null;   // ?t=3.2 freezes on one frame
+const REDUCED = matchMedia('(prefers-reduced-motion: reduce)').matches;
+document.body.classList.add(FORMAT);
+if (RECORD) document.body.classList.add('record');
+if (params.has('debug')) document.body.classList.add('debug');
+if (STILL !== null || REDUCED) document.body.classList.add('still');
+
+// Timeline (seconds). The reel holds the large logo for an extra second before zooming out.
+const SHIFT = FORMAT === 'reel' ? 1.0 : 0;
+const T = {
+  reveal: 0, revealEnd: 1.2,
+  logo: 1.2, tail: 1.9, tagline: 1.8, logoDone: 2.3,
+  zoom: 2.2,                                    // reel only: 2.2 -> 3.2
+  chars: 2.2 + SHIFT, accents: 3.4 + SHIFT, impact: 4.2 + SHIFT,
+  idle: 6.0 + SHIFT,
+};
+const LOOP = false;
+const DURATION = T.idle + 8;      // the exporter renders the intro plus 8s of the idle loop
+const STATIC_T = T.idle;          // frame shown for prefers-reduced-motion: intro finished, idle at rest
+
+// ===========================================================================
+const $ = id => document.getElementById(id);
+const stage = $('stage'), frame = $('frame'), banner = $('banner'), camera = $('camera');
+const SVGNS = 'http://www.w3.org/2000/svg';
+let W = 2374, H = 326;                       // replaced by the PNG's natural size on load
+const px = r => ({ x: r.x * W, y: r.y * H, w: r.w * W, h: r.h * H });
+
+function el(tag, cls, parent, style) {
+  const e = document.createElement(tag);
+  if (cls) e.className = cls;
+  if (style) Object.assign(e.style, style);
+  if (parent) parent.appendChild(e);
+  return e;
+}
+function box(e, r, rel = { x: 0, y: 0 }) {   // place e over region r (pixels), relative to a parent at rel
+  Object.assign(e.style, { left: (r.x - rel.x) + 'px', top: (r.y - rel.y) + 'px', width: r.w + 'px', height: r.h + 'px' });
+  return e;
+}
+// Plain crop of the PNG (CSS background-position)
+function cropBG(r, parent, rel, cls = '') {
+  const e = box(el('div', 'crop ' + cls, parent), r, rel);
+  Object.assign(e.style, { backgroundImage: `url("${SRC}")`, backgroundSize: `${W}px ${H}px`, backgroundPosition: `${-r.x}px ${-r.y}px` });
+  return e;
+}
+// Crop of the PNG run through an SVG filter (colour key, glow, clean plate). Rendered once, then
+// only moved with transform / opacity / clip-path / mask-position.
+function cropSVG(r, filter, parent, rel, cls = '') {
+  const e = box(el('div', 'abs ' + cls, parent), r, rel);
+  e.innerHTML = `<svg xmlns="${SVGNS}" width="${r.w}" height="${r.h}" viewBox="${r.x} ${r.y} ${r.w} ${r.h}" preserveAspectRatio="none">` +
+    `<image href="${SRC}" width="${W}" height="${H}" filter="url(#${filter})"/></svg>`;
+  return e;
+}
+
+// ---------------------------------------------------------------------------
+// Filters. Colour keys work because the logo is off-white and the background is red / charcoal.
+//   white: alpha from the blue channel (off-white ~0.9, red / charcoal / gold < 0.3)
+//   red:   alpha from R - G (heart glasses), output white
+//   gold:  alpha from G - B (hoop earrings), output white
+//   clean: paints the logo out (normalised-convolution fill from the surrounding strokes)
+// ---------------------------------------------------------------------------
+function buildFilters() {
+  const pad = 40, all = `filterUnits="userSpaceOnUse" x="${-pad}" y="${-pad}" width="${W + 2 * pad}" height="${H + 2 * pad}" color-interpolation-filters="sRGB"`;
+  const P = px(REGIONS.patch);
+  const patch = `filterUnits="userSpaceOnUse" x="${P.x}" y="${P.y}" width="${P.w}" height="${P.h}" color-interpolation-filters="sRGB"`;
+  const fill = s => `<feGaussianBlur in="bg" stdDeviation="${s}"/><feColorMatrix values="1 0 0 0 0 0 1 0 0 0 0 0 1 0 0 0 0 0 4 0" result="f${s}"/>`;
+  $('defs').querySelector('defs').innerHTML = `
+    <filter id="k-white" ${all}><feColorMatrix values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 5.5 0 -2.6"/></filter>
+    <filter id="k-glow" ${all}>
+      <feColorMatrix values="0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 5.5 0 -2.6" result="k"/>
+      <feMorphology in="k" operator="dilate" radius="2" result="d"/>
+      <feGaussianBlur in="d" stdDeviation="7" result="g"/>
+      <feMerge><feMergeNode in="g"/><feMergeNode in="g"/><feMergeNode in="k"/></feMerge>
+    </filter>
+    <filter id="k-red" ${all}><feColorMatrix values="0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  4 -4 0 0 -1.2"/><feGaussianBlur stdDeviation="1"/></filter>
+    <filter id="k-gold" ${all}><feColorMatrix values="0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 6 -6 0 -1.2"/><feGaussianBlur stdDeviation="1"/></filter>
+    <filter id="k-strokes" ${all}><feColorMatrix values=".78 0 0 0 0  0 .9 0 0 0  0 0 .9 0 0  4 -4 0 0 -1.2"/></filter>
+    <filter id="clean" ${patch}>
+      <feColorMatrix in="SourceGraphic" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 -7 0 3" result="m0"/>
+      <feGaussianBlur in="m0" stdDeviation="2.6"/>
+      <feComponentTransfer result="m"><feFuncA type="linear" slope="4" intercept="-3"/></feComponentTransfer>
+      <feComposite in="SourceGraphic" in2="m" operator="in" result="bg"/>
+      ${fill(5)}${fill(16)}${fill(40)}
+      <feFlood flood-color="#2a2a33" result="c"/>
+      <feMerge><feMergeNode in="c"/><feMergeNode in="f40"/><feMergeNode in="f16"/><feMergeNode in="f5"/><feMergeNode in="bg"/></feMerge>
+    </filter>`;
+}
+
+// ---------------------------------------------------------------------------
+// Coded overlays: brush strokes, ink splash, sakura petal
+// ---------------------------------------------------------------------------
+function rng(seed) { return () => { seed |= 0; seed = seed + 0x6D2B79F5 | 0; let t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+const svgURL = s => 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(s);
+
+// Diagonal strokes, left to right. Each is a vertical bar inside a layer rotated by STROKE_ANGLE, so
+// the dry-brush streaks run along the stroke. Coordinates are in that rotated layer; the bars are
+// painted in alternately bottom-up and top-down.
+const STROKE_ANGLE = 23;
+function strokes() {
+  const r = rng(11), list = [], a = STROKE_ANGLE * Math.PI / 180, cx = W / 2, cy = H / 2;
+  const local = ([x, y]) => [cx + (x - cx) * Math.cos(a) + (y - cy) * Math.sin(a), cy - (x - cx) * Math.sin(a) + (y - cy) * Math.cos(a)];
+  const reach = (H + 140) * Math.tan(a), n = Math.ceil((W + reach + 300) / 215);
+  for (let i = 0; i < n; i++) {
+    const x = -reach - 150 + i * ((W + reach + 300) / n) + (r() - .5) * 40;
+    const lo = local([x, H + 70]), hi = local([x + reach, -70]);
+    list.push({ x: lo[0], y0: hi[1], y1: lo[1], up: i % 2 === 0, seed: 7 + i * 13,
+      color: ['#e8343c', '#d62a33', '#e8343c', '#b51f28'][i % 4], w: 290 + r() * 40, start: i * (1.0 / n) });
+  }
+  return list;
+}
+// One stroke as an image: a bar with displaced (rough) edges and dry-brush streaks, rasterised once
+function strokeSVG(s, pad) {
+  const w = s.w, h = s.y1 - s.y0, box = `x="${-pad}" y="${-pad}" width="${w + 2 * pad}" height="${h + 2 * pad}"`;
+  return `<svg xmlns="${SVGNS}" viewBox="${-pad} ${-pad} ${w + 2 * pad} ${h + 2 * pad}" width="${(w + 2 * pad).toFixed(0)}" height="${(h + 2 * pad).toFixed(0)}">
+    <filter id="r" filterUnits="userSpaceOnUse" ${box}>
+      <feTurbulence type="fractalNoise" baseFrequency=".022 .05" numOctaves="3" seed="${s.seed}" result="n"/>
+      <feDisplacementMap in="SourceGraphic" in2="n" scale="38" xChannelSelector="R" yChannelSelector="G" result="d"/>
+      <feTurbulence type="fractalNoise" baseFrequency=".5 .035" numOctaves="2" seed="${s.seed + 50}" result="s"/>
+      <feColorMatrix in="s" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  2.4 0 0 0 -.1" result="dry"/>
+      <feComposite in="d" in2="dry" operator="in"/>
+    </filter>
+    <rect width="${w.toFixed(1)}" height="${h.toFixed(1)}" fill="${s.color}" filter="url(#r)"/>
+  </svg>`;
+}
+
+function splashSVG() {
+  const r = rng(5), pts = [], N = 26;
+  for (let i = 0; i < N; i++) {
+    const a = i / N * Math.PI * 2, spike = r() < .3;
+    const rad = spike ? 74 + r() * 16 : 52 + r() * 12;
+    pts.push([Math.cos(a) * rad, Math.sin(a) * rad]);
+  }
+  const mid = (p, q) => [(p[0] + q[0]) / 2, (p[1] + q[1]) / 2];
+  let d = `M${mid(pts[N - 1], pts[0]).map(v => v.toFixed(1)).join(' ')}`;
+  for (let i = 0; i < N; i++) { const p = pts[i], m = mid(p, pts[(i + 1) % N]); d += ` Q${p[0].toFixed(1)} ${p[1].toFixed(1)} ${m[0].toFixed(1)} ${m[1].toFixed(1)}`; }
+  let drops = '';
+  for (let i = 0; i < 18; i++) {
+    const a = r() * Math.PI * 2, rad = 78 + r() * 20, s = 1.5 + r() * 4.5;
+    drops += `<circle cx="${(Math.cos(a) * rad).toFixed(1)}" cy="${(Math.sin(a) * rad).toFixed(1)}" r="${s.toFixed(1)}"/>`;
+  }
+  return `<svg xmlns="${SVGNS}" viewBox="-100 -100 200 200" width="800" height="800">
+    <filter id="w" x="-10%" y="-10%" width="120%" height="120%"><feTurbulence type="fractalNoise" baseFrequency=".06" numOctaves="2" seed="9"/>
+      <feDisplacementMap in="SourceGraphic" scale="7" xChannelSelector="R" yChannelSelector="G"/></filter>
+    <g filter="url(#w)" fill="#b51f28"><path d="${d}"/>${drops}</g>
+    <g filter="url(#w)" fill="#e8343c" transform="scale(.62) rotate(23)"><path d="${d}"/></g>
+  </svg>`;
+}
+
+const PETAL_SVG = `<svg xmlns="${SVGNS}" viewBox="-12 -12 24 24" width="48" height="48">
+  <path d="M0 10.5C-6.8 7-9.6-2.4-4.6-9.4L0-6.2 4.6-9.4C9.6-2.4 6.8 7 0 10.5Z" fill="#fff"/>
+  <path d="M0 9C-1.6 4-1.2-1.8 0-4.6" stroke="#f1d9de" stroke-width="1.1" fill="none" stroke-linecap="round"/></svg>`;
+
+// ===========================================================================
+// Animation engine: every motion is a Web Animation created paused. Live playback starts them all
+// on the same timeline time; render(t) seeks them (export, ?t=, reduced motion). A few discrete
+// switches (drop the reveal mask, hide the painted-out logo) are cues checked against the same clock.
+// ===========================================================================
+const ANIMS = [], CUES = [];
+function A(target, frames, start, dur, opts = {}) {
+  const a = target.animate(frames, { delay: start * 1000, duration: dur * 1000, fill: 'both', easing: 'linear', ...opts });
+  a.pause(); ANIMS.push(a); return a;
+}
+function cue(t, on, off) { CUES.push({ t, on, off, state: null }); }
+function applyCues(t) {
+  for (const c of CUES) { const s = t >= c.t; if (s !== c.state) { c.state = s; (s ? c.on : c.off)(); } }
+}
+// Smooth periodic motion: sampled keyframes of a function of phase 0..1
+function wave(fn, n = 24) { return Array.from({ length: n + 1 }, (_, i) => ({ offset: i / n, ...fn(i / n) })); }
+const sin = p => Math.sin(p * Math.PI * 2);
+
+// ===========================================================================
+function build() {
+  buildFilters();
+  const back = $('back'), chars = $('chars'), fx = $('fx');
+  const R = {}; for (const k in REGIONS) R[k] = px(REGIONS[k]);
+
+  // ---- 1. Brush reveal: red strokes paint in (pre-rendered rough bars, clip-path wipes), and the
+  // banner is revealed through the same strokes a beat later (CSS mask referencing an SVG mask)
+  const S = strokes(), rot = `rotate(${STROKE_ANGLE} ${W / 2} ${H / 2})`;
+  const C = R.charL.x + R.charL.w, D = R.charR.x;          // the base shows only between the characters
+  el('div', 'abs', back, { width: W + 'px', height: H + 'px', background: 'var(--charcoal)' });
+  const rotor = el('div', 'abs', back, { width: W + 'px', height: H + 'px', transform: `rotate(${STROKE_ANGLE}deg)`, transformOrigin: '50% 50%' });
+  const SP = 40;                                            // padding round each bar for its rough edge
+  S.forEach(s => {
+    const img = el('img', 'abs layer', rotor);
+    img.src = svgURL(strokeSVG(s, SP)); img.alt = '';
+    box(img, { x: s.x - s.w / 2 - SP, y: s.y0 - SP, w: s.w + 2 * SP, h: s.y1 - s.y0 + 2 * SP });
+    const hidden = s.up ? 'inset(100% 0 0 0)' : 'inset(0 0 100% 0)';
+    A(img, [{ clipPath: hidden }, { clipPath: 'inset(0% 0 0% 0)' }], T.reveal + s.start, .3, { easing: 'cubic-bezier(.45,0,.25,1)' });
+  });
+  $('defs').querySelector('defs').insertAdjacentHTML('beforeend', `
+    <mask id="reveal" maskUnits="userSpaceOnUse" x="0" y="0" width="${W}" height="${H}">
+      <g fill="none" stroke="#fff" stroke-linecap="butt" transform="${rot}">${S.map(s =>
+        `<path class="ms" d="M${s.x.toFixed(1)} ${(s.up ? s.y1 : s.y0).toFixed(1)}V${(s.up ? s.y0 : s.y1).toFixed(1)}" stroke-width="${s.w - 40}" pathLength="1" stroke-dasharray="1 1" stroke-dashoffset="1"/>`).join('')}</g>
+      <rect id="maskFull" width="${W}" height="${H}" fill="#fff" opacity="0"/>
+    </mask>`);
+  document.querySelectorAll('#reveal .ms').forEach((p, i) => A(p, [{ strokeDashoffset: 1 }, { strokeDashoffset: 0 }], T.reveal + S[i].start + .1, .3, { easing: 'cubic-bezier(.45,0,.25,1)' }));
+  A($('maskFull'), [{ opacity: 0 }, { opacity: 1 }], T.revealEnd - .15, .15);
+  const revealed = el('div', 'abs', back, { width: W + 'px', height: H + 'px' });
+  const MASK = 'url(#reveal)';
+  cropBG({ x: C - 1, y: 0, w: D - C + 2, h: H }, revealed, undefined, 'layer');
+  const patch = cropSVG(R.patch, 'clean', revealed, undefined, 'layer');   // the logo, painted out
+  cue(T.revealEnd + .02, () => { revealed.style.mask = revealed.style.webkitMask = 'none'; },
+                         () => { revealed.style.mask = revealed.style.webkitMask = MASK; });
+  cue(T.logoDone, () => patch.style.display = 'none', () => patch.style.display = '');
+  // once both characters have landed the painted strokes are fully covered: stop compositing them
+  cue(T.chars + 1.1, () => rotor.style.display = 'none', () => rotor.style.display = '');
+
+  // ---- Idle: a red-keyed duplicate of the strokes drifts ±1.5% (centre only, under the logo)
+  const driftBox = box(el('div', 'clip', back), { x: C, y: 0, w: D - C, h: H });
+  driftBox.id = 'drift'; driftBox.style.right = 'auto'; driftBox.style.bottom = 'auto';
+  const drift = cropSVG({ x: 0, y: 0, w: W, h: H }, 'k-strokes', driftBox, { x: C, y: 0 }, 'layer');
+  A(driftBox, [{ opacity: 0 }, { opacity: .45 }], T.idle, 1.6, { easing: EASE.sine });
+  A(drift, wave(p => ({ transform: `translateX(${(sin(p) * 0.015 * W).toFixed(2)}px)` })), T.idle, 16, { iterations: Infinity, fill: 'none' });
+
+  // ---- 5. Ink splash behind the logo
+  const splash = el('img', 'splash', back);
+  splash.src = svgURL(splashSVG()); splash.alt = '';
+  const SZ = W * 0.3, lc = { x: R.letters.x + (R.tail.x + R.tail.w - R.letters.x) / 2, y: R.letters.y + R.letters.h / 2 };
+  Object.assign(splash.style, { width: SZ + 'px', height: SZ + 'px', left: (lc.x - SZ / 2) + 'px', top: (lc.y - SZ / 2) + 'px' });
+  A(splash, [{ transform: 'scale(.25) rotate(-20deg)' }, { transform: 'scale(1.12) rotate(0deg)' }], T.impact + .05, 1.3, { easing: EASE.out, fill: 'none' });
+  A(splash, [{ opacity: 0 }, { opacity: .95, offset: .06 }, { opacity: .95, offset: .35 }, { opacity: 0 }], T.impact + .05, 1.6, { fill: 'none' });
+
+  // ---- 2. Logo: letters wipe on left to right, tail flicks in, tagline tightens
+  const L = R.letters, cw = L.w / LETTER_COUNT;
+  for (let i = 0; i < LETTER_COUNT; i++) {
+    const c = cropSVG({ x: L.x + i * cw, y: L.y, w: cw + 1, h: L.h }, 'k-white', back, undefined, 'letter');
+    A(c, [{ clipPath: 'inset(0 100% 0 0)' }, { clipPath: 'inset(0 0% 0 0)' }], T.logo + i * .08, .3, { easing: EASE.wipe });
+  }
+  const tail = cropSVG(R.tail, 'k-white', back, undefined, 'tail');
+  tail.style.transformOrigin = TAIL_ORIGIN;
+  A(tail, [{ transform: 'rotate(-12deg)' }, { transform: 'rotate(0deg)' }], T.tail, .4, { easing: EASE.back });
+  A(tail, [{ opacity: 0 }, { opacity: 1 }], T.tail, .12);
+  const G = R.tagline, tw = G.w / TAG_COUNT;
+  for (let i = 0; i < TAG_COUNT; i++) {
+    const c = cropSVG({ x: G.x + i * tw, y: G.y, w: tw + .5, h: G.h }, 'k-white', back, undefined, 'tag');
+    const spread = (i - (TAG_COUNT - 1) / 2) * 0.4 * tw;           // 0.4em of letter-spacing, collapsing
+    A(c, [{ transform: `translate(${spread.toFixed(1)}px, 8px)` }, { transform: 'translate(0px, 0px)' }], T.tagline, .55, { easing: EASE.out });
+    A(c, [{ opacity: 0 }, { opacity: 1 }], T.tagline, .4, { easing: EASE.sine });
+  }
+  // Shimmer: a soft white glow of the keyed logo, swept every 5s
+  const logoBox = { x: L.x, y: L.y, w: R.tail.x + R.tail.w - L.x, h: L.h };
+  const pad = 16, shimmer = cropSVG({ x: logoBox.x - pad, y: logoBox.y - pad, w: logoBox.w + 2 * pad, h: logoBox.h + 2 * pad }, 'k-glow', back, undefined, 'sweep');
+  shimmer.id = 'shimmer';
+  const sweepFrames = (a, b) => [{ maskPosition: '100% 0', WebkitMaskPosition: '100% 0', offset: a }, { maskPosition: '0% 0', WebkitMaskPosition: '0% 0', offset: b }];
+  A(shimmer, [...sweepFrames(0, .24), { maskPosition: '0% 0', WebkitMaskPosition: '0% 0', offset: 1 }], T.idle + .5, 5, { iterations: Infinity, fill: 'none', easing: EASE.sine });
+  A(shimmer, sweepFrames(0, 1), T.impact + .1, 1.0, { fill: 'none', easing: EASE.sine });
+
+  // ---- 3. Characters: crops of the PNG, flown in, with bite squashes and breathing
+  const post = FORMAT === 'post';
+  let travel = 0;
+  if (post) { const s = FRAMES.post.w / W; travel = (FRAMES.post.h / s + H) / 2 * 1.08; }
+  const makeChar = (side) => {
+    const r = side === 'L' ? R.charL : R.charR, food = side === 'L' ? R.foodL : R.foodR, dir = side === 'L' ? -1 : 1;
+    const wrap = box(el('div', 'abs char feather', chars), side === 'L' ? { ...r, w: r.w + 1 } : { ...r, x: r.x - 1, w: r.w + 1 });
+    const rel = { x: parseFloat(wrap.style.left), y: 0 };
+    const breathe = el('div', 'breathe', wrap);
+    cropBG({ x: rel.x, y: r.y, w: parseFloat(wrap.style.width), h: r.h }, breathe, rel);
+    const f = cropBG(food, breathe, rel, 'food');
+    f.style.transformOrigin = FOOD_ORIGIN[side];
+    // glints ride along with the character
+    for (const [key, kind] of [['glasses' + side, 'k-red'], ['hoop' + side, 'k-gold']]) {
+      const g = cropSVG(R[key], kind, breathe, rel, 'sweep thin');
+      const at = T.accents + (side === 'L' ? 0 : .15) + (kind === 'k-gold' ? .12 : 0);
+      A(g, sweepFrames(0, 1), at, .55, { fill: 'none', easing: EASE.sine });
+    }
+    const start = T.chars + (side === 'L' ? 0 : .15);
+    const from = post ? `translate(${dir * 30}%, ${dir * travel}px) rotate(${dir * 8}deg)` : `translateX(${dir * 30}%)`;
+    A(wrap, [{ transform: from }, { transform: 'translate(0px, 0px) rotate(0deg)' }], start, post ? .9 : .7, { easing: post ? EASE.snapSoft : EASE.snap });
+    A(wrap, [{ opacity: 0 }, { opacity: 1 }], start, .3, { easing: EASE.sine });
+    A(wrap, [{ maskSize: '100% 100%', WebkitMaskSize: '100% 100%' }, { maskSize: '400% 400%', WebkitMaskSize: '400% 400%' }], start, post ? .9 : .7, { easing: EASE.feather });
+    const landed = start + (post ? .9 : .7);
+    cue(landed, () => wrap.classList.remove('feather'), () => wrap.classList.add('feather'));
+    // bite: food squashes 1 -> .94 -> 1, twice
+    const bite = [{ transform: 'scale(1)' }, { transform: 'scale(.94)' }, { transform: 'scale(1)' }, { transform: 'scale(.94)' }, { transform: 'scale(1)' }];
+    A(f, bite, landed + .05, .46, { fill: 'none', easing: EASE.sine });
+    // idle bite every 8s per character, alternating L / R so one happens every ~4s
+    const dur = 8, b = .46 / dur;
+    A(f, bite.map((k, i) => ({ ...k, offset: i * b / 4 })).concat({ transform: 'scale(1)', offset: 1 }), T.idle + (side === 'L' ? 1 : 5), dur, { iterations: Infinity, fill: 'none', easing: EASE.sine });
+    // breathing: translateY ±2px over 3s, the two characters half a cycle apart
+    A(breathe, wave(p => ({ transform: `translateY(${(-2 * sin(p)).toFixed(3)}px)` })), T.idle, 3, { iterations: Infinity, fill: 'none', iterationStart: side === 'L' ? 0 : .5 });
+  };
+  makeChar('L'); makeChar('R');
+
+  // ---- 4. Sakura petals pop out near each character
+  const PETAL = svgURL(PETAL_SVG), pr = rng(21);
+  for (const side of ['L', 'R']) {
+    const o = PETAL_POPS[side];
+    for (let i = 0; i < 6; i++) {
+      const p = el('img', 'petal', fx); p.src = PETAL; p.alt = '';
+      const s = 14 + pr() * 12; Object.assign(p.style, { width: s + 'px', height: s + 'px' });
+      const x0 = o.x * W, y0 = o.y * H, a = (-70 + pr() * 140) * Math.PI / 180, d = 50 + pr() * 110;
+      const x1 = x0 + o.dir * Math.cos(a) * d, y1 = y0 + Math.sin(a) * d * .8, rot = (pr() - .5) * 400;
+      const at = T.accents + .05 + i * .05 + (side === 'R' ? .1 : 0);
+      A(p, [{ transform: `translate(${x0}px, ${y0}px) scale(0) rotate(0deg)` },
+            { transform: `translate(${(x0 + x1) / 2}px, ${(y0 + y1) / 2 - 12}px) scale(1.1) rotate(${rot / 2}deg)`, offset: .35 },
+            { transform: `translate(${x1}px, ${y1 + 20}px) scale(.8) rotate(${rot}deg)` }], at, 1.0, { fill: 'none', easing: EASE.out });
+      A(p, [{ opacity: 0 }, { opacity: 1, offset: .12 }, { opacity: 1, offset: .6 }, { opacity: 0 }], at, 1.0, { fill: 'none' });
+    }
+  }
+  // Idle petals drift right to left across the banner
+  for (let i = 0; i < 8; i++) {
+    const p = el('img', 'petal', fx); p.src = PETAL; p.alt = '';
+    const s = 12 + pr() * 14; Object.assign(p.style, { width: s + 'px', height: s + 'px' });
+    const y0 = H * (.12 + pr() * .76), amp = 12 + pr() * 22, sways = 2 + Math.floor(pr() * 3), spin = (pr() < .5 ? -1 : 1) * (360 + pr() * 360);
+    const dur = 11 + pr() * 7, dy = (pr() - .5) * H * .3;
+    A(p, wave(q => ({ transform: `translate(${(W + 40 - q * (W + 100)).toFixed(1)}px, ${(y0 + dy * q + amp * sin(q * sways)).toFixed(1)}px) rotate(${(spin * q).toFixed(1)}deg) scaleX(${(.6 + .4 * Math.abs(Math.cos(q * sways * Math.PI))).toFixed(3)})`,
+                       opacity: q < .04 ? q / .04 * .9 : q > .96 ? (1 - q) / .04 * .9 : .9 }), 48),
+      T.idle + i * 1.45, dur, { iterations: Infinity, fill: 'none' });
+  }
+
+  // ---- 5. Camera: punch on impact; in the reel, start zoomed in on the logo
+  A(camera, [{ transform: 'scale(1)' }, { transform: 'scale(1.03)', offset: .3 }, { transform: 'scale(1)' }], T.impact, .5, { fill: 'none', easing: EASE.sine });
+  if (FORMAT === 'reel') {
+    const Z = 0.9 / (logoBox.w / W);
+    const cx = logoBox.x + logoBox.w / 2, cy = (R.letters.y + R.tagline.y + R.tagline.h) / 2;
+    A(camera, [{ transform: `translate(${((W / 2 - cx) * Z).toFixed(1)}px, ${((H / 2 - cy) * Z).toFixed(1)}px) scale(${Z.toFixed(3)})` },
+               { transform: 'translate(0px, 0px) scale(1)' }], T.zoom, 1.0, { easing: EASE.camera });
+  }
+
+  // ---- Debug boxes
+  for (const k in R) { const d = box(el('div', '', $('debug')), R[k]); d.textContent = k; }
+}
+
+// ===========================================================================
+// Sizing: the banner keeps the PNG's ratio and is centred in the frame
+// ===========================================================================
+function fit() {
+  const vw = innerWidth, vh = innerHeight;
+  let FW = vw, FH = vh;
+  if (FRAMES[FORMAT]) {
+    ({ w: FW, h: FH } = FRAMES[FORMAT]);
+    const k = Math.min(vw / FW, vh / FH);
+    frame.style.transform = `translate(${(vw - FW * k) / 2}px, ${(vh - FH * k) / 2}px) scale(${k})`;
+  } else frame.style.transform = 'none';
+  frame.style.width = FW + 'px'; frame.style.height = FH + 'px';
+  const s = Math.min(FW / W, FH / H);
+  banner.style.width = W + 'px'; banner.style.height = H + 'px';
+  banner.style.transform = `translate(${(FW - W * s) / 2}px, ${(FH - H * s) / 2}px) scale(${s})`;
+}
+
+// ===========================================================================
+// Playback
+// ===========================================================================
+var lastT = -1, T0 = null, raf = 0;
+function render(t) {                    // seek every animation to time t (seconds); used by the exporter
+  cancelAnimationFrame(raf); T0 = null;
+  for (const a of ANIMS) { a.pause(); a.currentTime = t * 1000; }
+  applyCues(t); lastT = t;
+}
+function tick() {
+  if (T0 === null) return;
+  applyCues((document.timeline.currentTime - T0) / 1000);
+  raf = requestAnimationFrame(tick);
+}
+function play() {
+  if (STILL !== null || REDUCED || !ANIMS.length) return;
+  cancelAnimationFrame(raf);
+  for (const a of ANIMS) { a.pause(); a.currentTime = 0; }
+  applyCues(0);
+  T0 = document.timeline.currentTime;
+  for (const a of ANIMS) a.startTime = T0;
+  raf = requestAnimationFrame(tick);
+}
+$('replay').addEventListener('click', play);
+addEventListener('keydown', e => { if (['r', 'R', ' ', 'Enter'].includes(e.key) && (RECORD || e.target === document.body)) { e.preventDefault(); play(); } });
+if (RECORD) addEventListener('pointerdown', play);
+addEventListener('resize', fit);
+
+(async function init() {
+  const img = new Image();
+  img.src = SRC;
+  const ok = await img.decode().then(() => true, () => false);
+  if (ok) { W = img.naturalWidth; H = img.naturalHeight; }
+  fit();
+  if (!ok) { document.body.classList.add('missing'); stage.classList.remove('waiting'); return; }
+  build();
+  try { await document.fonts.ready; } catch (e) {}
+  await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+  if (STILL !== null) render(STILL);
+  else if (REDUCED) { document.querySelectorAll('.petal').forEach(p => p.style.display = 'none'); render(STATIC_T); }
+  else render(0);
+  stage.classList.remove('waiting');
+  if (STILL === null && !REDUCED) play();
+})();
+</script>
+</body>
+</html>
