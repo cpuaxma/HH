@@ -612,7 +612,6 @@ function build() {
 // ===========================================================================
 const ease = {
   inOut: t => t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2,
-  whip: t => t < .5 ? 16 * Math.pow(t, 5) : 1 - Math.pow(-2 * t + 2, 5) / 2,
   sine: t => -(Math.cos(Math.PI * t) - 1) / 2,
   out: t => 1 - Math.pow(1 - t, 3),
 };
@@ -631,8 +630,8 @@ function buildReel(R, logoBox, lc) {
   // [start, end, from, to, easing]: holds push in slowly, moves are quick (whips are motion-blurred in export)
   const moves = [
     [0, 2.35, S.logoIn, S.logoOut, ease.out],     [2.35, 2.8, S.logoOut, S.pizzaIn, ease.inOut],
-    [2.8, 5.45, S.pizzaIn, S.pizzaOut, ease.sine], [5.45, 5.85, S.pizzaOut, S.burgIn, ease.whip],
-    [5.85, 8.5, S.burgIn, S.burgOut, ease.sine],   [8.5, 8.95, S.burgOut, S.panIn, ease.inOut],
+    [2.8, 5.4, S.pizzaIn, S.pizzaOut, ease.sine],  [5.4, 5.95, S.pizzaOut, S.burgIn, ease.inOut],
+    [5.95, 8.5, S.burgIn, S.burgOut, ease.sine],   [8.5, 8.95, S.burgOut, S.panIn, ease.inOut],
     [8.95, 11.15, S.panIn, S.panOut, ease.sine],   [11.15, 11.65, S.panOut, S.endIn, ease.inOut],
     [11.65, DURATION, S.endIn, S.endOut, ease.out],
   ];

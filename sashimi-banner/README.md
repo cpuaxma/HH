@@ -31,8 +31,8 @@ The reel films the same animated banner with a moving camera. The camera's path 
 | Time | Scene |
 |---|---|
 | 0.0–2.35s | The brush field paints in. The logo fills the frame width as it stamps on, and the camera pulls back slightly. |
-| 2.35–5.45s | The camera moves to the left girl. She snaps in as it arrives. **SUSHI / PIZZA** rises in with a cream brush underline, and the camera pushes in slowly. |
-| 5.45–8.5s | A whip pan to the right girl. **SUSHI / BURGER**. |
+| 2.35–5.4s | The camera moves to the left girl. She snaps in as it arrives. **SUSHI / PIZZA** rises in with a cream brush underline, and the camera pushes in slowly. |
+| 5.4–8.5s | A whip pan to the right girl. **SUSHI / BURGER**. |
 | 8.5–11.15s | The camera pulls back and pans along the banner. *Classic sushi. / Bold fusion.* |
 | 11.15–15s | End card. The camera returns to the logo, and the ink splash and punch hit. "Sushi burgers & mouth-watering pizzas" appears above the logo, and the branches (Mansourieh • Tripoli • Faraya • Jal el Dib) and the Instagram handle appear below it. |
 
@@ -80,11 +80,11 @@ In headless Chromium without a GPU, the banner plays at close to 60fps after the
 
 ## Exporting MP4s
 
-From the repo root. These are the settings used for the delivered files: 60fps, motion blur from 4 sub-frames per frame (180° shutter), and 4 browsers rendering in parallel:
+From the repo root. These are the settings used for the delivered files: 60fps, motion blur from sub-frames, and 4 browsers rendering in parallel. The reel uses 8 sub-frames per frame and a 270° shutter (`SHUTTER=0.75`), so its whip pans smear instead of strobing. The banner and post use 4 sub-frames and a 180° shutter:
 
 ```
 # Reel, 1080x1920
-SIZE=1080x1920 BLUR=4 JOBS=4 SHOT=jpeg node tools/export-video.js 60 sashimi-banner/exports/sashimi-reel.mp4 'sashimi-banner/index.html?format=reel&record=1'
+SIZE=1080x1920 BLUR=8 SHUTTER=0.75 JOBS=4 SHOT=jpeg node tools/export-video.js 60 sashimi-banner/exports/sashimi-reel.mp4 'sashimi-banner/index.html?format=reel&record=1'
 # Banner, 3840x528 (4K wide): a 1920x264 layout at 2x pixel density
 SIZE=1920x264 SCALE=2 BLUR=4 JOBS=4 SHOT=jpeg node tools/export-video.js 60 sashimi-banner/exports/sashimi-banner-4k.mp4 'sashimi-banner/index.html?record=1'
 # Square post, 1080x1080
@@ -93,4 +93,4 @@ SIZE=1080x1080 BLUR=4 JOBS=4 SHOT=jpeg node tools/export-video.js 60 sashimi-ban
 
 The banner and post exports are the intro plus 8 seconds of the idle loop (14s). The reel is the whole 15s story. Leave out `BLUR` for a quick draft. For a supersampled reel, add `SCALE=2 OUT=1080x1920`, which takes about four times as long. `exports/` is git-ignored.
 
-Render time: without a GPU, each frame takes about 0.65s at 1080×1920. With `BLUR=4`, the 15s reel is 3,600 captures, about 15–25 minutes with `JOBS=4` on 4 cores.
+Render time: without a GPU, each frame takes about 0.65s at 1080×1920. With `JOBS=4` on 4 cores, `BLUR=4` takes about 19 minutes for the reel or the 4K banner, and `BLUR=8` about twice that.
