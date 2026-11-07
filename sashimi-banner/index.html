@@ -6,7 +6,7 @@
 <title>Sashimi Banner Animation</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
 <style>
   :root {
     --red: #e8343c;
@@ -27,8 +27,31 @@
   #frame { position: absolute; left: 0; top: 0; overflow: hidden; transform-origin: 0 0; background: var(--backdrop); }
 
   /* Everything inside #banner is laid out in the PNG's own pixels (W x H) and scaled once to fit */
+  #punch { position: absolute; inset: 0; transform-origin: 50% 50%; will-change: transform; }
   #banner { position: absolute; left: 0; top: 0; transform-origin: 0 0; }
   #camera { position: absolute; inset: 0; transform-origin: 50% 50%; will-change: transform; }
+  /* reel: the camera maps banner pixels straight to frame pixels; the band's top and bottom edges are feathered */
+  body.reel #camera {
+    transform-origin: 0 0;
+    -webkit-mask-image: linear-gradient(180deg, transparent 0%, #000 9%, #000 91%, transparent 100%);
+            mask-image: linear-gradient(180deg, transparent 0%, #000 9%, #000 91%, transparent 100%);
+  }
+  #reelBack, #reelFront { position: absolute; inset: 0; pointer-events: none; display: none; overflow: hidden; }
+  body.reel #reelBack, body.reel #reelFront { display: block; }
+  .rtext { position: absolute; left: 0; right: 0; text-align: center; color: var(--cream); }
+  .rtext .ln { display: block; overflow: hidden; padding: 0 0 .06em; }
+  .rtext .ln > span { display: inline-block; will-change: transform; }
+  .hl { font: 800 176px/.98 Poppins, system-ui, sans-serif; letter-spacing: -.015em; text-shadow: 0 .05em .16em rgba(20,16,30,.28); }
+  .hl.small { font: 700 112px/1.04 Poppins, system-ui, sans-serif; letter-spacing: -.01em; }
+  .kicker { font: 600 46px/1.2 Poppins, system-ui, sans-serif; letter-spacing: .01em; }
+  .branches { font: 600 42px/1.3 Poppins, system-ui, sans-serif; letter-spacing: .015em; }
+  .pill {
+    display: inline-flex; align-items: center; gap: .45em;
+    font: 700 46px/1 Poppins, system-ui, sans-serif; color: var(--cream);
+    background: rgba(22,20,34,.82); padding: .5em 1em .5em .8em; border-radius: 99em;
+  }
+  .pill svg { width: 1.1em; height: 1.1em; }
+  .rfade { opacity: 0; will-change: transform, opacity; }
   .clip { position: absolute; inset: 0; overflow: hidden; }
   body.post #chars { overflow: visible; }
   .abs { position: absolute; left: 0; top: 0; }
@@ -83,6 +106,7 @@
             mask-image: radial-gradient(closest-side, #000 62%, transparent 100%);
   }
 
+  .chomp { position: absolute; left: 0; top: 0; opacity: 0; will-change: transform, opacity; pointer-events: none; display: block; }
   .petal, .splash { position: absolute; left: 0; top: 0; opacity: 0; will-change: transform, opacity; pointer-events: none; display: block; }
 
   #debug { position: absolute; inset: 0; pointer-events: none; display: none; }
@@ -116,13 +140,17 @@
 <body>
 <div id="stage" class="waiting">
   <div id="frame">
-    <div id="banner" role="img" aria-label="Sashimi Fusion Sushi banner">
-      <div id="camera">
-        <div class="clip" id="back"></div>
-        <div class="clip" id="chars"></div>
-        <div class="clip" id="fx"></div>
-        <div id="debug"></div>
+    <div id="punch">
+      <div id="reelBack"></div>
+      <div id="banner" role="img" aria-label="Sashimi Fusion Sushi banner">
+        <div id="camera">
+          <div class="clip" id="back"></div>
+          <div class="clip" id="chars"></div>
+          <div class="clip" id="fx"></div>
+          <div id="debug"></div>
+        </div>
       </div>
+      <div id="reelFront"></div>
     </div>
     <div id="missing"><p><code>sashimi_banner.png</code> was not found.<br>Put the banner PNG next to this <code>index.html</code> and reload.</p></div>
   </div>
@@ -138,7 +166,11 @@
 // Layout map: fractions of the banner's width (x, w) and height (y, h).
 // Run the page with ?debug=1 to see these boxes drawn over the PNG and tune them.
 // ===========================================================================
-const SRC = 'sashimi_banner.png';
+// The artwork. sashimi_banner.png is the flat 2374x326 crop and sets the layout units. If the 4x
+// master (Real-ESRGAN upscale of the same file) sits next to it, it is drawn instead, so close-ups,
+// zooms and 2x/4K renders stay sharp. ?sd forces the original PNG.
+const SRC_SD = 'sashimi_banner.png', SRC_HD = 'sashimi_banner@4x.jpg', HD_SCALE = 4;
+let SRC = SRC_SD;
 const REGIONS = {
   charL:    { x: 0.000, y: 0.00, w: 0.190, h: 1.00 },   // left character (and the background behind her)
   charR:    { x: 0.780, y: 0.00, w: 0.220, h: 1.00 },   // right character, out to the banner's right edge
@@ -166,6 +198,8 @@ const PRINT = { red: '#f7646e', red2: '#e8545f', deep: '#c44a5c', navy: '#40465d
 const FOOD_ORIGIN = { L: '5% 15%', R: '95% 12%' };     // the corner of the food at each mouth
 const TAIL_ORIGIN = '0% 55%';                          // where the tail meets the lettering
 const PETAL_POPS = { L: { x: 0.165, y: 0.28, dir: 1 }, R: { x: 0.805, y: 0.28, dir: -1 } };
+// "Chomp" accent lines beside each mouth on every bite: position (fractions) and fan direction (deg)
+const CHOMP = { L: { x: 0.128, y: 0.30, rot: 35 }, R: { x: 0.824, y: 0.32, rot: -35 } };
 
 const EASE = {
   snap: 'cubic-bezier(.2,.9,.3,1.2)',
@@ -176,6 +210,9 @@ const EASE = {
   wipe: 'cubic-bezier(.5,0,.2,1)',
   sine: 'cubic-bezier(.37,0,.63,1)',
   camera: 'cubic-bezier(.7,0,.2,1)',
+  brush: 'cubic-bezier(.55,0,.1,1)',
+  lineIn: 'cubic-bezier(.2,1,.3,1.08)',
+  lineOut: 'cubic-bezier(.7,0,.84,0)',
 };
 
 // ===========================================================================
@@ -190,18 +227,22 @@ if (RECORD) document.body.classList.add('record');
 if (params.has('debug')) document.body.classList.add('debug');
 if (STILL !== null || REDUCED) document.body.classList.add('still');
 
-// Timeline (seconds). The reel holds the large logo for an extra second before zooming out.
-const SHIFT = FORMAT === 'reel' ? 1.0 : 0;
-const T = {
-  reveal: 0, revealEnd: 1.2,
-  logo: 1.2, tail: 1.9, tagline: 1.8, logoDone: 2.3,
-  zoom: 2.2,                                    // reel only: 2.2 -> 3.2
-  chars: 2.2 + SHIFT, accents: 3.4 + SHIFT, impact: 4.2 + SHIFT,
-  idle: 6.0 + SHIFT,
+// Timeline (seconds). Each character has her own entrance, glint and petal times, so the reel can
+// bring each one in as the camera arrives on her. `duration` is what the exporter renders.
+const TIMES = {
+  banner: { reveal: 0, revealEnd: 1.2, logo: 1.2, tail: 1.9, tagline: 1.8,
+            charL: 2.2, charR: 2.35, glintL: 3.4, glintR: 3.55, popL: 3.45, popR: 3.6,
+            impact: 4.2, idle: 6.0, duration: 14, still: 6.0 },
+  // reel scenes: logo 0-2.35 | sushi pizza 2.35-5.45 | sushi burger 5.45-8.5 | pan 8.5-11.2 | end card 11.2-15
+  reel:   { reveal: 0, revealEnd: 1.0, logo: 0.95, tail: 1.6, tagline: 1.5,
+            charL: 2.5, charR: 5.6, glintL: 3.7, glintR: 6.85, popL: 3.55, popR: 6.7,
+            impact: 11.7, idle: 8.6, duration: 15, still: 13.6 },
 };
+TIMES.post = TIMES.banner;
+const T = TIMES[FORMAT];
 const LOOP = false;
-const DURATION = T.idle + 8;      // the exporter renders the intro plus 8s of the idle loop
-const STATIC_T = T.idle;          // frame shown for prefers-reduced-motion: intro finished, idle at rest
+const DURATION = T.duration;      // banner / post: the intro plus 8s of the idle loop; reel: the whole story
+const STATIC_T = T.still;         // frame shown for prefers-reduced-motion
 
 // ===========================================================================
 const $ = id => document.getElementById(id);
@@ -229,10 +270,10 @@ function cropBG(r, parent, rel, cls = '') {
 }
 // Crop of the PNG run through an SVG filter (colour key, glow, clean plate). Rendered once, then
 // only moved with transform / opacity / clip-path / mask-position.
-function cropSVG(r, filter, parent, rel, cls = '') {
+function cropSVG(r, filter, parent, rel, cls = '', src = SRC) {
   const e = box(el('div', 'abs ' + cls, parent), r, rel);
   e.innerHTML = `<svg xmlns="${SVGNS}" width="${r.w}" height="${r.h}" viewBox="${r.x} ${r.y} ${r.w} ${r.h}" preserveAspectRatio="none">` +
-    `<image href="${SRC}" width="${W}" height="${H}" filter="url(#${filter})"/></svg>`;
+    `<image href="${src}" width="${W}" height="${H}" filter="url(#${filter})"/></svg>`;
   return e;
 }
 
@@ -286,26 +327,37 @@ function strokes() {
   const r = rng(11), list = [], a = STROKE_ANGLE * Math.PI / 180, cx = W / 2, cy = H / 2;
   const local = ([x, y]) => [cx + (x - cx) * Math.cos(a) + (y - cy) * Math.sin(a), cy - (x - cx) * Math.sin(a) + (y - cy) * Math.cos(a)];
   const reach = (H + 140) * Math.tan(a), n = Math.ceil((W + reach + 300) / 215);
+  const span = Math.max(.4, (T.revealEnd - T.reveal) - .42);    // the sweep accelerates left to right
   for (let i = 0; i < n; i++) {
     const x = -reach - 150 + i * ((W + reach + 300) / n) + (r() - .5) * 40;
     const lo = local([x, H + 70]), hi = local([x + reach, -70]);
     list.push({ x: lo[0], y0: hi[1], y1: lo[1], up: i % 2 === 0, seed: 7 + i * 13,
-      color: [PRINT.red, PRINT.red2, PRINT.red, PRINT.deep][i % 4], w: 290 + r() * 40, start: i * (1.0 / n) });
+      color: [PRINT.red, PRINT.red2, PRINT.red, PRINT.deep][i % 4], w: 290 + r() * 40,
+      tilt: (r() - .5) * 9, dur: .26 + r() * .1, start: span * Math.pow(i / (n - 1), .8) });
   }
   return list;
 }
-// One stroke as an image: a bar with displaced (rough) edges and dry-brush streaks, rasterised once
+// One stroke as an image: a bar with ragged, tapering ends, displaced (rough) edges and dry-brush
+// streaks, rasterised once
 function strokeSVG(s, pad) {
   const w = s.w, h = s.y1 - s.y0, box = `x="${-pad}" y="${-pad}" width="${w + 2 * pad}" height="${h + 2 * pad}"`;
+  const r = rng(s.seed), end = Math.min(70, h * .12), N = 9, top = [], bot = [];
+  for (let i = 0; i <= N; i++) {
+    const x = w * i / N, mid = 1 - Math.abs(i / N - .5) * 2;            // ends taper towards the sides
+    top.push([x, end * (1 - mid) * (.5 + r() * .5) + r() * end * .35]);
+    bot.push([x, h - end * (1 - mid) * (.4 + r() * .6) - r() * end * .3]);
+  }
+  const d = 'M' + top.map(p => p.map(v => v.toFixed(1)).join(' ')).join('L') +
+            'L' + bot.reverse().map(p => p.map(v => v.toFixed(1)).join(' ')).join('L') + 'Z';
   return `<svg xmlns="${SVGNS}" viewBox="${-pad} ${-pad} ${w + 2 * pad} ${h + 2 * pad}" width="${(w + 2 * pad).toFixed(0)}" height="${(h + 2 * pad).toFixed(0)}">
     <filter id="r" filterUnits="userSpaceOnUse" ${box}>
       <feTurbulence type="fractalNoise" baseFrequency=".022 .05" numOctaves="3" seed="${s.seed}" result="n"/>
       <feDisplacementMap in="SourceGraphic" in2="n" scale="38" xChannelSelector="R" yChannelSelector="G" result="d"/>
       <feTurbulence type="fractalNoise" baseFrequency=".5 .035" numOctaves="2" seed="${s.seed + 50}" result="s"/>
-      <feColorMatrix in="s" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  2.4 0 0 0 -.1" result="dry"/>
+      <feColorMatrix in="s" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  ${(s.dry || [2.4, -.1]).join(' 0 0 0 ')}" result="dry"/>
       <feComposite in="d" in2="dry" operator="in"/>
     </filter>
-    <rect width="${w.toFixed(1)}" height="${h.toFixed(1)}" fill="${s.color}" filter="url(#r)"/>
+    <path d="${d}" fill="${s.color}" filter="url(#r)"/>
   </svg>`;
 }
 
@@ -319,11 +371,7 @@ function splashSVG() {
   const mid = (p, q) => [(p[0] + q[0]) / 2, (p[1] + q[1]) / 2];
   let d = `M${mid(pts[N - 1], pts[0]).map(v => v.toFixed(1)).join(' ')}`;
   for (let i = 0; i < N; i++) { const p = pts[i], m = mid(p, pts[(i + 1) % N]); d += ` Q${p[0].toFixed(1)} ${p[1].toFixed(1)} ${m[0].toFixed(1)} ${m[1].toFixed(1)}`; }
-  let drops = '';
-  for (let i = 0; i < 18; i++) {
-    const a = r() * Math.PI * 2, rad = 78 + r() * 20, s = 1.5 + r() * 4.5;
-    drops += `<circle cx="${(Math.cos(a) * rad).toFixed(1)}" cy="${(Math.sin(a) * rad).toFixed(1)}" r="${s.toFixed(1)}"/>`;
-  }
+  const drops = '';
   return `<svg xmlns="${SVGNS}" viewBox="-100 -100 200 200" width="800" height="800">
     <filter id="w" x="-10%" y="-10%" width="120%" height="120%"><feTurbulence type="fractalNoise" baseFrequency=".06" numOctaves="2" seed="9"/>
       <feDisplacementMap in="SourceGraphic" scale="7" xChannelSelector="R" yChannelSelector="G"/></filter>
@@ -332,6 +380,10 @@ function splashSVG() {
   </svg>`;
 }
 
+const DROP_SVG = c => `<svg xmlns="${SVGNS}" viewBox="-12 -12 24 24" width="48" height="48"><path d="M0-10C5-4 7.5 0 7.5 3.5A7.5 7.5 0 0 1-7.5 3.5C-7.5 0-5-4 0-10Z" fill="${c}"/></svg>`;
+const CHOMP_SVG = `<svg xmlns="${SVGNS}" viewBox="-50 -60 100 70" width="200" height="140"><g stroke="#fff7f0" stroke-width="7" stroke-linecap="round" fill="none">
+  <path d="M0-18V-50"/><path d="M15-14L33-40"/><path d="M-15-14L-33-40"/></g></svg>`;
+const RING_SVG = `<svg xmlns="${SVGNS}" viewBox="-50 -50 100 100" width="400" height="400"><circle r="46" fill="none" stroke="#fff7f0" stroke-width="2.2"/></svg>`;
 const PETAL_SVG = `<svg xmlns="${SVGNS}" viewBox="-12 -12 24 24" width="48" height="48">
   <path d="M0 10.5C-6.8 7-9.6-2.4-4.6-9.4L0-6.2 4.6-9.4C9.6-2.4 6.8 7 0 10.5Z" fill="#fff"/>
   <path d="M0 9C-1.6 4-1.2-1.8 0-4.6" stroke="#f1d9de" stroke-width="1.1" fill="none" stroke-linecap="round"/></svg>`;
@@ -359,6 +411,7 @@ function build() {
   buildFilters();
   const back = $('back'), chars = $('chars'), fx = $('fx');
   const R = {}; for (const k in REGIONS) R[k] = px(REGIONS[k]);
+  const reel = FORMAT === 'reel', post = FORMAT === 'post';
 
   // ---- 1. Brush reveal: red strokes paint in (pre-rendered rough bars, clip-path wipes), and the
   // banner is revealed through the same strokes a beat later (CSS mask referencing an SVG mask)
@@ -371,104 +424,146 @@ function build() {
     const img = el('img', 'abs layer', rotor);
     img.src = svgURL(strokeSVG(s, SP)); img.alt = '';
     box(img, { x: s.x - s.w / 2 - SP, y: s.y0 - SP, w: s.w + 2 * SP, h: s.y1 - s.y0 + 2 * SP });
+    img.style.transform = `rotate(${s.tilt.toFixed(2)}deg)`;
     const hidden = s.up ? 'inset(100% 0 0 0)' : 'inset(0 0 100% 0)';
-    A(img, [{ clipPath: hidden }, { clipPath: 'inset(0% 0 0% 0)' }], T.reveal + s.start, .3, { easing: 'cubic-bezier(.45,0,.25,1)' });
+    A(img, [{ clipPath: hidden }, { clipPath: 'inset(0% 0 0% 0)' }], T.reveal + s.start, s.dur, { easing: EASE.brush });
   });
   $('defs').querySelector('defs').insertAdjacentHTML('beforeend', `
     <mask id="reveal" maskUnits="userSpaceOnUse" x="0" y="0" width="${W}" height="${H}">
       <g fill="none" stroke="#fff" stroke-linecap="butt" transform="${rot}">${S.map(s =>
-        `<path class="ms" d="M${s.x.toFixed(1)} ${(s.up ? s.y1 : s.y0).toFixed(1)}V${(s.up ? s.y0 : s.y1).toFixed(1)}" stroke-width="${s.w - 40}" pathLength="1" stroke-dasharray="1 1" stroke-dashoffset="1"/>`).join('')}</g>
+        `<path class="ms" transform="rotate(${s.tilt.toFixed(2)} ${s.x.toFixed(1)} ${((s.y0 + s.y1) / 2).toFixed(1)})" d="M${s.x.toFixed(1)} ${(s.up ? s.y1 : s.y0).toFixed(1)}V${(s.up ? s.y0 : s.y1).toFixed(1)}" stroke-width="${s.w - 40}" pathLength="1" stroke-dasharray="1 1" stroke-dashoffset="1"/>`).join('')}</g>
       <rect id="maskFull" width="${W}" height="${H}" fill="#fff" opacity="0"/>
     </mask>`);
-  document.querySelectorAll('#reveal .ms').forEach((p, i) => A(p, [{ strokeDashoffset: 1 }, { strokeDashoffset: 0 }], T.reveal + S[i].start + .1, .3, { easing: 'cubic-bezier(.45,0,.25,1)' }));
+  document.querySelectorAll('#reveal .ms').forEach((p, i) => A(p, [{ strokeDashoffset: 1 }, { strokeDashoffset: 0 }], T.reveal + S[i].start + .1, S[i].dur, { easing: EASE.brush }));
   A($('maskFull'), [{ opacity: 0 }, { opacity: 1 }], T.revealEnd - .15, .15);
   const revealed = el('div', 'abs', back, { width: W + 'px', height: H + 'px' });
   const MASK = 'url(#reveal)';
   // the centre's edges are feathered during the reveal; the feather opens up as the characters land
   const base = cropBG({ x: C - 1, y: 0, w: D - C + 2, h: H }, revealed, undefined, 'layer edgefade');
-  A(base, [{ maskSize: '100% 100%', WebkitMaskSize: '100% 100%' }, { maskSize: '112% 100%', WebkitMaskSize: '112% 100%' }], T.chars, .85, { easing: EASE.sine });
-  const patch = cropSVG(R.patch, 'clean', revealed, undefined, 'layer');   // the logo, painted out
+  A(base, [{ maskSize: '100% 100%', WebkitMaskSize: '100% 100%' }, { maskSize: '112% 100%', WebkitMaskSize: '112% 100%' }], T.charL, .85, { easing: EASE.sine });
+  // the logo, painted out. It stays under the keyed logo for good, so the logo can move freely.
+  // Built from the original PNG: the upscale adds a faint dark fringe round the letters that the fill would keep.
+  cropSVG(R.patch, 'clean', revealed, undefined, 'layer', SRC_SD);
   cue(T.revealEnd + .02, () => { revealed.style.mask = revealed.style.webkitMask = 'none'; },
                          () => { revealed.style.mask = revealed.style.webkitMask = MASK; });
-  cue(T.logoDone, () => patch.style.display = 'none', () => patch.style.display = '');
   // once both characters have landed the painted strokes are fully covered: stop compositing them
-  cue(T.chars + 1.1, () => rotor.style.display = 'none', () => rotor.style.display = '');
+  cue(Math.max(T.charL, T.charR) + 1.1, () => rotor.style.display = 'none', () => rotor.style.display = '');
 
   // ---- Idle: a red-keyed duplicate of the strokes drifts ±1.5% (centre only, under the logo)
   const driftBox = box(el('div', 'clip', back), { x: C, y: 0, w: D - C, h: H });
   driftBox.id = 'drift'; driftBox.style.right = 'auto'; driftBox.style.bottom = 'auto';
-  const drift = cropSVG({ x: 0, y: 0, w: W, h: H }, 'k-strokes', driftBox, { x: C, y: 0 }, 'layer');
+  const drift = cropSVG({ x: 0, y: 0, w: W, h: H }, 'k-strokes', driftBox, { x: C, y: 0 }, 'layer', SRC_SD);
   A(driftBox, [{ opacity: 0 }, { opacity: .35 }], T.idle, 1.6, { easing: EASE.sine });
   A(drift, wave(p => ({ transform: `translateX(${(sin(p) * 0.015 * W).toFixed(2)}px)` })), T.idle, 16, { iterations: Infinity, fill: 'none' });
 
-  // ---- 5. Ink splash behind the logo
-  const splash = el('img', 'splash', back);
-  splash.src = svgURL(splashSVG()); splash.alt = '';
-  const SZ = W * 0.3, lc = { x: R.letters.x + (R.tail.x + R.tail.w - R.letters.x) / 2, y: R.letters.y + R.letters.h / 2 };
-  Object.assign(splash.style, { width: SZ + 'px', height: SZ + 'px', left: (lc.x - SZ / 2) + 'px', top: (lc.y - SZ / 2) + 'px' });
-  A(splash, [{ transform: 'scale(.25) rotate(-20deg)' }, { transform: 'scale(1.12) rotate(0deg)' }], T.impact + .05, 1.3, { easing: EASE.out, fill: 'none' });
-  A(splash, [{ opacity: 0 }, { opacity: .95, offset: .06 }, { opacity: .95, offset: .35 }, { opacity: 0 }], T.impact + .05, 1.6, { fill: 'none' });
+  // ---- 5. Ink splash behind the logo: a blob, a shock ring and droplets flung outward
+  const L = R.letters, logoBox = { x: L.x, y: L.y, w: R.tail.x + R.tail.w - L.x, h: L.h };
+  const lc = { x: logoBox.x + logoBox.w / 2, y: L.y + L.h * .48 };
+  const sr = rng(17), at = T.impact + .04;
+  const blob = el('img', 'splash', back); blob.src = svgURL(splashSVG()); blob.alt = '';
+  const SZ = W * 0.3;
+  Object.assign(blob.style, { width: SZ + 'px', height: SZ + 'px', left: (lc.x - SZ / 2) + 'px', top: (lc.y - SZ / 2) + 'px' });
+  A(blob, [{ transform: 'scale(.2) rotate(-24deg)' }, { transform: 'scale(1.16) rotate(-2deg)', offset: .3 }, { transform: 'scale(1.1) rotate(0deg)' }], at, 1.5, { easing: EASE.out, fill: 'none' });
+  A(blob, [{ opacity: 0 }, { opacity: .95, offset: .04 }, { opacity: .9, offset: .45 }, { opacity: 0 }], at, 1.5, { fill: 'none' });
+  const ring = el('img', 'splash', back); ring.src = svgURL(RING_SVG); ring.alt = '';
+  Object.assign(ring.style, { width: H + 'px', height: H + 'px', left: (lc.x - H / 2) + 'px', top: (lc.y - H / 2) + 'px' });
+  A(ring, [{ transform: 'scale(.3)', opacity: .9 }, { transform: 'scale(3.2)', opacity: 0 }], at, .7, { easing: EASE.out, fill: 'none' });
+  for (let i = 0; i < 18; i++) {
+    const d = el('img', 'splash', back); d.src = svgURL(DROP_SVG(i % 3 ? PRINT.ink : PRINT.red2)); d.alt = '';
+    const s = 8 + sr() * 18, ang = sr() * Math.PI * 2, dist = W * (.08 + sr() * .1);
+    const dx = Math.cos(ang) * dist, dy = Math.sin(ang) * dist * .42, spin = (ang * 180 / Math.PI) + 90;
+    Object.assign(d.style, { width: s + 'px', height: s + 'px', left: (lc.x - s / 2) + 'px', top: (lc.y - s / 2) + 'px' });
+    const t0 = at + .02 + sr() * .08, dur = .55 + sr() * .35;
+    A(d, [{ transform: `translate(0px, 0px) rotate(${spin}deg) scale(.4)` },
+          { transform: `translate(${(dx * .75).toFixed(1)}px, ${(dy * .75).toFixed(1)}px) rotate(${spin}deg) scale(1.1, 1.5)`, offset: .45 },
+          { transform: `translate(${dx.toFixed(1)}px, ${(dy + H * .22).toFixed(1)}px) rotate(${spin + 40}deg) scale(.7)` }], t0, dur, { easing: EASE.out, fill: 'none' });
+    A(d, [{ opacity: 0 }, { opacity: 1, offset: .08 }, { opacity: 1, offset: .6 }, { opacity: 0 }], t0, dur, { fill: 'none' });
+  }
 
-  // ---- 2. Logo: letters wipe on left to right, tail flicks in, tagline tightens
-  const L = R.letters;
+  // ---- 2. Logo: letters stamp on left to right, the tail springs in, the tagline tightens.
+  // All of it sits in one group, which pulses on the impact and floats gently in the idle loop.
+  const logoG = el('div', 'abs layer', back, { width: W + 'px', height: H + 'px', transformOrigin: `${lc.x}px ${lc.y}px` });
+  const logoF = el('div', 'abs', logoG, { width: W + 'px', height: H + 'px', transformOrigin: `${lc.x}px ${lc.y}px` });
   for (let i = 0; i < LETTER_X.length - 1; i++) {
     const [y0, y1] = LETTER_Y[i], x0 = LETTER_X[i] * W, x1 = LETTER_X[i + 1] * W;
-    const c = cropSVG({ x: x0, y: y0 * H, w: x1 - x0 + 1, h: (y1 - y0) * H }, 'k-white', back, undefined, 'letter');
-    A(c, [{ clipPath: 'inset(0 100% 0 0)' }, { clipPath: 'inset(0 0% 0 0)' }], T.logo + i * .08, .3, { easing: EASE.wipe });
+    const c = cropSVG({ x: x0, y: y0 * H, w: x1 - x0 + 1, h: (y1 - y0) * H }, 'k-white', logoF, undefined, 'letter layer');
+    c.style.transformOrigin = '50% 85%';
+    const t = T.logo + i * .08;
+    A(c, [{ clipPath: 'inset(0 100% 0 0)' }, { clipPath: 'inset(0 0% 0 0)' }], t, .24, { easing: EASE.wipe });
+    A(c, [{ transform: 'translateY(-12px) scale(1.24) rotate(-4deg)' }, { transform: 'translateY(0px) scale(1) rotate(0deg)' }], t, .46, { easing: EASE.back });
   }
-  const tail = cropSVG(R.tail, 'k-white', back, undefined, 'tail');
+  const tail = cropSVG(R.tail, 'k-white', logoF, undefined, 'tail');
   tail.style.transformOrigin = TAIL_ORIGIN;
-  A(tail, [{ transform: 'rotate(-12deg)' }, { transform: 'rotate(0deg)' }], T.tail, .4, { easing: EASE.back });
-  A(tail, [{ opacity: 0 }, { opacity: 1 }], T.tail, .12);
+  A(tail, [{ transform: 'rotate(-30deg) scale(.7)', easing: EASE.out }, { transform: 'rotate(8deg) scale(1.06)', offset: .42, easing: EASE.sine },
+           { transform: 'rotate(-3deg) scale(.99)', offset: .72, easing: EASE.sine }, { transform: 'rotate(0deg) scale(1)' }], T.tail, .7);
+  A(tail, [{ opacity: 0 }, { opacity: 1 }], T.tail, .1);
   const G = R.tagline, n = TAG_CUTS.length - 1, em = G.h * 0.75;   // ~ the tagline's font size
   for (let i = 0; i < n; i++) {
     const x0 = TAG_CUTS[i] * W, x1 = TAG_CUTS[i + 1] * W, slot = i < TAG_SPACE ? i : i + 1;
-    const c = cropSVG({ x: x0, y: G.y, w: x1 - x0 + .5, h: G.h }, 'k-white', back, undefined, 'tag');
+    const c = cropSVG({ x: x0, y: G.y, w: x1 - x0 + .5, h: G.h }, 'k-white', logoF, undefined, 'tag');
     const spread = (slot - n / 2) * 0.4 * em;                      // 0.4em of letter-spacing, collapsing
-    A(c, [{ transform: `translate(${spread.toFixed(1)}px, 8px)` }, { transform: 'translate(0px, 0px)' }], T.tagline, .55, { easing: EASE.out });
-    A(c, [{ opacity: 0 }, { opacity: 1 }], T.tagline, .4, { easing: EASE.sine });
+    A(c, [{ transform: `translate(${spread.toFixed(1)}px, 8px)` }, { transform: 'translate(0px, 0px)' }], T.tagline + i * .012, .6, { easing: EASE.out });
+    A(c, [{ opacity: 0 }, { opacity: 1 }], T.tagline + i * .012, .4, { easing: EASE.sine });
   }
   // Shimmer: a soft white glow of the keyed logo, swept every 5s
-  const logoBox = { x: L.x, y: L.y, w: R.tail.x + R.tail.w - L.x, h: L.h };
-  const pad = 16, shimmer = cropSVG({ x: logoBox.x - pad, y: logoBox.y - pad, w: logoBox.w + 2 * pad, h: logoBox.h + 2 * pad }, 'k-glow', back, undefined, 'sweep');
+  const pad = 16, shimmer = cropSVG({ x: logoBox.x - pad, y: logoBox.y - pad, w: logoBox.w + 2 * pad, h: logoBox.h + 2 * pad }, 'k-glow', logoF, undefined, 'sweep');
   shimmer.id = 'shimmer';
   const sweepFrames = (a, b) => [{ maskPosition: '100% 0', WebkitMaskPosition: '100% 0', offset: a }, { maskPosition: '0% 0', WebkitMaskPosition: '0% 0', offset: b }];
   A(shimmer, [...sweepFrames(0, .24), { maskPosition: '0% 0', WebkitMaskPosition: '0% 0', offset: 1 }], T.idle + .5, 5, { iterations: Infinity, fill: 'none', easing: EASE.sine });
   A(shimmer, sweepFrames(0, 1), T.impact + .1, 1.0, { fill: 'none', easing: EASE.sine });
+  A(shimmer, sweepFrames(0, 1), T.tail + .45, .9, { fill: 'none', easing: EASE.sine });
+  A(logoG, [{ transform: 'scale(1)' }, { transform: 'scale(1.075)', offset: .22 }, { transform: 'scale(.985)', offset: .55 }, { transform: 'scale(1)' }], T.impact, .75, { fill: 'none', easing: EASE.sine });
+  A(logoF, wave(p => ({ transform: `translateY(${(-1.8 * sin(p)).toFixed(3)}px) rotate(${(.22 * sin(p + .25) - .22).toFixed(3)}deg)` })), T.idle, 4.5, { iterations: Infinity, fill: 'none' });
 
-  // ---- 3. Characters: crops of the PNG, flown in, with bite squashes and breathing
-  const post = FORMAT === 'post';
+  // ---- 3. Characters: crops of the PNG, flown in, with bites, chomp accents and breathing
   let travel = 0;
   if (post) { const s = FRAMES.post.w / W; travel = (FRAMES.post.h / s + H) / 2 * 1.08; }
+  const CH = svgURL(CHOMP_SVG);
   const makeChar = (side) => {
     const r = side === 'L' ? R.charL : R.charR, food = side === 'L' ? R.foodL : R.foodR, dir = side === 'L' ? -1 : 1;
     const wrap = box(el('div', 'abs char feather', chars), side === 'L' ? { ...r, w: r.w + 1 } : { ...r, x: r.x - 1, w: r.w + 1 });
     const rel = { x: parseFloat(wrap.style.left), y: 0 };
-    const breathe = el('div', 'breathe', wrap);
-    cropBG({ x: rel.x, y: r.y, w: parseFloat(wrap.style.width), h: r.h }, breathe, rel);
-    const f = cropBG(food, breathe, rel, 'food');
+    const breathe = el('div', 'breathe', wrap); breathe.style.transformOrigin = '50% 100%';
+    const chew = el('div', 'breathe', breathe); chew.style.transformOrigin = side === 'L' ? '30% 100%' : '70% 100%';
+    cropBG({ x: rel.x, y: r.y, w: parseFloat(wrap.style.width), h: r.h }, chew, rel);
+    const f = cropBG(food, chew, rel, 'food');
     f.style.transformOrigin = FOOD_ORIGIN[side];
     // glints ride along with the character
     for (const [key, kind] of [['glasses' + side, 'k-red'], ['hoop' + side, 'k-gold']]) {
-      const g = cropSVG(R[key], kind, breathe, rel, 'sweep thin');
-      const at = T.accents + (side === 'L' ? 0 : .15) + (kind === 'k-gold' ? .12 : 0);
+      const g = cropSVG(R[key], kind, chew, rel, 'sweep thin');
+      const at = (side === 'L' ? T.glintL : T.glintR) + (kind === 'k-gold' ? .12 : 0);
       A(g, sweepFrames(0, 1), at, .55, { fill: 'none', easing: EASE.sine });
     }
-    const start = T.chars + (side === 'L' ? 0 : .15);
-    const from = post ? `translate(${dir * 30}%, ${dir * travel}px) rotate(${dir * 8}deg)` : `translateX(${dir * 30}%)`;
-    A(wrap, [{ transform: from }, { transform: 'translate(0px, 0px) rotate(0deg)' }], start, post ? .9 : .7, { easing: post ? EASE.snapSoft : EASE.snap });
-    A(wrap, [{ opacity: 0 }, { opacity: 1 }], start, .3, { easing: EASE.sine });
-    A(wrap, [{ maskSize: '100% 100%', WebkitMaskSize: '100% 100%' }, { maskSize: '400% 400%', WebkitMaskSize: '400% 400%' }], start, post ? .9 : .7, { easing: EASE.feather });
-    const landed = start + (post ? .9 : .7);
+    const ch = el('img', 'chomp', chew); ch.src = CH; ch.alt = '';
+    const cs = H * .2, cp = CHOMP[side];
+    Object.assign(ch.style, { width: cs + 'px', height: cs * .7 + 'px', left: (cp.x * W - rel.x - cs / 2) + 'px', top: (cp.y * H - cs * .35) + 'px' });
+    const start = side === 'L' ? T.charL : T.charR, inDur = post ? .9 : .62;
+    const from = post ? `translate(${dir * 30}%, ${dir * travel}px) rotate(${dir * 8}deg) scale(1)`
+                      : `translate(${dir * (reel ? 100 : 62)}%, 0px) rotate(${dir * -3}deg) scale(.94)`;
+    A(wrap, [{ transform: from }, { transform: 'translate(0%, 0px) rotate(0deg) scale(1)' }], start, inDur, { easing: post ? EASE.snapSoft : EASE.snap });
+    A(wrap, [{ opacity: 0 }, { opacity: 1 }], start, .16, { easing: EASE.sine });
+    A(wrap, [{ maskSize: '100% 100%', WebkitMaskSize: '100% 100%' }, { maskSize: '400% 400%', WebkitMaskSize: '400% 400%' }], start, inDur, { easing: EASE.feather });
+    const landed = start + inDur;
     cue(landed, () => wrap.classList.remove('feather'), () => wrap.classList.add('feather'));
-    // bite: food squashes 1 -> .94 -> 1, twice
-    const bite = [{ transform: 'scale(1)' }, { transform: 'scale(.94)' }, { transform: 'scale(1)' }, { transform: 'scale(.94)' }, { transform: 'scale(1)' }];
-    A(f, bite, landed + .05, .46, { fill: 'none', easing: EASE.sine });
-    // idle bite every 8s per character, alternating L / R so one happens every ~4s
-    const dur = 8, b = .46 / dur;
-    A(f, bite.map((k, i) => ({ ...k, offset: i * b / 4 })).concat({ transform: 'scale(1)', offset: 1 }), T.idle + (side === 'L' ? 1 : 5), dur, { iterations: Infinity, fill: 'none', easing: EASE.sine });
-    // breathing: translateY ±2px over 3s, the two characters half a cycle apart
-    A(breathe, wave(p => ({ transform: `translateY(${(-2 * sin(p)).toFixed(3)}px)` })), T.idle, 3, { iterations: Infinity, fill: 'none', iterationStart: side === 'L' ? 0 : .5 });
+    // a bite: the food squashes towards the mouth twice, the body dips with each chomp and the
+    // accent lines pop beside the mouth
+    const bite = (t0, every = 0) => {
+      const D = .5, o = every ? { iterations: Infinity, fill: 'none' } : { fill: 'none' }, dur = every || D, k = D / dur;
+      const at = (frames) => frames.map(([off, v]) => ({ offset: off * k, transform: v })).concat(every ? [{ offset: 1, transform: frames[frames.length - 1][1] }] : []);
+      A(f, at([[0, 'scale(1)'], [.25, 'scale(.93)'], [.5, 'scale(1)'], [.75, 'scale(.93)'], [1, 'scale(1)']]), t0, dur, { ...o, easing: EASE.sine });
+      A(chew, at([[0, 'translateY(0px) rotate(0deg)'], [.25, `translateY(2.5px) rotate(${dir * .5}deg)`], [.5, 'translateY(0px) rotate(0deg)'],
+                  [.75, `translateY(2.5px) rotate(${dir * .5}deg)`], [1, 'translateY(0px) rotate(0deg)']]), t0, dur, { ...o, easing: EASE.sine });
+      const pop = [[0, `rotate(${cp.rot}deg) scale(.3)`], [.18, `rotate(${cp.rot}deg) scale(1.15)`], [.32, `rotate(${cp.rot}deg) scale(.6)`],
+                   [.5, `rotate(${cp.rot}deg) scale(.3)`], [.68, `rotate(${cp.rot}deg) scale(1.15)`], [.82, `rotate(${cp.rot}deg) scale(.6)`], [1, `rotate(${cp.rot}deg) scale(.3)`]];
+      A(ch, at(pop), t0, dur, { ...o, easing: EASE.out });
+      const op = [[0, 0], [.14, 1], [.34, 0], [.5, 0], [.64, 1], [.84, 0], [1, 0]].map(([off, v]) => ({ offset: off * k, opacity: v }));
+      A(ch, every ? op.concat({ offset: 1, opacity: 0 }) : op, t0, dur, o);
+    };
+    bite(landed + .05);
+    // idle: one bite every 8s per character, alternating L / R so one happens every ~4s
+    bite(T.idle + (side === 'L' ? 1 : 5), 8);
+    // breathing: a slow 1.2% swell from the waist (no gaps at the edges), half a cycle apart
+    A(breathe, wave(p => ({ transform: `scale(${(1 + .006 * (1 - Math.cos(p * Math.PI * 2))).toFixed(5)})` })), T.idle, 3.2, { iterations: Infinity, fill: 'none', iterationStart: side === 'L' ? 0 : .5 });
   };
   makeChar('L'); makeChar('R');
 
@@ -476,40 +571,142 @@ function build() {
   const PETAL = svgURL(PETAL_SVG), pr = rng(21);
   for (const side of ['L', 'R']) {
     const o = PETAL_POPS[side];
-    for (let i = 0; i < 6; i++) {
+    for (let i = 0; i < 7; i++) {
       const p = el('img', 'petal', fx); p.src = PETAL; p.alt = '';
-      const s = 14 + pr() * 12; Object.assign(p.style, { width: s + 'px', height: s + 'px' });
-      const x0 = o.x * W, y0 = o.y * H, a = (-70 + pr() * 140) * Math.PI / 180, d = 50 + pr() * 110;
+      const s = 14 + pr() * 14; Object.assign(p.style, { width: s + 'px', height: s + 'px' });
+      const x0 = o.x * W, y0 = o.y * H, a = (-70 + pr() * 140) * Math.PI / 180, d = 60 + pr() * 130;
       const x1 = x0 + o.dir * Math.cos(a) * d, y1 = y0 + Math.sin(a) * d * .8, rot = (pr() - .5) * 400;
-      const at = T.accents + .05 + i * .05 + (side === 'R' ? .1 : 0);
+      const at = (side === 'L' ? T.popL : T.popR) + i * .045;
       A(p, [{ transform: `translate(${x0}px, ${y0}px) scale(0) rotate(0deg)` },
-            { transform: `translate(${(x0 + x1) / 2}px, ${(y0 + y1) / 2 - 12}px) scale(1.1) rotate(${rot / 2}deg)`, offset: .35 },
-            { transform: `translate(${x1}px, ${y1 + 20}px) scale(.8) rotate(${rot}deg)` }], at, 1.0, { fill: 'none', easing: EASE.out });
-      A(p, [{ opacity: 0 }, { opacity: 1, offset: .12 }, { opacity: 1, offset: .6 }, { opacity: 0 }], at, 1.0, { fill: 'none' });
+            { transform: `translate(${(x0 + x1) / 2}px, ${(y0 + y1) / 2 - 14}px) scale(1.15) rotate(${rot / 2}deg)`, offset: .3 },
+            { transform: `translate(${x1}px, ${y1 + 26}px) scale(.8) rotate(${rot}deg)` }], at, 1.1, { fill: 'none', easing: EASE.out });
+      A(p, [{ opacity: 0 }, { opacity: 1, offset: .1 }, { opacity: 1, offset: .6 }, { opacity: 0 }], at, 1.1, { fill: 'none' });
     }
   }
-  // Idle petals drift right to left across the banner
-  for (let i = 0; i < 8; i++) {
+  // Idle petals drift right to left in three depths: far ones small, soft and slow, near ones big and quick
+  for (let i = 0; i < 10; i++) {
+    const z = (i % 5) / 4 * .85 + pr() * .15;
     const p = el('img', 'petal', fx); p.src = PETAL; p.alt = '';
-    const s = 12 + pr() * 14; Object.assign(p.style, { width: s + 'px', height: s + 'px' });
-    const y0 = H * (.12 + pr() * .76), amp = 12 + pr() * 22, sways = 2 + Math.floor(pr() * 3), spin = (pr() < .5 ? -1 : 1) * (360 + pr() * 360);
-    const dur = 11 + pr() * 7, dy = (pr() - .5) * H * .3;
-    A(p, wave(q => ({ transform: `translate(${(W + 40 - q * (W + 100)).toFixed(1)}px, ${(y0 + dy * q + amp * sin(q * sways)).toFixed(1)}px) rotate(${(spin * q).toFixed(1)}deg) scaleX(${(.6 + .4 * Math.abs(Math.cos(q * sways * Math.PI))).toFixed(3)})`,
-                       opacity: q < .04 ? q / .04 * .9 : q > .96 ? (1 - q) / .04 * .9 : .9 }), 48),
-      T.idle + i * 1.45, dur, { iterations: Infinity, fill: 'none' });
+    const s = 10 + z * 26; Object.assign(p.style, { width: s + 'px', height: s + 'px' });
+    if (z < .3 || z > .85) p.style.filter = `blur(${z < .3 ? 1.2 : 1}px)`;
+    const y0 = H * (.1 + pr() * .78), amp = 8 + z * 26, sways = 2 + Math.floor(pr() * 3), spin = (pr() < .5 ? -1 : 1) * (300 + pr() * 400);
+    const dur = 19 - z * 9 + pr() * 2, dy = (pr() - .5) * H * .3, op = .55 + z * .4;
+    A(p, wave(q => ({ transform: `translate(${(W + 40 - q * (W + 100)).toFixed(1)}px, ${(y0 + dy * q + amp * sin(q * sways)).toFixed(1)}px) rotate(${(spin * q).toFixed(1)}deg) scaleX(${(.55 + .45 * Math.abs(Math.cos(q * sways * Math.PI))).toFixed(3)})`,
+                       opacity: (q < .04 ? q / .04 : q > .96 ? (1 - q) / .04 : 1) * op }), 48),
+      T.idle + i * 1.1, dur, { iterations: Infinity, fill: 'none' });
   }
 
-  // ---- 5. Camera: punch on impact; in the reel, start zoomed in on the logo
-  A(camera, [{ transform: 'scale(1)' }, { transform: 'scale(1.03)', offset: .3 }, { transform: 'scale(1)' }], T.impact, .5, { fill: 'none', easing: EASE.sine });
-  if (FORMAT === 'reel') {
-    const Z = 0.9 / (logoBox.w / W);
-    const cx = logoBox.x + logoBox.w / 2, cy = (R.letters.y + R.tagline.y + R.tagline.h) / 2;
-    A(camera, [{ transform: `translate(${((W / 2 - cx) * Z).toFixed(1)}px, ${((H / 2 - cy) * Z).toFixed(1)}px) scale(${Z.toFixed(3)})` },
-               { transform: 'translate(0px, 0px) scale(1)' }], T.zoom, 1.0, { easing: EASE.camera });
-  }
+  // ---- 5. Camera: a punch on the impact; a slow drift in the idle loop; the reel's choreography
+  A($('punch'), [{ transform: 'scale(1)' }, { transform: 'scale(1.035)', offset: .22 }, { transform: 'scale(.995)', offset: .6 }, { transform: 'scale(1)' }], T.impact, .6, { fill: 'none', easing: EASE.sine });
+  if (reel) buildReel(R, logoBox, lc);
+  else A(camera, wave(p => ({ transform: `translate(${(.004 * W * sin(p)).toFixed(2)}px, ${(1.2 * sin(p * 2)).toFixed(2)}px) scale(${(1 + .007 * (1 - Math.cos(p * Math.PI * 2))).toFixed(5)})` }), 48),
+         T.idle, 16, { iterations: Infinity, fill: 'none' });
 
   // ---- Debug boxes
   for (const k in R) { const d = box(el('div', '', $('debug')), R[k]); d.textContent = k; }
+}
+
+// ===========================================================================
+// The reel (1080x1920): the same animated banner, filmed by a moving camera, over a full-frame brush
+// field, with kinetic type. Scenes: logo | sushi pizza | sushi burger | pan across | end card.
+// ===========================================================================
+const ease = {
+  inOut: t => t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2,
+  whip: t => t < .5 ? 16 * Math.pow(t, 5) : 1 - Math.pow(-2 * t + 2, 5) / 2,
+  sine: t => -(Math.cos(Math.PI * t) - 1) / 2,
+  out: t => 1 - Math.pow(1 - t, 3),
+};
+function buildReel(R, logoBox, lc) {
+  const FW = FRAMES.reel.w, FH = FRAMES.reel.h, back = $('reelBack'), front = $('reelFront');
+  const kLogo = FW * .9 / logoBox.w;
+  // Shots: the banner point (x, y) is placed at frame (FW / 2, fy) at scale k
+  const shot = (k, x, y, fy) => ({ k, x, y, fy });
+  const S = {
+    logoIn:  shot(kLogo * 1.1, lc.x, lc.y, 960),  logoOut: shot(kLogo, lc.x, lc.y, 960),
+    pizzaIn: shot(2.39, 226, 163, 1060),          pizzaOut: shot(2.6, 216, 150, 1060),
+    burgIn:  shot(2.07, W - 261, 163, 1060),       burgOut: shot(2.24, W - 241, 150, 1060),
+    panIn:   shot(1.72, W - 470, 163, 1080),       panOut: shot(1.72, 470, 163, 1080),
+    endIn:   shot(kLogo, lc.x, lc.y, 760),        endOut: shot(kLogo * 1.04, lc.x, lc.y, 760),
+  };
+  // [start, end, from, to, easing]: holds push in slowly, moves are quick (whips are motion-blurred in export)
+  const moves = [
+    [0, 2.35, S.logoIn, S.logoOut, ease.out],     [2.35, 2.8, S.logoOut, S.pizzaIn, ease.inOut],
+    [2.8, 5.45, S.pizzaIn, S.pizzaOut, ease.sine], [5.45, 5.85, S.pizzaOut, S.burgIn, ease.whip],
+    [5.85, 8.5, S.burgIn, S.burgOut, ease.sine],   [8.5, 8.95, S.burgOut, S.panIn, ease.inOut],
+    [8.95, 11.15, S.panIn, S.panOut, ease.sine],   [11.15, 11.65, S.panOut, S.endIn, ease.inOut],
+    [11.65, DURATION, S.endIn, S.endOut, ease.out],
+  ];
+  const cam = t => {
+    const m = moves.find(m => t <= m[1]) || moves[moves.length - 1];
+    const u = m[4](Math.min(1, Math.max(0, (t - m[0]) / (m[1] - m[0])))), a = m[2], b = m[3];
+    const k = Math.exp(Math.log(a.k) + (Math.log(b.k) - Math.log(a.k)) * u);     // zoom evenly in log space
+    const x = a.x + (b.x - a.x) * u, y = a.y + (b.y - a.y) * u, fy = a.fy + (b.fy - a.fy) * u;
+    return `translate(${(FW / 2 - k * x).toFixed(2)}px, ${(fy - k * y).toFixed(2)}px) scale(${k.toFixed(5)})`;
+  };
+  const N = Math.round(DURATION * 30);
+  A(camera, Array.from({ length: N + 1 }, (_, i) => ({ offset: i / N, transform: cam(i / N * DURATION) })), 0, DURATION);
+
+  // Full-frame brush field behind the banner band: navy with big diagonal strokes that paint in
+  back.style.background = PRINT.navy;
+  const field = el('div', 'abs', back, { width: '2600px', height: '2600px', left: (FW - 2600) / 2 + 'px', top: (FH - 2600) / 2 + 'px', transform: `rotate(${STROKE_ANGLE}deg)` });
+  const fr = rng(31), cols = [PRINT.red, PRINT.deep, PRINT.red2, '#353a50', PRINT.red, PRINT.deep, PRINT.red2, '#353a50', PRINT.red];
+  cols.forEach((c, i) => {
+    const w = 300 + fr() * 140, x = 380 + i * 230 + (fr() - .5) * 60, len = 2300, s = { w, y0: 0, y1: len, color: c, seed: 90 + i * 7, up: i % 2 === 0, dry: [1.5, .3] };
+    const img = el('img', 'abs layer', field); img.src = svgURL(strokeSVG(s, 40)); img.alt = '';
+    box(img, { x: x - w / 2 - 40, y: 150 - 40, w: w + 80, h: len + 80 });
+    img.style.transform = `rotate(${((fr() - .5) * 8).toFixed(2)}deg)`;
+    A(img, [{ clipPath: s.up ? 'inset(100% 0 0 0)' : 'inset(0 0 100% 0)' }, { clipPath: 'inset(0% 0 0% 0)' }], .05 + i * .06, .42, { easing: EASE.brush });
+  });
+  A(field, wave(p => ({ transform: `rotate(${STROKE_ANGLE}deg) translate(${(18 * sin(p)).toFixed(2)}px, ${(26 * sin(p + .25) - 26).toFixed(2)}px)` })), 1, 12, { iterations: Infinity, fill: 'none' });
+
+  // Kinetic type: each line rises out of its own mask, then leaves upward
+  const lines = (cls, top, words, tIn, tOut, stagger = .09) => {
+    const blk = el('div', 'rtext ' + cls, front, { top: top + 'px' });
+    words.forEach((w, i) => {
+      const ln = el('div', 'ln', blk), sp = el('span', '', ln); sp.textContent = w;
+      // hidden well below the line's mask: a tilted line would otherwise peek out at one end
+      A(sp, [{ transform: 'translateY(150%) rotate(2deg)' }, { transform: 'translateY(0%) rotate(0deg)' }], tIn + i * stagger, .55, { easing: EASE.lineIn });
+      if (tOut) A(sp, [{ transform: 'translateY(0%) rotate(0deg)' }, { transform: 'translateY(-150%) rotate(-2deg)' }], tOut + i * .05, .32, { easing: EASE.lineOut, fill: 'forwards' });
+    });
+    return blk;
+  };
+  lines('hl', 250, ['SUSHI', 'PIZZA'], 2.85, 5.3);
+  lines('hl', 250, ['SUSHI', 'BURGER'], 5.95, 8.4);
+  lines('hl small', 300, ['Classic sushi.', 'Bold fusion.'], 9.0, 11.05, .14);
+  lines('kicker', 380, ['Sushi burgers & mouth-watering pizzas'], 11.85, 0);
+  // brush underline under each headline (paints in left to right, wipes out with the words)
+  const under = (top, tIn, tOut) => {
+    const s = { w: 58, y0: 0, y1: 560, color: '#f3eee6', seed: 140 + top, dry: [1.4, .35] };
+    const u = el('img', 'abs', front); u.src = svgURL(strokeSVG(s, 30)); u.alt = '';
+    Object.assign(u.style, { width: '118px', height: '620px', left: (FW / 2 - 59) + 'px', top: (top - 310) + 'px', transform: 'rotate(-88deg)' });
+    A(u, [{ clipPath: 'inset(0 0 100% 0)' }, { clipPath: 'inset(0 0 0% 0)' }], tIn, .45, { easing: EASE.brush });
+    A(u, [{ opacity: 1 }, { opacity: 0 }], tOut, .25, { fill: 'forwards' });
+  };
+  under(640, 3.05, 5.35); under(640, 6.15, 8.45);
+
+  // End card: branches and the Instagram handle under the logo
+  const end = el('div', 'rtext rfade', front, { top: '1110px' });
+  end.innerHTML = `<div class="branches">Mansourieh • Tripoli • Faraya • Jal el Dib</div>
+    <div style="margin-top:44px"><span class="pill"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4.2"/><circle cx="17.4" cy="6.6" r="1" fill="currentColor" stroke="none"/></svg>sashimi.fusion.lb</span></div>`;
+  A(end, [{ opacity: 0, transform: 'translateY(40px)' }, { opacity: 1, transform: 'translateY(0px)' }], 12.05, .7, { easing: EASE.out });
+
+  // Footer handle through the middle scenes
+  const foot = el('div', 'rtext rfade kicker', front, { top: '1770px', fontSize: '38px', opacity: 0 });
+  foot.textContent = '@sashimi.fusion.lb';
+  A(foot, [{ opacity: 0 }, { opacity: .85, offset: .04 }, { opacity: .85, offset: .96 }, { opacity: 0 }], 2.9, 8.2);
+
+  // Full-frame petals in three depths, drifting down and to the left
+  const PETAL = svgURL(PETAL_SVG), pr = rng(41);
+  for (let i = 0; i < 14; i++) {
+    const z = (i % 7) / 6, p = el('img', 'petal', front); p.src = PETAL; p.alt = '';
+    const s = 22 + z * 56; Object.assign(p.style, { width: s + 'px', height: s + 'px' });
+    if (z < .25 || z > .9) p.style.filter = `blur(${z < .25 ? 2 : 2.5}px)`;
+    const x0 = FW * (.2 + pr() * 1.0), y0 = -80 - pr() * 300, dx = -(300 + pr() * 500), dy = FH + 400;
+    const amp = 30 + z * 60, sw = 2 + Math.floor(pr() * 2), spin = (pr() < .5 ? -1 : 1) * (360 + pr() * 360), op = .6 + z * .35;
+    A(p, wave(q => ({ transform: `translate(${(x0 + dx * q + amp * sin(q * sw)).toFixed(1)}px, ${(y0 + dy * q).toFixed(1)}px) rotate(${(spin * q).toFixed(1)}deg) scaleX(${(.55 + .45 * Math.abs(Math.cos(q * sw * Math.PI))).toFixed(3)})`,
+                       opacity: (q < .05 ? q / .05 : q > .95 ? (1 - q) / .05 : 1) * op }), 48),
+      2.4 + i * .55, 9 - z * 4 + pr() * 2, { iterations: Infinity, fill: 'none' });
+  }
 }
 
 // ===========================================================================
@@ -524,8 +721,9 @@ function fit() {
     frame.style.transform = `translate(${(vw - FW * k) / 2}px, ${(vh - FH * k) / 2}px) scale(${k})`;
   } else frame.style.transform = 'none';
   frame.style.width = FW + 'px'; frame.style.height = FH + 'px';
-  const s = Math.min(FW / W, FH / H);
   banner.style.width = W + 'px'; banner.style.height = H + 'px';
+  if (FORMAT === 'reel') { banner.style.transform = 'none'; return; }
+  const s = Math.min(FW / W, FH / H);
   banner.style.transform = `translate(${(FW - W * s) / 2}px, ${(FH - H * s) / 2}px) scale(${s})`;
 }
 
@@ -558,10 +756,11 @@ if (RECORD) addEventListener('pointerdown', play);
 addEventListener('resize', fit);
 
 (async function init() {
-  const img = new Image();
-  img.src = SRC;
-  const ok = await img.decode().then(() => true, () => false);
-  if (ok) { W = img.naturalWidth; H = img.naturalHeight; }
+  const load = src => { const i = new Image(); i.src = src; return i.decode().then(() => i, () => null); };
+  const hd = params.has('sd') ? null : await load(SRC_HD);
+  const img = hd || await load(SRC_SD), ok = !!img;
+  if (hd) { SRC = SRC_HD; W = Math.round(hd.naturalWidth / HD_SCALE); H = Math.round(hd.naturalHeight / HD_SCALE); }
+  else if (ok) { W = img.naturalWidth; H = img.naturalHeight; }
   fit();
   if (!ok) { document.body.classList.add('missing'); stage.classList.remove('waiting'); return; }
   build();
@@ -569,7 +768,12 @@ addEventListener('resize', fit);
   await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
   if (STILL !== null) render(STILL);
   else if (REDUCED) { document.querySelectorAll('.petal').forEach(p => p.style.display = 'none'); render(STATIC_T); }
-  else render(0);
+  else {
+    // warm up: draw a late frame once so every layer (filters, strokes, the 4x image) is rasterised
+    // before playback, then start from the top
+    render(T.still); await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+    render(0); await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+  }
   stage.classList.remove('waiting');
   if (STILL === null && !REDUCED) play();
 })();
