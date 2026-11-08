@@ -1,0 +1,4 @@
+.work/
+input.mov
+*.mov
+__pycache__/
