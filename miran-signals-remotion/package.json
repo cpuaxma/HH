@@ -18,6 +18,12 @@
     "cover": "remotion still MiranSignals out/miran-signals-cover.png --frame=1200",
     "render:all": "bash scripts/render-all.sh",
     "scan": "python3 scripts/scan-frames.py",
+    "copy:stills": "COMP=MiranCopyTrading node scripts/stills.mjs out/copy-stills 0.5 150,420,600,700,1040,1250,1430,1520,1590,1760,1860,2160",
+    "copy:storyboard": "python3 scripts/storyboard-copy.py storyboard-copy-trading.png out/copy-stills",
+    "copy:check:camera": "esbuild scripts/check-camera-copy.ts --bundle --platform=node --outfile=scripts/tmp/check-camera-copy.cjs --log-level=error && node scripts/tmp/check-camera-copy.cjs vertical && node scripts/tmp/check-camera-copy.cjs feed",
+    "copy:blur:budget": "esbuild scripts/blur-budget-copy.ts --bundle --platform=node --outfile=scripts/tmp/blur-budget-copy.cjs --log-level=error && node scripts/tmp/blur-budget-copy.cjs vertical && node scripts/tmp/blur-budget-copy.cjs feed",
+    "copy:preview": "PREVIEW=1 bash scripts/render-copy.sh",
+    "copy:render": "bash scripts/render-copy.sh",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {

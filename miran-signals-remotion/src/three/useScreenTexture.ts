@@ -1,10 +1,14 @@
 import {useThree} from '@react-three/fiber';
-import {useLayoutEffect, useMemo, useRef} from 'react';
+import {createContext, useContext, useLayoutEffect, useMemo, useRef} from 'react';
 import {useCurrentFrame, useVideoConfig} from 'remotion';
 import * as THREE from 'three';
 import {FormatId, LAYOUT} from '../data';
 import {computeCamera} from '../lib/camera';
 import {SCREEN, V3} from '../lib/story';
+import type {CameraFn} from '../lib/projection';
+
+/** The camera of the reel being rendered (Pipeline provides it; this reel's camera by default). */
+export const CameraContext = createContext<CameraFn>(computeCamera);
 
 /** Screen canvas size: 402 × 874 design points at 3×, matching the screen aspect (0.708 × 1.538). */
 export const TEX = {w: 1206, h: 2622, scale: 3};
@@ -12,8 +16,8 @@ export const TEX = {w: 1206, h: 2622, scale: 3};
 export type ScreenTextures = {hi: THREE.CanvasTexture; lo: THREE.CanvasTexture; active: {current: THREE.Texture}};
 
 /** How tall the screen is on the frame (px), from the camera distance to the phone. */
-const screenPx = (t: number, fmt: FormatId, at: V3) => {
-  const c = computeCamera(t, fmt);
+const screenPx = (t: number, fmt: FormatId, at: V3, compute: CameraFn) => {
+  const c = compute(t, fmt);
   const d = Math.hypot(c.position[0] - at[0], c.position[1] - at[1], c.position[2] - at[2]);
   return (SCREEN.height / (2 * d * Math.tan((c.fov * Math.PI) / 360))) * LAYOUT[fmt].height;
 };
@@ -33,6 +37,7 @@ export const useScreenTexture = (
   const frame = useCurrentFrame();
   const fmt: FormatId = useVideoConfig().height > 1500 ? 'vertical' : 'feed';
   const {gl} = useThree();
+  const compute = useContext(CameraContext);
   const last = useRef<{key: string; tier: string} | null>(null);
   const t = useMemo(() => {
     // The canvas follows the render scale (a half-res preview draws half-res screens), never above 1.
@@ -63,7 +68,7 @@ export const useScreenTexture = (
   }, [gl]);
 
   useLayoutEffect(() => {
-    const tier = screenPx(frame, fmt, at) > 1150 ? 'hi' : 'lo';
+    const tier = screenPx(frame, fmt, at, compute) > 1150 ? 'hi' : 'lo';
     const k = key(frame);
     const prev = last.current;
     if (prev && prev.key === k && prev.tier === tier) return;
@@ -87,6 +92,6 @@ export const useScreenTexture = (
       t.active.current = t.lo;
     }
     last.current = {key: k, tier};
-  }, [t, frame, draw, key, fmt, at]);
+  }, [t, frame, draw, key, fmt, at, compute]);
   return t;
 };

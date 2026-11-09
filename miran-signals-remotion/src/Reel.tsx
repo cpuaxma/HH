@@ -24,7 +24,7 @@ export type ReelProps = {
 export const useFormat = (): FormatId => (useVideoConfig().height > 1500 ? 'vertical' : 'feed');
 
 /** Holds the render until every font weight and the logo (drawn on the canvas screens) are loaded. */
-const useAssetsReady = () => {
+export const useAssetsReady = () => {
   const {delayRender, continueRender} = useDelayRender();
   const [ready, setReady] = useState(false);
   const [handle] = useState(() => delayRender('Loading fonts and the logo for the screens'));

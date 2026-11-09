@@ -1,5 +1,7 @@
 # Miran Gold: one trade, one news candle, two results (signals reel)
 
+> This project also holds a second reel, **how automatic copy trading works with Miran Gold** (`MiranCopyTrading`, `src/copy/`): see [README-copy-trading.md](README-copy-trading.md).
+
 A 32-second Arabic reel (32.2s: 1080×1920 and 1080×1350, 60fps, 1930 frames) built in Remotion with `@remotion/three` (React Three Fiber). Two iPhone-style 3D phones in a navy studio make **the same gold trade on the same day**, and the same news candle hits both:
 
 - **Left «بلا خطة»** (no plan). Buys gold with **no stop loss** («لا حدّ للخسارة», no limit on the loss) and no alerts. It buys 1 lot. Its balance climbs to about $10,700 while gold rises, close to the right's. Then the news candle drops gold about $107, the screen floods red and the account is wiped out: **«خسارة كاملة» −$10,000, $10,000 → $0 (−100%)**.

@@ -24,13 +24,13 @@ export const setScreenLang = (l: Lang) => {
 };
 const SC = () => SCREEN_COPY[LANG];
 
-const PAD = 26;
+export const PAD = 26;
 /** x of the reading start / end (right / left in Arabic). */
-const sx = () => (SC().rtl ? W - PAD : PAD);
-const aStart = (): CanvasTextAlign => (SC().rtl ? 'right' : 'left');
+export const sx = () => (SC().rtl ? W - PAD : PAD);
+export const aStart = (): CanvasTextAlign => (SC().rtl ? 'right' : 'left');
 
 /** Localised text that fits in maxW, anchored at x with `align`. */
-const say = (ctx: CanvasRenderingContext2D, s: string, x: number, y: number, o: {weight?: number; size?: number; color?: string | CanvasGradient; align?: CanvasTextAlign; maxW?: number} = {}) => {
+export const say = (ctx: CanvasRenderingContext2D, s: string, x: number, y: number, o: {weight?: number; size?: number; color?: string | CanvasGradient; align?: CanvasTextAlign; maxW?: number} = {}) => {
   const rtl = SC().rtl;
   const weight = o.weight ?? 600;
   const size = fit(ctx, s, weight, o.size ?? 18, o.maxW ?? W - 2 * PAD, rtl);
@@ -38,10 +38,10 @@ const say = (ctx: CanvasRenderingContext2D, s: string, x: number, y: number, o: 
 };
 
 /** Numbers are always laid out LTR (so "−$4,800" keeps its sign on the left). */
-const num = (ctx: CanvasRenderingContext2D, s: string, x: number, y: number, o: {weight?: number; size?: number; color?: string | CanvasGradient; align?: CanvasTextAlign} = {}) =>
+export const num = (ctx: CanvasRenderingContext2D, s: string, x: number, y: number, o: {weight?: number; size?: number; color?: string | CanvasGradient; align?: CanvasTextAlign} = {}) =>
   text(ctx, s, x, y, {weight: o.weight ?? 700, size: o.size ?? 18, color: o.color ?? C.text, align: o.align ?? aStart(), rtl: false});
 
-const usd = (n: number) => `$${money(n, 0)}`;
+export const usd = (n: number) => `$${money(n, 0)}`;
 
 // ─── iOS chrome ──────────────────────────────────────────────────────────────
 
@@ -51,7 +51,7 @@ const clock = (t: number) => {
 };
 
 /** Status bar (time, signal, Wi-Fi, battery) and the Dynamic Island. */
-const chrome = (ctx: CanvasRenderingContext2D, t: number, acts: Activity[] = [], ink = C.text) => {
+export const chrome = (ctx: CanvasRenderingContext2D, t: number, acts: Activity[] = [], ink = C.text) => {
   text(ctx, clock(t), 62, 35, {weight: 600, size: 17, color: ink, align: 'center'});
   // Signal bars.
   ctx.fillStyle = ink;
@@ -90,7 +90,7 @@ const chrome = (ctx: CanvasRenderingContext2D, t: number, acts: Activity[] = [],
 };
 
 /** A Live Activity: the Dynamic Island expands to show an alert, then shrinks back. */
-type Activity = {at: number; until: number; color: string; icon: IconKind; title: string; sub: string};
+export type Activity = {at: number; until: number; color: string; icon: IconKind; title: string; sub: string};
 
 const island = (ctx: CanvasRenderingContext2D, t: number, acts: Activity[]) => {
   let k = 0;
@@ -147,7 +147,7 @@ const island = (ctx: CanvasRenderingContext2D, t: number, acts: Activity[]) => {
 };
 
 
-const homeIndicator = (ctx: CanvasRenderingContext2D, ink = C.text) => {
+export const homeIndicator = (ctx: CanvasRenderingContext2D, ink = C.text) => {
   ctx.fillStyle = ink;
   ctx.globalAlpha = 0.85;
   rr(ctx, W / 2 - 68, H - 13, 136, 5, 2.5);
@@ -155,7 +155,7 @@ const homeIndicator = (ctx: CanvasRenderingContext2D, ink = C.text) => {
   ctx.globalAlpha = 1;
 };
 
-const illus = (ctx: CanvasRenderingContext2D, y: number) => {
+export const illus = (ctx: CanvasRenderingContext2D, y: number) => {
   const rtl = SC().rtl;
   // tagPill anchors at its right edge.
   const label = SC().illustrative;
@@ -168,7 +168,7 @@ const illus = (ctx: CanvasRenderingContext2D, y: number) => {
 /** Default card colour for the screen being drawn (set by `background`). */
 let CARD_FILL = 'rgba(26,31,44,0.96)';
 
-const background = (ctx: CanvasRenderingContext2D, mode: 'blind' | 'miran', danger: number) => {
+export const background = (ctx: CanvasRenderingContext2D, mode: 'blind' | 'miran', danger: number) => {
   const g = ctx.createLinearGradient(0, 0, 0, H);
   // Each phone has its own look: Miran Gold is warm black and gold, the no-plan app cool steel.
   CARD_FILL = mode === 'miran' ? 'rgba(40,32,19,0.96)' : 'rgba(30,38,54,0.96)';
@@ -203,7 +203,7 @@ const background = (ctx: CanvasRenderingContext2D, mode: 'blind' | 'miran', dang
 
 // ─── Header and balance ──────────────────────────────────────────────────────
 
-const header = (ctx: CanvasRenderingContext2D, mode: 'blind' | 'miran') => {
+export const header = (ctx: CanvasRenderingContext2D, mode: 'blind' | 'miran') => {
   const rtl = SC().rtl;
   const y = 92;
   if (mode === 'miran') {
@@ -225,7 +225,7 @@ const header = (ctx: CanvasRenderingContext2D, mode: 'blind' | 'miran') => {
 
 /** The big balance, plus the open trade's live P&L under it. */
 /** Draws `from` → `to` at frame `at`, anchored at x (reading start); changed digits roll over. */
-const swapNum = (ctx: CanvasRenderingContext2D, from: string, to: string, at: number, t: number, x: number, y: number, size: number, color: string) => {
+export const swapNum = (ctx: CanvasRenderingContext2D, from: string, to: string, at: number, t: number, x: number, y: number, size: number, color: string) => {
   const n = Math.max(from.length, to.length);
   const A = Array.from({length: n}, (_, i) => from[i - (n - from.length)] ?? '');
   const B = Array.from({length: n}, (_, i) => to[i - (n - to.length)] ?? '');
@@ -262,7 +262,7 @@ const swapNum = (ctx: CanvasRenderingContext2D, from: string, to: string, at: nu
   ctx.restore();
 };
 
-const balanceBlock = (
+export const balanceBlock = (
   ctx: CanvasRenderingContext2D,
   balance: number,
   balanceColor: string,
@@ -287,13 +287,17 @@ const balanceBlock = (
 
 // ─── The chart: one thick price line ─────────────────────────────────────────
 
-type Level = {price: number; color: string; label: string; alpha: number};
+export type Level = {price: number; color: string; label: string; alpha: number};
 
-const CHART = {top: 268, bottom: 520, left: PAD, right: W - PAD - 16};
+export const CHART = {top: 268, bottom: 520, left: PAD, right: W - PAD - 16};
 
-const chart = (ctx: CanvasRenderingContext2D, t: number, lineColor: string, levels: Level[], newsColor: string) => {
-  const span = MARKET.chartSpan;
-  let [lo, hi] = chartRange(t);
+/** Where the chart reads its prices from (another reel can pass its own market). */
+export type ChartSource = {price: (t: number) => number; range: (t: number) => [number, number]; newsAt: number; span: number};
+const OWN_MARKET: ChartSource = {price: (t) => price(t), range: (t) => chartRange(t), newsAt: NEWS.at, span: MARKET.chartSpan};
+
+export const chart = (ctx: CanvasRenderingContext2D, t: number, lineColor: string, levels: Level[], newsColor: string, src: ChartSource = OWN_MARKET) => {
+  const span = src.span;
+  let [lo, hi] = src.range(t);
   // Keep visible levels (stop loss, target) inside the chart, easing the range out to them.
   for (const l of levels) {
     if (l.alpha <= 0) continue;
@@ -315,8 +319,8 @@ const chart = (ctx: CanvasRenderingContext2D, t: number, lineColor: string, leve
   }
 
   // The news moment: a vertical marker.
-  if (t >= NEWS.at) {
-    const x = X(NEWS.at);
+  if (t >= src.newsAt) {
+    const x = X(src.newsAt);
     if (x > CHART.left) {
       ctx.save();
       ctx.strokeStyle = newsColor;
@@ -341,15 +345,18 @@ const chart = (ctx: CanvasRenderingContext2D, t: number, lineColor: string, leve
     ctx.strokeStyle = l.color;
     ctx.lineWidth = 2;
     ctx.setLineDash([7, 6]);
+    // The tag sits inside the screen at the left (the live price is at the right end).
+    const tw = Math.max(58, measure(ctx, l.label, 700, 14, SC().rtl) + 18);
+    const tx = CHART.left;
     ctx.beginPath();
-    ctx.moveTo(CHART.left, y);
+    ctx.moveTo(tx + tw + 6, y);
     ctx.lineTo(CHART.right, y);
     ctx.stroke();
     ctx.setLineDash([]);
-    rr(ctx, CHART.right + 6, y - 12, 62, 24, 12);
+    rr(ctx, tx, y - 12, tw, 24, 12);
     ctx.fillStyle = l.color;
     ctx.fill();
-    text(ctx, l.label, CHART.right + 37, y + 5, {weight: 700, size: 13, color: '#0b0f19', align: 'center', rtl: SC().rtl});
+    text(ctx, l.label, tx + tw / 2, y + 5, {weight: 700, size: 14, color: '#0b0f19', align: 'center', rtl: SC().rtl});
     ctx.restore();
   }
 
@@ -358,7 +365,7 @@ const chart = (ctx: CanvasRenderingContext2D, t: number, lineColor: string, leve
   const pts: [number, number][] = [];
   for (let i = 0; i <= N; i++) {
     const f = t - span + (span * i) / N;
-    pts.push([X(f), Y(price(f))]);
+    pts.push([X(f), Y(src.price(f))]);
   }
   ctx.beginPath();
   pts.forEach(([x, y], i) => (i ? ctx.lineTo(x, y) : ctx.moveTo(x, y)));
@@ -396,7 +403,7 @@ const chart = (ctx: CanvasRenderingContext2D, t: number, lineColor: string, leve
   ctx.fill();
 };
 
-const hexA = (hex: string, a: number) => {
+export const hexA = (hex: string, a: number) => {
   const h = hex.replace('#', '');
   const r = parseInt(h.slice(0, 2), 16);
   const g = parseInt(h.slice(2, 4), 16);
@@ -406,9 +413,9 @@ const hexA = (hex: string, a: number) => {
 
 // ─── Cards ───────────────────────────────────────────────────────────────────
 
-const CARD = {x: PAD - 6, y: 556, w: W - 2 * PAD + 12, h: 278};
+export const CARD = {x: PAD - 6, y: 556, w: W - 2 * PAD + 12, h: 278};
 
-const cardBox = (ctx: CanvasRenderingContext2D, o: {fill?: string; border?: string; glow?: string; y?: number; h?: number} = {}) => {
+export const cardBox = (ctx: CanvasRenderingContext2D, o: {fill?: string; border?: string; glow?: string; y?: number; h?: number} = {}) => {
   const y = o.y ?? CARD.y;
   const h = o.h ?? CARD.h;
   softShadow(ctx, CARD.x, y, CARD.w, h, 0.5, 8);
@@ -424,7 +431,7 @@ const cardBox = (ctx: CanvasRenderingContext2D, o: {fill?: string; border?: stri
 };
 
 /** Card transition: 0 → 1 in, then 1 → 0 out; returns alpha and a vertical offset. */
-const tr = (t: number, inAt: number, outAt = Infinity, dur = 14) => {
+export const tr = (t: number, inAt: number, outAt = Infinity, dur = 14) => {
   const a = springAt(t - inAt, {freq: 2.0, damping: 0.75});
   const b = Number.isFinite(outAt) ? ramp(t, outAt, outAt + dur, easeIn) : 0;
   return {
@@ -435,7 +442,7 @@ const tr = (t: number, inAt: number, outAt = Infinity, dur = 14) => {
   };
 };
 
-const withT = (ctx: CanvasRenderingContext2D, k: {alpha: number; dy: number; s: number; on: boolean}, draw: () => void) => {
+export const withT = (ctx: CanvasRenderingContext2D, k: {alpha: number; dy: number; s: number; on: boolean}, draw: () => void) => {
   if (!k.on || k.alpha <= 0.001) return;
   ctx.save();
   ctx.globalAlpha = k.alpha;
@@ -449,8 +456,8 @@ const withT = (ctx: CanvasRenderingContext2D, k: {alpha: number; dy: number; s: 
 
 // ─── LEFT: trading without a plan ────────────────────────────────────────────
 
-const RED = '#FF4D4D';
-const GREEN = '#3FD08A';
+export const RED = '#FF4D4D';
+export const GREEN = '#3FD08A';
 
 /** The news arrives on the left as a red Live Activity, too late to act on. */
 const LEFT_ACTS_FN = (): Activity[] => [{at: NEWS.at + 2, until: LEFT.marginCallAt + 6, color: RED, icon: 'bolt', title: SC().newsBanner, sub: SC().newsBody}];
@@ -592,7 +599,7 @@ const drawBlind = (ctx: CanvasRenderingContext2D, t: number) => {
 
 // ─── RIGHT: trading with Miran Gold ──────────────────────────────────────────
 
-const GOLD = '#E3B65E';
+export const GOLD = '#E3B65E';
 
 /** The right gets the Miran update before the news (gold), then "protected" when it lands (green). */
 const RIGHT_ACTS = (): Activity[] => [
@@ -601,7 +608,7 @@ const RIGHT_ACTS = (): Activity[] => [
 ];
 
 /** An iOS-style switch, `on` from 0 (off, grey) to 1 (on, green); a press dips it slightly. */
-const toggle = (ctx: CanvasRenderingContext2D, cx: number, cy: number, on: number, press: number) => {
+export const toggle = (ctx: CanvasRenderingContext2D, cx: number, cy: number, on: number, press: number) => {
   const w = 86;
   const h = 48;
   ctx.save();
@@ -809,10 +816,10 @@ const drawMiranLeft = (ctx: CanvasRenderingContext2D, t: number) => {
 // ─── Exports ─────────────────────────────────────────────────────────────────
 
 /** The balance is tinted by how the account is doing: green when up, red when down. */
-const valueColor = (v: number, start: number) =>
+export const valueColor = (v: number, start: number) =>
   v >= start ? mixHex('#F5F1E8', GREEN, clamp01((v - start) / 140)) : mixHex('#F5F1E8', RED, clamp01((start - v) / 400));
 
-const mixHex = (a: string, b: string, k: number) => {
+export const mixHex = (a: string, b: string, k: number) => {
   const pa = [1, 3, 5].map((i) => parseInt(a.slice(i, i + 2), 16));
   const pb = [1, 3, 5].map((i) => parseInt(b.slice(i, i + 2), 16));
   const m = pa.map((v, i) => Math.round(v + (pb[i] - v) * k));

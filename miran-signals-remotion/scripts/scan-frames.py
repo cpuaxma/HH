@@ -73,7 +73,8 @@ def scan(path):
     print(f'\n{path}: {n} frames ({n / FPS:.2f}s)')
     print(f'  brightness min {mean.min():.3f} (f{mean.argmin()}), max {mean.max():.3f}; '
           f'largest frame-to-frame change {d.max():.4f} (f{d.argmax()}->{d.argmax() + 1})')
-    print(f'  intended impact frames {min(INTENDED)}-{max(INTENDED)}: brightness ' + ', '.join(f'{mean[i]:.2f}' for i in sorted(INTENDED) if i < n))
+    if INTENDED:
+        print(f'  intended impact frames {min(INTENDED)}-{max(INTENDED)}: brightness ' + ', '.join(f'{mean[i]:.2f}' for i in sorted(INTENDED) if i < n))
     if issues:
         print(f'  {len(issues)} issue(s):')
         for i, msg in issues[:40]:
@@ -83,6 +84,23 @@ def scan(path):
     return not issues
 
 
+def parse_intended(spec):
+    """'none', or frames and ranges like '911-914,1456'."""
+    out = set()
+    if spec == 'none':
+        return out
+    for part in spec.split(','):
+        a, _, b = part.partition('-')
+        out |= set(range(int(a), int(b or a) + 1))
+    return out
+
+
 if __name__ == '__main__':
-    ok = all([scan(p) for p in sys.argv[1:]])
+    args = sys.argv[1:]
+    # --intended SPEC replaces the default intended frames (for other reels in this project).
+    if '--intended' in args:
+        i = args.index('--intended')
+        INTENDED = parse_intended(args[i + 1])
+        del args[i:i + 2]
+    ok = all([scan(p) for p in args])
     sys.exit(0 if ok else 1)

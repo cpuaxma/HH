@@ -102,7 +102,7 @@ export const NumberSwap: React.FC<{from: string; to: string; at: number; size: n
   );
 };
 
-const Mark: React.FC<{good: boolean; size: number}> = ({good, size}) => (
+export const Mark: React.FC<{good: boolean; size: number}> = ({good, size}) => (
   <svg width={size} height={size} viewBox="0 0 40 40" style={{flex: 'none'}}>
     <defs>
       <linearGradient id="mk-gold" x1="0" y1="0" x2="1" y2="1">
@@ -229,7 +229,7 @@ const Board: React.FC<BoardProps> = ({label, good, start, final, value, changeAt
   );
 };
 
-const mix = (a: string, b: string, k: number) => {
+export const mix = (a: string, b: string, k: number) => {
   const pa = [1, 3, 5].map((i) => parseInt(a.slice(i, i + 2), 16));
   const pb = [1, 3, 5].map((i) => parseInt(b.slice(i, i + 2), 16));
   return `rgb(${pa.map((v, i) => Math.round(v + (pb[i] - v) * k)).join(',')})`;
@@ -321,10 +321,21 @@ const ImpactBurst: React.FC<{fmt: FormatId}> = ({fmt}) => {
 
 // ─── End card ────────────────────────────────────────────────────────────────
 
-export const endFade = (f: number) => ramp(f, TIMING.endCardStart, TIMING.endCardStart + 50, easeInOut);
+/** What the end card needs: its timings, its copy and its layout per format (another reel can pass its own). */
+export type EndCardCfg = {
+  timing: {endCardStart: number; logoAt: number; disclaimerAt: number; ctaAt: number; tapAt: number; holdFrom: number};
+  copy: (lang: Lang) => {tagline: string; cta: string; disclaimer: string};
+  layout: (fmt: FormatId) => {width: number; height: number; endLogoTop: number; endLogoSize: number; disclaimerTop: number};
+  /** Disclaimer font size per format (px). */
+  disclaimerSize?: (fmt: FormatId) => number;
+};
+
+const SIGNALS_END: EndCardCfg = {timing: TIMING, copy: (lang) => COPY[lang], layout: (fmt) => LAYOUT[fmt]};
+
+export const endFade = (f: number, start: number = TIMING.endCardStart) => ramp(f, start, start + 50, easeInOut);
 
 /** Drifting gold particles (deterministic; frozen in the held last second). */
-const Particles: React.FC<{f: number; width: number; height: number; alpha: number}> = ({f, width, height, alpha}) => (
+export const Particles: React.FC<{f: number; width: number; height: number; alpha: number}> = ({f, width, height, alpha}) => (
   <>
     {Array.from({length: 26}, (_, i) => {
       const x = hash(i * 3.1) * width;
@@ -353,15 +364,16 @@ const Particles: React.FC<{f: number; width: number; height: number; alpha: numb
   </>
 );
 
-const EndCard: React.FC<{fmt: FormatId; lang: Lang}> = ({fmt, lang}) => {
+export const EndCard: React.FC<{fmt: FormatId; lang: Lang; cfg?: EndCardCfg}> = ({fmt, lang, cfg = SIGNALS_END}) => {
   const raw = useCurrentFrame();
+  const TIMING = cfg.timing;
   const f = Math.min(raw, TIMING.holdFrom);
   if (f < TIMING.endCardStart) return null;
-  const c = COPY[lang];
+  const c = cfg.copy(lang);
   const rtl = lang === 'ar';
-  const fade = endFade(f);
-  const L = LAYOUT[fmt];
-  const {width, height} = LAYOUT[fmt];
+  const fade = endFade(f, TIMING.endCardStart);
+  const L = cfg.layout(fmt);
+  const {width, height} = L;
   const logo = springAt(f - TIMING.logoAt, {freq: 1.5, damping: 0.55});
   const word = springAt(f - (TIMING.logoAt + 16), {freq: 1.8, damping: 0.7});
   const cta = springAt(f - TIMING.ctaAt, {freq: 2.0, damping: 0.5});
@@ -489,7 +501,7 @@ const EndCard: React.FC<{fmt: FormatId; lang: Lang}> = ({fmt, lang}) => {
           textAlign: 'center',
           fontFamily: FAMILY,
           fontWeight: 500,
-          fontSize: vertical ? 31 : 28,
+          fontSize: cfg.disclaimerSize ? cfg.disclaimerSize(fmt) : vertical ? 31 : 28,
           lineHeight: 1.6,
           color: 'rgba(245,241,232,0.9)',
           opacity: disc,
@@ -527,9 +539,9 @@ const grainTile = () => {
   return grainUrl;
 };
 
-const Finish: React.FC = () => {
+export const Finish: React.FC<{holdFrom?: number}> = ({holdFrom = TIMING.holdFrom}) => {
   const raw = useCurrentFrame();
-  const f = Math.min(raw, TIMING.holdFrom);
+  const f = Math.min(raw, holdFrom);
   const ox = Math.floor(hash(f) * 256);
   const oy = Math.floor(hash(f + 0.5) * 256);
   return (
@@ -540,7 +552,7 @@ const Finish: React.FC = () => {
   );
 };
 
-const SafeZones: React.FC<{fmt: FormatId}> = ({fmt}) => {
+export const SafeZones: React.FC<{fmt: FormatId}> = ({fmt}) => {
   const zone = {position: 'absolute', background: 'rgba(0,120,255,0.18)', outline: '2px dashed rgba(0,90,220,0.8)'} as const;
   const vertical = fmt === 'vertical';
   return (

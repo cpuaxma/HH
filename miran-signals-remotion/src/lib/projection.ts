@@ -2,13 +2,16 @@
 // so HTML labels stay pinned to the phones.
 import * as THREE from 'three';
 import {FormatId, LAYOUT} from '../data';
-import {computeCamera} from './camera';
+import {CameraState, computeCamera} from './camera';
 import {PhonePose, V3} from './story';
 
 const cam = new THREE.PerspectiveCamera();
 
-export const applyCamera = (camera: THREE.PerspectiveCamera, t: number, fmt: FormatId, width: number, height: number) => {
-  const c = computeCamera(t, fmt);
+/** A reel's whole camera as a pure function of the frame (this reel's by default). */
+export type CameraFn = (t: number, fmt: FormatId) => CameraState;
+
+export const applyCamera = (camera: THREE.PerspectiveCamera, t: number, fmt: FormatId, width: number, height: number, compute: CameraFn = computeCamera) => {
+  const c = compute(t, fmt);
   camera.aspect = width / height;
   camera.fov = c.fov;
   camera.near = Math.max(0.03, c.dist * 0.04);
@@ -24,9 +27,9 @@ export const applyCamera = (camera: THREE.PerspectiveCamera, t: number, fmt: For
 };
 
 /** Screen position (px) of a point given in a phone's local space, posed at time t. */
-export const projectOnPhone = (t: number, fmt: FormatId, pose: PhonePose, local: V3) => {
+export const projectOnPhone = (t: number, fmt: FormatId, pose: PhonePose, local: V3, compute: CameraFn = computeCamera) => {
   const {width, height} = LAYOUT[fmt];
-  applyCamera(cam, t, fmt, width, height);
+  applyCamera(cam, t, fmt, width, height, compute);
   const m = new THREE.Matrix4().compose(
     new THREE.Vector3(...pose.pos),
     new THREE.Quaternion().setFromEuler(new THREE.Euler(pose.rot[0], pose.rot[1], pose.rot[2], 'YXZ')),

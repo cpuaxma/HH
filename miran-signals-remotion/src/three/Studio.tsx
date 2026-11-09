@@ -145,7 +145,18 @@ const shadowTexture = () => {
   return t;
 };
 
-export const Studio: React.FC = () => {
+/** Colours of the two soft light orbs on the backdrop at time t (written into `left` / `right`). */
+export type OrbFn = (t: number, left: THREE.Color, right: THREE.Color) => void;
+
+/** This reel's orbs: the left one turns red at the news and gold after the switch; the right is gold. */
+const signalsOrbs: OrbFn = (t, left, right) => {
+  const danger = leftDanger(t);
+  const warm = leftWarmth(t);
+  left.copy(ORB_COOL).lerp(ORB_RED, danger).lerp(ORB_GOLD, warm).multiplyScalar(0.085 * (0.7 + 0.3 * focus('left', t)) + 0.06 * danger);
+  right.copy(ORB_GOLD).multiplyScalar(0.085 + 0.03 * syncPulse(t));
+};
+
+export const Studio: React.FC<{orbs?: OrbFn}> = ({orbs = signalsOrbs}) => {
   const {gl, scene} = useThree();
   const cyc = useMemo(cycGeometry, []);
   const cycMat = useMemo(cycMaterial, []);
@@ -184,10 +195,7 @@ export const Studio: React.FC = () => {
   useAnimator((t) => {
     const u = cycMat.uniforms;
     u.uTime.value = t;
-    const danger = leftDanger(t);
-    const warm = leftWarmth(t);
-    (u.leftOrb.value as THREE.Color).copy(ORB_COOL).lerp(ORB_RED, danger).lerp(ORB_GOLD, warm).multiplyScalar(0.085 * (0.7 + 0.3 * focus('left', t)) + 0.06 * danger);
-    (u.rightOrb.value as THREE.Color).copy(ORB_GOLD).multiplyScalar(0.085 + 0.03 * syncPulse(t));
+    orbs(t, u.leftOrb.value as THREE.Color, u.rightOrb.value as THREE.Color);
   });
 
   return (
@@ -279,7 +287,7 @@ export const PhoneGlow: React.FC<{
 };
 
 export const GOLD = new THREE.Color(STUDIO.goldGlow);
-const ORB_COOL = new THREE.Color('#3E5288');
-const ORB_RED = new THREE.Color('#E0383E');
-const ORB_GOLD = new THREE.Color('#C8963E');
+export const ORB_COOL = new THREE.Color('#3E5288');
+export const ORB_RED = new THREE.Color('#E0383E');
+export const ORB_GOLD = new THREE.Color('#C8963E');
 export const RED = new THREE.Color(STUDIO.redGlow);

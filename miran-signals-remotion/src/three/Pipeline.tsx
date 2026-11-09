@@ -28,7 +28,9 @@ import {createContext, useContext, useEffect, useLayoutEffect, useMemo, useRef, 
 import {useCurrentFrame, useDelayRender} from 'remotion';
 import * as THREE from 'three';
 import {BRAND, FormatId, TIMING} from '../data';
-import {applyCamera} from '../lib/projection';
+import {CameraFn, applyCamera} from '../lib/projection';
+import {computeCamera} from '../lib/camera';
+import {CameraContext} from './useScreenTexture';
 import {MOTION_BLUR_RULE as MOTION_BLUR} from './motionBlurRule';
 import {impact} from '../lib/story';
 
@@ -201,7 +203,18 @@ class GradeEffect extends Effect {
   }
 }
 
-export const Pipeline: React.FC<{children: React.ReactNode; fmt: FormatId}> = ({children, fmt}) => {
+export type PipelineProps = {
+  children: React.ReactNode;
+  fmt: FormatId;
+  /** The reel's camera (this reel's by default). */
+  camera?: CameraFn;
+  /** Frames that need bloom (this reel's by default). */
+  bloom?: (t: number) => boolean;
+  /** Strength of the two-tone impact frame, 0–1 (this reel's by default). */
+  impactAt?: (t: number) => number;
+};
+
+export const Pipeline: React.FC<PipelineProps> = ({children, fmt, camera: cameraFn = computeCamera, bloom = bloomNeeded, impactAt = impact}) => {
   const frame = useCurrentFrame();
   const {gl, size} = useThree();
   const scene = useMemo(() => new THREE.Scene(), []);
@@ -252,7 +265,7 @@ export const Pipeline: React.FC<{children: React.ReactNode; fmt: FormatId}> = ({
   useEffect(() => {
     if (!smaaReady) return;
     const t0 = frame;
-    const applyCam = (t: number) => applyCamera(camera, t, fmt, size.width, size.height);
+    const applyCam = (t: number) => applyCamera(camera, t, fmt, size.width, size.height, cameraFn);
     const applyAll = (t: number) => {
       for (const a of registry.animators) a(t);
       scene.updateMatrixWorld();
@@ -293,11 +306,15 @@ export const Pipeline: React.FC<{children: React.ReactNode; fmt: FormatId}> = ({
     pipe.accum.apply = applyAll;
     pipe.accum.depthNeeded = false;
     // Bloom only runs while something is bright enough to bloom (the streak, the impact, the pulses).
-    pipe.bloomPass.enabled = bloomNeeded(t0);
-    (pipe.grade.uniforms.get('impact') as THREE.Uniform).value = impact(t0);
+    pipe.bloomPass.enabled = bloom(t0);
+    (pipe.grade.uniforms.get('impact') as THREE.Uniform).value = impactAt(t0);
     pipe.composer.render();
     if (samples > 1) console.log(`[mb] frame ${t0} samples ${samples}`);
-  }, [frame, fmt, pipe, scene, camera, registry, size.width, size.height, smaaReady]);
+  }, [frame, fmt, pipe, scene, camera, registry, size.width, size.height, smaaReady, cameraFn, bloom, impactAt]);
 
-  return <RegistryContext.Provider value={registry}>{createPortal(children, scene)}</RegistryContext.Provider>;
+  return (
+    <CameraContext.Provider value={cameraFn}>
+      <RegistryContext.Provider value={registry}>{createPortal(children, scene)}</RegistryContext.Provider>
+    </CameraContext.Provider>
+  );
 };
