@@ -111,8 +111,9 @@ export const shotAt = (t: number) => {
 /** A small decaying jolt at the news release. */
 const jolt = (t: number) => {
   const d = t - T.newsAt;
-  if (d <= -1 || d >= 36) return {s: 0, d};
-  return {s: Math.exp(-Math.max(0, d) / 7) * Math.min(1, Math.max(0, d + 1)) * (1 - smootherstep((d - 14) / 22)), d};
+  if (d <= 0 || d >= 36) return {s: 0, d};
+  // Eased in over 3 frames (no one-frame pop), decays, and settles to exactly zero.
+  return {s: Math.exp(-d / 7) * smootherstep(d / 3) * (1 - smootherstep((d - 14) / 22)), d};
 };
 
 export const computeCopyCamera = (t: number, fmt: CopyFormat): CameraState => {
