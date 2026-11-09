@@ -32,7 +32,7 @@ import {
   valueColor,
   withT,
 } from '../screens/draw';
-import {C, H, W, emblem, goldGradient, icon, measure, rr, signedMoney, softShadow} from '../screens/kit';
+import {C, H, W, emblem, goldGradient, icon, measure, rr, setShadowRelative, signedMoney, softShadow} from '../screens/kit';
 import {MARKET, MAX_LOSS, PLACEHOLDERS, RESULT, SCREEN as S, T} from './data';
 import {accountValue, autoOn, chartRange, dailyOn, fmtPct, fmtRatio, openPnl, pagesAt, price, ratioValue, riskValue, tradeOpen} from './story';
 import {PageId} from './story';
@@ -719,6 +719,8 @@ const PAGE_DRAW: Record<PageId, (ctx: CanvasRenderingContext2D, t: number) => vo
 };
 
 export const drawCopyScreen = (ctx: CanvasRenderingContext2D, t: number) => {
+  // Shadows fade with their page and card (no pop on the first frame of a transition).
+  setShadowRelative(true);
   background(ctx, 'miran', 0);
   header(ctx, 'miran');
   // Pages push in from the left (Arabic iOS); the old page slides off to the right.
@@ -737,6 +739,7 @@ export const drawCopyScreen = (ctx: CanvasRenderingContext2D, t: number) => {
   }
   chrome(ctx, t, t >= T.dashPage - T.pageTr ? dashActs() : []);
   homeIndicator(ctx);
+  setShadowRelative(false);
 };
 
 /** The screen stops changing once the end card covers it. */

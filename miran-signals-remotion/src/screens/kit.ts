@@ -473,6 +473,15 @@ export const smear = (
   ctx.restore();
 };
 
+/**
+ * When true, soft shadows multiply the current alpha (so they fade with whatever they belong
+ * to). Off by default: the signals reel draws its shadows at their own absolute alpha.
+ */
+let shadowRelative = false;
+export const setShadowRelative = (on: boolean) => {
+  shadowRelative = on;
+};
+
 /** A soft drop shadow under a box, from a cached blurred sprite (much cheaper than shadowBlur). */
 export const softShadow = (ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, alpha: number, dy = 6, tint = '#000000') => {
   const key = `shadow-sprite:${tint}`;
@@ -493,7 +502,7 @@ export const softShadow = (ctx: CanvasRenderingContext2D, x: number, y: number, 
   const sx = w / 144;
   const sy = h / 144;
   ctx.save();
-  ctx.globalAlpha = alpha;
+  ctx.globalAlpha = shadowRelative ? ctx.globalAlpha * alpha : alpha;
   ctx.drawImage(sprite, x - 56 * sx, y - 56 * sy + dy, 256 * sx, 256 * sy);
   ctx.restore();
 };
