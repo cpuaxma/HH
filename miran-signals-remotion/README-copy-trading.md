@@ -37,26 +37,22 @@ Compositions: `MiranCopyTrading` (9:16), `MiranCopyTrading4x5` (4:5) and `MiranC
 
 ## Your voiceover (Arabic narration script)
 
-There's no voiceover in the mix. The script below is timed to the picture:
+There's no voiceover in the mix. The script below is short and simple on purpose (about 47 words for 37.5s), so it fits comfortably when read by text to speech. Each line has roughly twice the time it needs, so it can start a little late or run a little slow:
 
-| Time | Line |
-|---|---|
-| 0.2–1.6s | ما هو النسخ التلقائي؟ |
-| 1.8–4.0s | ببساطة: صفقات Miran Gold تُنسخ إلى حسابك تلقائياً. |
-| 4.4–6.6s | أولاً، تربط حسابك مع Miran Gold. |
-| 9.0–12.2s | ثم تختار إعداداتك: حجم النسخ، وحدّ المخاطرة لكل صفقة. |
-| 12.4–14.6s | وحدّاً يومياً للخسارة… ثم تحفظ. |
-| 15.3–17.4s | بعدها، تفعّل النسخ التلقائي. |
-| 18.8–21.2s | تنشر Miran Gold إشارة على الذهب: الدخول، والوقف، والهدف. |
-| 21.3–23.0s | فتُنسخ إلى حسابك تلقائياً، بالحجم الذي اخترته. |
-| 23.1–24.5s | وقبل خبر اقتصادي قوي، يصلك تنبيه. |
-| 24.6–26.0s | فتُغلق الصفقة حسب الخطة. |
-| 26.1–27.3s | والنتيجة قد تكون ربحاً أو خسارة. |
-| 27.5–30.0s | وأنت المتحكّم: توقف النسخ متى شئت… |
-| 30.2–31.8s | وتشغّله من جديد. |
-| 32.4–34.4s | إشارات، وتنبيهات الأخبار، ونسخ تلقائي. |
-| 34.6–36.0s | انضم إلى إشارات Miran Gold. |
-| 36.2–37.5s | النسخ لا يلغي المخاطرة، والنتائج قد تختلف. |
+| Time | Line | On screen |
+|---|---|---|
+| 0.2–2.0s | ما هو النسخ التلقائي؟ | the question |
+| 2.2–4.2s | صفقات Miran Gold تُنسخ إلى حسابك. | the diagram |
+| 4.6–7.4s | أولاً، اربط حسابك. | connect, linked |
+| 9.0–13.5s | اختر حجم النسخ، وحدّ المخاطرة. | the sliders, the daily limit, save |
+| 15.3–17.5s | ثم فعّل النسخ التلقائي. | the big switch |
+| 19.0–23.0s | تصل إشارة… فتُنسخ إلى حسابك تلقائياً. | the signal, «نُسخت تلقائياً» |
+| 23.2–26.0s | وقبل الخبر القوي، تُغلق الصفقة حسب الخطة. | the news alert, closed by plan |
+| 27.6–31.8s | وتستطيع إيقاف النسخ متى شئت. | the switch off, then on |
+| 32.4–35.5s | انضم إلى إشارات Miran Gold. | the end card |
+| 35.8–37.5s | النسخ لا يلغي المخاطرة. | the disclaimer |
+
+The gaps (7.4–9.0s, 13.5–15.3s, 26.0–27.6s) are deliberate: the taps and the sound effects carry those moments.
 
 If your takes run longer or shorter, change the timings in `T` (below) and re-render. The screens, the taps, the board, the sound and the camera all follow.
 
