@@ -88,7 +88,7 @@ setsid nohup bash scripts/render-copy.sh > out/render-copy.log 2>&1 &   # the fi
 python3 scripts/scan-frames.py --intended none out/miran-copy-trading-silent.mp4
 ```
 
-Rendering is the same as for the signals reel: the Chrome Headless Shell in `/opt/pw-browsers`, `gl` swangle (SwiftShader through ANGLE), concurrency 1. A full-res format takes about an hour, so run it detached and poll the log.
+Rendering is the same as for the signals reel: the Chrome Headless Shell in `/opt/pw-browsers`, `gl` swangle (SwiftShader through ANGLE), concurrency 1. A full-res format takes about 25 minutes here, so run it detached and poll the log.
 
 ## Changing things
 
