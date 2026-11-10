@@ -87,7 +87,7 @@ export const T = {
   /** Everything is still from here to the end (the held last second). */
   holdFrom: 2040,
 
-  coverFrame: 360,
+  coverFrame: 440,
 };
 
 // ─── Copy (Arabic only; the brand is always «Miran Gold» in Latin letters) ────
@@ -222,12 +222,12 @@ export const CHART = {
   noise: 0.007,
   /** Chart frames per candle, and how many candles fit across. */
   candle: 22,
-  candles: 20,
+  candles: 18,
   /** The whale's candle: from → to (one candle), and how many reel frames the chart's clock
    * falls behind while it forms (it slows down, then catches up once the whale is under). */
   whale: {from: 0.315, to: 0.62, slow: 34},
   /** Panel in the studio (world units): centre and size. */
-  panel: {x: 0, y: 1.86, z: -2.6, w: 4.6, h: 2.5},
+  panel: {x: 0, y: 1.7, z: -2.6, w: 4.6, h: 2.5},
 };
 
 // ─── Layout per format ───────────────────────────────────────────────────────

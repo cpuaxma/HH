@@ -15,11 +15,12 @@ export const drawChart = (ctx: CanvasRenderingContext2D, t: number) => {
   ctx.clearRect(0, 0, W, H);
   const {candles, now} = candlesAt(t);
   const C = CHART.candle;
-  const right = W * 0.84;
-  const left = W * 0.04;
+  // The newest candle sits about two thirds across, so it stays in frame in the close shots.
+  const right = W * 0.64;
+  const left = W * 0.02;
   const cw = (right - left) / CHART.candles;
   const xOf = (chartFrame: number) => right - ((now - chartFrame) / C) * cw;
-  const yOf = (v: number) => H * (0.9 - 0.8 * v);
+  const yOf = (v: number) => H * (0.86 - 0.68 * v);
   const tint = tintMix(t);
   const glow = mixHex(tint.a, tint.b, tint.k);
   const pulse = chartPulse(t);

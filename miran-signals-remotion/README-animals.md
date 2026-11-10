@@ -28,7 +28,7 @@ In `deliverables/animals/` (and `out/` after a render):
 | `miran-animals-4x5.mp4` | 4:5 (1080×1350), re-framed for the feed, with the sound effects |
 | `miran-animals-4x5-silent.mp4` | 4:5, muted |
 | `miran-animals-sfx.wav` | The sound effects alone |
-| `miran-animals-cover.png` | 1080×1920 cover (frame 360: the bull's horns up, the chart climbing) |
+| `miran-animals-cover.png` | 1080×1920 cover (frame 440: the bull, horns up, the chart climbing) |
 | `storyboard-animals.png` (project root) | Captioned storyboard of real stills |
 
 Final settings: H.264, CRF 16, yuv420p, preset slow, 60fps. They're passed on the render command in `scripts/render-animals.sh`, not set in `remotion.config.ts`. Each format's picture is rendered once (muted), and the effects WAV is muxed onto it.
