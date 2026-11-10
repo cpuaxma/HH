@@ -7,13 +7,14 @@ import {FINAL_BALANCE, MARKET, PLACEHOLDERS, T} from './data';
 
 // ─── Pages on the phone ──────────────────────────────────────────────────────
 
-export type PageId = 'hook' | 'connect' | 'settings' | 'auto' | 'dash';
+export type PageId = 'hook' | 'connect' | 'settings' | 'auto' | 'dash' | 'control';
 export const PAGES: {id: PageId; at: number}[] = [
   {id: 'hook', at: -1000},
   {id: 'connect', at: T.connectPage},
   {id: 'settings', at: T.settingsPage},
   {id: 'auto', at: T.autoPage},
   {id: 'dash', at: T.dashPage},
+  {id: 'control', at: T.controlAt},
 ];
 
 /**
@@ -65,16 +66,17 @@ export const ratioValue = (t: number) => {
   const k = ramp(t, T.ratioGrab + 6, T.ratioRelease - 6, easeInOut);
   return {raw: r.from + (r.to - r.from) * k, shown: snap(r.from + (r.to - r.from) * k, r.step)};
 };
-export const riskValue = (t: number) => {
-  const r = PLACEHOLDERS.risk;
-  const k = ramp(t, T.riskGrab + 6, T.riskRelease - 6, easeInOut);
+/** The total loss limit ($) while it is dragged from `from` to `to` (snapped to its step). */
+export const lossValue = (t: number) => {
+  const r = PLACEHOLDERS.totalLoss;
+  const k = ramp(t, T.lossGrab + 6, T.lossRelease - 6, easeInOut);
   return {raw: r.from + (r.to - r.from) * k, shown: snap(r.from + (r.to - r.from) * k, r.step)};
 };
-export const dailyOn = (t: number) => ramp(t, T.dailyTapAt, T.dailyTapAt + 10, easeOut);
 
 /** Formatting of the setting values (Western digits, like the rest of the app). */
 export const fmtRatio = (v: number) => `×${(Math.round(v * 100) / 100).toFixed(2).replace(/0$/, '')}`;
 export const fmtPct = (v: number) => `${(Math.round(v * 10) / 10).toString()}%`;
+export const fmtUsd = (v: number) => `$${Math.round(v).toLocaleString('en-US')}`;
 
 // ─── The market ──────────────────────────────────────────────────────────────
 
@@ -147,7 +149,7 @@ const bump = (t: number, at: number, up: number, hold: number, down: number) =>
   smootherstep((t - at) / up) * (1 - smootherstep((t - at - up - hold) / down));
 
 /** Every tap on the screen: the phone gives a tiny nod back. */
-export const TAPS = [T.connectTapAt, T.ratioGrab, T.riskGrab, T.dailyTapAt, T.saveTapAt, T.autoOnAt, T.pauseTapAt, T.resumeTapAt];
+export const TAPS = [T.connectTapAt, T.ratioGrab, T.lossGrab, T.saveTapAt, T.autoOnAt, T.pauseTapAt, T.resumeTapAt];
 
 const nod = (t: number) => {
   let n = 0;

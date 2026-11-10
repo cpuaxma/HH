@@ -5,7 +5,7 @@ import {Audio} from '@remotion/media';
 import {Sequence, staticFile} from 'remotion';
 import {SFX_MASTER, SoundCue} from '../sound';
 import {PLACEHOLDERS, T} from './data';
-import {PAGES, ratioValue, riskValue} from './story';
+import {PAGES, lossValue, ratioValue} from './story';
 
 const cue = (at: number, sfx: string, volume: number): SoundCue => ({at: Math.round(at), sfx, volume});
 
@@ -48,10 +48,8 @@ export const getCopyCues = (): SoundCue[] => {
   // Settings: grab, slider ticks, the switch, save.
   c.push(cue(T.ratioGrab, 'tap', 0.3));
   steps(T.ratioGrab, T.ratioRelease, ratioValue).forEach((f) => c.push(cue(f, 'gtick-1', 0.1)));
-  c.push(cue(T.riskGrab, 'tap', 0.3));
-  steps(T.riskGrab, T.riskRelease, riskValue).forEach((f) => c.push(cue(f, 'gtick-1', 0.1)));
-  c.push(cue(T.dailyTapAt, 'tap', 0.42));
-  c.push(cue(T.dailyTapAt + 4, 'gtick-0', 0.3));
+  c.push(cue(T.lossGrab, 'tap', 0.3));
+  steps(T.lossGrab, T.lossRelease, lossValue).forEach((f) => c.push(cue(f, 'gtick-1', 0.1)));
   c.push(cue(T.saveTapAt, 'tap', 0.45));
   c.push(cue(T.saveTapAt + 6, 'tp', 0.38));
 
@@ -74,12 +72,17 @@ export const getCopyCues = (): SoundCue[] => {
   c.push(cue(T.newsAt + 1, 'hit', 0.3));
   c.push(cue(T.newsAt + 8, 'shield', 0.45));
 
-  // In control: off, then on again.
-  c.push(cue(T.controlAt - 6, 'thock', 0.24));
+  // In control: off, then on again; then the loss limit, withdraw / deposit (yours only), the history.
+  c.push(cue(T.controlAt + 10, 'thock', 0.24));
   c.push(cue(T.pauseTapAt - 2, 'tap', 0.5));
   c.push(cue(T.pauseTapAt + 4, 'thock', 0.34));
   c.push(cue(T.resumeTapAt - 2, 'tap', 0.5));
   c.push(cue(T.resumeTapAt + 4, 'gtick-1', 0.42));
+  c.push(cue(T.limitCardAt + 4, 'thock', 0.26));
+  c.push(cue(T.accessCardAt + 4, 'thock', 0.26));
+  c.push(cue(T.accessCardAt + 16, 'shield', 0.36));
+  c.push(cue(T.historyCardAt + 4, 'thock', 0.26));
+  c.push(cue(T.historyCardAt + 14, 'gtick-0', 0.24));
 
   // End card.
   c.push(cue(T.endCardStart - 10, 'whoosh-metal', 0.4));

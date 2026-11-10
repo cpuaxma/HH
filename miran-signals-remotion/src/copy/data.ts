@@ -8,11 +8,13 @@
  * ONE PHONE (gold finish), shown step by step on its screen:
  *   1. Hook: «ما هو النسخ التلقائي؟» and a small diagram (Miran Gold → your account).
  *   2. Connect your account (a generic "linked" screen: no real broker or platform).
- *   3. Choose your settings: copy ratio and risk-per-trade sliders, a daily loss limit switch.
+ *   3. Choose your settings: the copy ratio and your total loss limit (sliders); withdrawals
+ *      and deposits stay yours only (a locked row).
  *   4. Switch on «النسخ التلقائي».
  *   5. A Miran Gold gold signal (entry, stop loss, target) is copied: «نُسخت تلقائياً».
  *   6. A news alert before a high-impact release: the trade is closed by plan (copied).
- *   7. You stay in control: the switch goes off («متوقف مؤقتاً») and on again.
+ *   7. You control and see everything: the switch goes off («متوقف مؤقتاً») and on again, your
+ *      loss limit, withdraw / deposit «أنت فقط», and the trade history.
  *   8. End card: wordmark, tagline, CTA and the risk disclaimer.
  *
  * EVERY NUMBER IS A PLACEHOLDER (illustrative, «توضيحي»): confirm them with Miran Gold.
@@ -29,10 +31,8 @@ export const PLACEHOLDERS = {
   balance: 10000,
   /** Copy ratio slider: from → to (× the size of the Miran Gold trade), and its range. */
   ratio: {from: 1.0, to: 0.5, min: 0.25, max: 2.0, step: 0.05},
-  /** Risk-per-trade slider (% of the balance): from → to, and its range. */
-  risk: {from: 2, to: 1, min: 0.5, max: 5, step: 0.1},
-  /** Daily loss limit (% of the balance), switched on in the settings. */
-  dailyLimitPct: 3,
+  /** Total loss limit slider ($): the most you accept losing in total. From → to, and its range. */
+  totalLoss: {from: 2000, to: 1000, min: 250, max: 5000, step: 50},
   /** The gold signal (USD per ounce): entry, stop loss and target. */
   signal: {entry: 4002.0, sl: 3997.0, tp: 4012.0},
   /**
@@ -55,7 +55,7 @@ export const FINAL_BALANCE = P.balance + RESULT;
 
 export const T = {
   fps: 60,
-  durationInFrames: 2250,
+  durationInFrames: 2420,
 
   // 1. Hook (0–250): the question, then the diagram.
   questionAt: 14,
@@ -70,16 +70,15 @@ export const T = {
   settingsPage: 530,
   ratioGrab: 576,
   ratioRelease: 622,
-  riskGrab: 664,
-  riskRelease: 710,
-  dailyTapAt: 750,
+  lossGrab: 664,
+  lossRelease: 716,
   saveTapAt: 816,
 
   // 4. Automatic copy trading (910–1110).
   autoPage: 910,
   autoOnAt: 968,
 
-  // 5–7. The account screen (from 1110): the signal, the news, you stay in control.
+  // 5–6. The account screen (from 1110): the signal, the news.
   dashPage: 1110,
   signalAt: 1140,
   /** Copied into the account: the trade opens here. */
@@ -90,25 +89,30 @@ export const T = {
   closedAt: 1474,
   /** The high-impact release itself (the chart moves hard; no trade is open). */
   newsAt: 1552,
+
+  // 7. You control and see everything (a page of its own from controlAt).
   controlAt: 1640,
   pauseTapAt: 1702,
-  resumeTapAt: 1812,
+  resumeTapAt: 1790,
+  limitCardAt: 1830,
+  accessCardAt: 1880,
+  historyCardAt: 1940,
 
   /** Page transitions last this many frames (centred on each page's start). */
   pageTr: 22,
 
   /** The board under the phone. */
   boardIn: 262,
-  boardOut: 1900,
+  boardOut: 2070,
 
   // 8. End card.
-  endCardStart: 1920,
-  logoAt: 1944,
-  disclaimerAt: 1958,
-  ctaAt: 1994,
-  tapAt: 2034,
+  endCardStart: 2090,
+  logoAt: 2114,
+  disclaimerAt: 2128,
+  ctaAt: 2164,
+  tapAt: 2204,
   /** Everything is still from here to the end (the held last second). */
-  holdFrom: 2190,
+  holdFrom: 2360,
 
   coverFrame: 1250,
 };
@@ -138,15 +142,19 @@ export const SCREEN = {
   connecting: 'جارٍ الربط…',
   linkedBtn: 'تم الربط',
   linked: 'تم الربط مع Miran Gold',
+  /** What Miran Gold can do on the linked account, and what stays yours only. */
+  permCopy: 'Miran Gold تنسخ الصفقات',
+  permFunds: 'السحب والإيداع: أنت فقط',
 
   // Settings.
   settingsTitle: 'إعدادات النسخ',
   settingsSub: 'أنت تختار الحجم والمخاطرة',
   ratio: 'نسبة النسخ',
   ratioSub: 'حجم صفقاتك مقارنة بصفقة Miran Gold',
-  risk: 'حدّ المخاطرة لكل صفقة',
-  riskSub: 'أقصى خسارة مسموحة للصفقة الواحدة',
-  daily: 'حدّ الخسارة اليومي',
+  loss: 'أقصى خسارة إجمالية',
+  lossSub: 'أقصى ما تقبل خسارته بالمجموع',
+  access: 'السحب والإيداع',
+  onlyYou: 'أنت فقط',
   save: 'حفظ الإعدادات',
   saved: 'تم الحفظ',
   riskNote: 'النسخ لا يلغي المخاطرة، والنتائج قد تختلف',
@@ -158,8 +166,7 @@ export const SCREEN = {
   on: 'مفعّل',
   onBody: 'تُنسخ إشارات Miran Gold إلى حسابك',
   chipRatio: (r: string) => `نسبة ${iso(r)}`,
-  chipRisk: (p: string) => `مخاطرة ${iso(p)}`,
-  chipDaily: (p: string) => `حدّ يومي ${iso(p)}`,
+  chipLoss: (v: string) => `أقصى خسارة ${iso(v)}`,
   waiting: 'بانتظار إشارة Miran Gold',
 
   // Account screen.
@@ -189,9 +196,15 @@ export const SCREEN = {
   newsIslandSub: 'لا صفقات مفتوحة',
 
   controlTitle: 'أنت المتحكّم',
+  controlSub: 'وترى كل شيء أمامك',
   controlOn: 'مفعّل · تُنسخ الإشارات الجديدة',
   controlOff: 'متوقف مؤقتاً · لن تُنسخ إشارات جديدة',
-  controlNote: 'يمكنك الإيقاف أو التشغيل في أي وقت',
+  yourLimit: 'أنت تحدّدها',
+  deposit: 'إيداع',
+  withdraw: 'سحب',
+  history: 'سجل الصفقات',
+  live: 'مباشر',
+  historyNote: 'أُغلقت حسب الخطة · نُسخت تلقائياً',
 };
 
 /** The board under the phone. */

@@ -34,7 +34,7 @@ import {
 } from '../screens/draw';
 import {C, H, W, emblem, goldGradient, icon, measure, rr, setShadowRelative, signedMoney, softShadow} from '../screens/kit';
 import {MARKET, MAX_LOSS, PLACEHOLDERS, RESULT, SCREEN as S, T} from './data';
-import {accountValue, autoOn, chartRange, dailyOn, fmtPct, fmtRatio, openPnl, pagesAt, price, ratioValue, riskValue, tradeOpen} from './story';
+import {accountValue, autoOn, chartRange, fmtRatio, fmtUsd, lossValue, openPnl, pagesAt, price, ratioValue, tradeOpen} from './story';
 import {PageId} from './story';
 
 const P = PLACEHOLDERS;
@@ -425,10 +425,43 @@ const connectPage = (ctx: CanvasRenderingContext2D, t: number) => {
     }, GREEN);
   }
   land(ctx, t, T.linkedAt + 6, () => say(ctx, S.linked, W / 2, 716, {weight: 700, size: 23, color: goldGradient(ctx, 40, 0, W - 40, 0), align: 'center', maxW: W - 60}));
+  land(ctx, t, T.linkedAt + 20, () => permLine(ctx, 'check', GREEN, S.permCopy, 764));
+  land(ctx, t, T.linkedAt + 30, () => permLine(ctx, 'lock', '#F3D27A', S.permFunds, 800));
   tap(ctx, t, T.connectTapAt, W / 2 + 30, by + 35);
 };
 
-/** 3. Settings: two sliders (copy ratio, risk per trade), a daily loss limit switch, save. */
+/** One centred line: an icon in a soft circle, then the label (right to left). */
+const permLine = (ctx: CanvasRenderingContext2D, kind: 'check' | 'lock', color: string, label: string, y: number) => {
+  const size = 19;
+  const lw = measure(ctx, label, 700, size, true);
+  const total = lw + 38;
+  const right = W / 2 + total / 2;
+  ctx.beginPath();
+  ctx.arc(right - 13, y - 7, 13, 0, Math.PI * 2);
+  ctx.fillStyle = hexA(color, 0.18);
+  ctx.fill();
+  icon(ctx, kind, right - 13, y - 7, kind === 'lock' ? 15 : 13, color, 2.4);
+  say(ctx, label, right - 34, y, {weight: 700, size, color: kind === 'lock' ? '#F3D27A' : C.text, align: 'right', maxW: W - 2 * PAD - 40});
+};
+
+/** «أنت فقط» with a lock, in a gold pill, anchored at its left edge. */
+const lockPill = (ctx: CanvasRenderingContext2D, left: number, top: number, glow = 0) => {
+  const size = 17;
+  const w = measure(ctx, S.onlyYou, 700, size, true) + 52;
+  const h = 34;
+  if (glow > 0.01) softShadow(ctx, left, top, w, h, 0.8 * glow, 0, '#C8963E');
+  rr(ctx, left, top, w, h, h / 2);
+  ctx.fillStyle = 'rgba(212,162,76,0.18)';
+  ctx.fill();
+  ctx.lineWidth = 1.5;
+  ctx.strokeStyle = 'rgba(243,210,122,0.7)';
+  ctx.stroke();
+  icon(ctx, 'lock', left + w - 20, top + h / 2 + 1, 15, '#F3D27A', 2.2);
+  say(ctx, S.onlyYou, left + w - 36, top + h / 2 + size * 0.36, {weight: 700, size, color: '#F3D27A', align: 'right'});
+  return w;
+};
+
+/** 3. Settings: two sliders (copy ratio, total loss limit), withdraw / deposit locked to you, save. */
 const settingsPage = (ctx: CanvasRenderingContext2D, t: number) => {
   title(ctx, S.settingsTitle, S.settingsSub);
   const grabbed = (g: number, r: number) => ramp(t, g, g + 6, easeOut) * (1 - ramp(t, r, r + 8, easeOut));
@@ -442,22 +475,19 @@ const settingsPage = (ctx: CanvasRenderingContext2D, t: number) => {
   num(ctx, fmtRatio(rv.shown), CARD.x + 24, 272, {size: 26, color: '#F3D27A', align: 'left'});
   const k1 = slider(ctx, 334, rv.raw, P.ratio.min, P.ratio.max, g1);
 
-  // Risk per trade.
-  const kv = riskValue(t);
-  const g2 = grabbed(T.riskGrab, T.riskRelease);
+  // Total loss limit: the most you accept losing in total.
+  const kv = lossValue(t);
+  const g2 = grabbed(T.lossGrab, T.lossRelease);
   cardBox(ctx, {y: 376, h: 134, border: `rgba(243,210,122,${0.12 + 0.6 * g2})`});
-  say(ctx, S.risk, sx() - 10, 418, {weight: 700, size: 23, color: C.text, align: 'right', maxW: 250});
-  say(ctx, S.riskSub, sx() - 10, 446, {weight: 500, size: 15, color: C.meta, align: 'right', maxW: 300});
-  num(ctx, fmtPct(kv.shown), CARD.x + 24, 420, {size: 26, color: '#F3D27A', align: 'left'});
-  const k2 = slider(ctx, 482, kv.raw, P.risk.min, P.risk.max, g2);
+  say(ctx, S.loss, sx() - 10, 418, {weight: 700, size: 23, color: C.text, align: 'right', maxW: 230});
+  say(ctx, S.lossSub, sx() - 10, 446, {weight: 500, size: 15, color: C.meta, align: 'right', maxW: 300});
+  num(ctx, fmtUsd(kv.shown), CARD.x + 24, 420, {size: 26, color: '#F3D27A', align: 'left'});
+  const k2 = slider(ctx, 482, kv.raw, P.totalLoss.min, P.totalLoss.max, g2);
 
-  // Daily loss limit.
-  const d = dailyOn(t);
-  cardBox(ctx, {y: 524, h: 86, border: `rgba(63,208,138,${0.1 + 0.4 * d})`});
-  say(ctx, S.daily, sx() - 10, 575, {weight: 700, size: 23, color: C.text, align: 'right', maxW: 200});
-  const tgx = CARD.x + 60;
-  num(ctx, fmtPct(P.dailyLimitPct), tgx + 62, 576, {size: 22, color: mixHex('#6B7180', '#F3D27A', d), align: 'left'});
-  toggle(ctx, tgx, 567, d, pressOf(t, T.dailyTapAt - 2));
+  // Withdrawals and deposits: yours only (locked, nothing to change).
+  cardBox(ctx, {y: 524, h: 86, border: 'rgba(243,210,122,0.35)'});
+  say(ctx, S.access, sx() - 10, 575, {weight: 700, size: 23, color: C.text, align: 'right', maxW: 200});
+  lockPill(ctx, CARD.x + 22, 550);
 
   // Save.
   const saved = t >= T.saveTapAt + 6;
@@ -477,8 +507,7 @@ const settingsPage = (ctx: CanvasRenderingContext2D, t: number) => {
   riskNote(ctx, 744);
 
   dragTouch(ctx, t, T.ratioGrab, T.ratioRelease, k1, 334);
-  dragTouch(ctx, t, T.riskGrab, T.riskRelease, k2, 482);
-  tap(ctx, t, T.dailyTapAt, tgx + 6, 567);
+  dragTouch(ctx, t, T.lossGrab, T.lossRelease, k2, 482);
   tap(ctx, t, T.saveTapAt, W / 2 + 40, 659);
 };
 
@@ -512,7 +541,7 @@ const autoPage = (ctx: CanvasRenderingContext2D, t: number) => {
   say(ctx, S.onBody, W / 2, 506, {weight: 600, size: 17, color: '#D5D8DF', align: 'center', maxW: CARD.w - 40});
   ctx.restore();
   // The settings chosen in the step before.
-  chipRow(ctx, [S.chipRatio(fmtRatio(P.ratio.to)), S.chipRisk(fmtPct(P.risk.to)), S.chipDaily(fmtPct(P.dailyLimitPct))], 556, 16);
+  chipRow(ctx, [S.chipRatio(fmtRatio(P.ratio.to)), S.chipLoss(fmtUsd(P.totalLoss.to))], 556, 17);
   land(ctx, t, T.autoOnAt + 16, () => {
     say(ctx, S.waiting, W / 2, 662, {weight: 600, size: 20, color: '#C9CDD6', align: 'center', maxW: 320});
     dots(ctx, t, 692);
@@ -668,31 +697,92 @@ const closedCard = (ctx: CanvasRenderingContext2D, t: number) => {
   say(ctx, S.resultNote, W / 2, y + 258, {weight: 500, size: 15, color: '#AEB4C2', align: 'center', maxW: 330});
 };
 
-const controlCard = (ctx: CanvasRenderingContext2D, t: number) => {
-  const on = autoOn(t);
-  cardBox(ctx, {border: mixHex('#E8A33D', '#D4A24C', on) + 'AA'});
-  const y = CARD.y;
-  say(ctx, S.controlTitle, sx() - 6, y + 50, {weight: 700, size: 27, color: goldGradient(ctx, 0, 0, W, 0), align: 'right', maxW: 300});
-  const press = Math.max(pressOf(t, T.pauseTapAt - 2), pressOf(t, T.resumeTapAt - 2));
-  const row = switchRow(ctx, y + 124, on, press);
-  const line = (label: string, color: string, a: number) => {
-    if (a <= 0.001) return;
-    ctx.save();
-    ctx.globalAlpha *= a;
-    const lw = measure(ctx, label, 700, 18, true);
-    const right = W / 2 + (lw + 20) / 2;
-    ctx.beginPath();
-    ctx.arc(right - 5, y + 196, 5, 0, Math.PI * 2);
-    ctx.fillStyle = color;
+/** 7. You control and see everything: the switch, your loss limit, withdraw / deposit (yours only), the history. */
+const controlPage = (ctx: CanvasRenderingContext2D, t: number) => {
+  title(ctx, S.controlTitle, S.controlSub);
+
+  // The automatic copy switch: off, then on again.
+  land(ctx, t, T.controlAt + 10, () => {
+    const on = autoOn(t);
+    cardBox(ctx, {y: 226, h: 136, border: mixHex('#E8A33D', '#D4A24C', on) + 'AA'});
+    const press = Math.max(pressOf(t, T.pauseTapAt - 2), pressOf(t, T.resumeTapAt - 2));
+    switchRow(ctx, 278, on, press);
+    const line = (label: string, color: string, a: number) => {
+      if (a <= 0.001) return;
+      ctx.save();
+      ctx.globalAlpha *= a;
+      const lw = measure(ctx, label, 700, 17, true);
+      const right = W / 2 + (lw + 20) / 2;
+      ctx.beginPath();
+      ctx.arc(right - 5, 337, 5, 0, Math.PI * 2);
+      ctx.fillStyle = color;
+      ctx.fill();
+      say(ctx, label, right - 18, 343, {weight: 700, size: 17, color, align: 'right', maxW: CARD.w - 40});
+      ctx.restore();
+    };
+    line(S.controlOn, GREEN, on);
+    line(S.controlOff, AMBER, 1 - on);
+  });
+
+  // Your total loss limit.
+  land(ctx, t, T.limitCardAt, () => {
+    cardBox(ctx, {y: 374, h: 90, border: 'rgba(243,210,122,0.5)'});
+    say(ctx, S.loss, sx() - 10, 412, {weight: 700, size: 22, color: C.text, align: 'right', maxW: 220});
+    say(ctx, S.yourLimit, sx() - 10, 442, {weight: 600, size: 16, color: '#E9CF95', align: 'right', maxW: 220});
+    num(ctx, fmtUsd(P.totalLoss.to), CARD.x + 24, 432, {size: 30, color: '#F3D27A', align: 'left'});
+  });
+
+  // Withdrawals and deposits: yours only.
+  land(ctx, t, T.accessCardAt, () => {
+    cardBox(ctx, {y: 476, h: 140, border: 'rgba(243,210,122,0.5)'});
+    say(ctx, S.access, sx() - 10, 514, {weight: 700, size: 22, color: C.text, align: 'right', maxW: 200});
+    const glow = t >= T.accessCardAt + 14 ? Math.exp(-(t - (T.accessCardAt + 14)) / 18) : 0;
+    lockPill(ctx, CARD.x + 22, 490, glow);
+    const bw = (CARD.w - 44 - 12) / 2;
+    [S.deposit, S.withdraw].forEach((label, i) => {
+      const x = CARD.x + CARD.w - 22 - bw - i * (bw + 12);
+      rr(ctx, x, 538, bw, 58, 29);
+      ctx.fillStyle = i === 0 ? 'rgba(212,162,76,0.2)' : 'rgba(255,255,255,0.06)';
+      ctx.fill();
+      ctx.lineWidth = 1.5;
+      ctx.strokeStyle = 'rgba(243,210,122,0.55)';
+      ctx.stroke();
+      icon(ctx, i === 0 ? 'down' : 'up', x + bw - 30, 567, 14, '#F3D27A', 2);
+      say(ctx, label, x + bw / 2 - 6, 575, {weight: 700, size: 22, color: '#F3D27A', align: 'center'});
+    });
+  });
+
+  // You see everything: the trade history, live.
+  land(ctx, t, T.historyCardAt, () => {
+    cardBox(ctx, {y: 628, h: 150, border: 'rgba(212,162,76,0.35)'});
+    say(ctx, S.history, sx() - 10, 664, {weight: 700, size: 21, color: C.text, align: 'right', maxW: 220});
+    // "Live" pill with a blinking dot.
+    const lw = measure(ctx, S.live, 700, 15, true) + 36;
+    rr(ctx, CARD.x + 22, 646, lw, 28, 14);
+    ctx.fillStyle = 'rgba(63,208,138,0.16)';
     ctx.fill();
-    say(ctx, label, right - 18, y + 203, {weight: 700, size: 18, color, align: 'right', maxW: CARD.w - 40});
-    ctx.restore();
-  };
-  line(S.controlOn, GREEN, on);
-  line(S.controlOff, AMBER, 1 - on);
-  say(ctx, S.controlNote, W / 2, y + 250, {weight: 500, size: 16, color: '#AEB4C2', align: 'center', maxW: CARD.w - 40});
-  tap(ctx, t, T.pauseTapAt, row.x + 4, row.y);
-  tap(ctx, t, T.resumeTapAt, row.x + 4, row.y);
+    ctx.beginPath();
+    ctx.arc(CARD.x + 22 + lw - 14, 660, 4.5, 0, Math.PI * 2);
+    ctx.fillStyle = hexA(GREEN, 0.5 + 0.5 * Math.abs(Math.sin(t / 14)));
+    ctx.fill();
+    say(ctx, S.live, CARD.x + 22 + lw - 24, 665, {weight: 700, size: 15, color: GREEN, align: 'right'});
+    // The one trade of the reel.
+    rr(ctx, CARD.x + 16, 684, CARD.w - 32, 78, 20);
+    ctx.fillStyle = 'rgba(255,255,255,0.05)';
+    ctx.fill();
+    const ix = CARD.x + CARD.w - 46;
+    ctx.beginPath();
+    ctx.arc(ix, 723, 18, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(63,208,138,0.18)';
+    ctx.fill();
+    icon(ctx, 'up', ix, 724, 16, GREEN, 2);
+    say(ctx, S.buyGold, ix - 28, 718, {weight: 700, size: 20, color: C.text, align: 'right', maxW: 180});
+    say(ctx, S.historyNote, ix - 28, 744, {weight: 500, size: 14, color: '#AEB4C2', align: 'right', maxW: 230});
+    num(ctx, signedMoney(RESULT), CARD.x + 34, 731, {size: 24, color: GREEN, align: 'left'});
+  });
+  riskNote(ctx, 818);
+  tap(ctx, t, T.pauseTapAt, CARD.x + 96, 278);
+  tap(ctx, t, T.resumeTapAt, CARD.x + 96, 278);
 };
 
 const dashPage = (ctx: CanvasRenderingContext2D, t: number) => {
@@ -704,8 +794,7 @@ const dashPage = (ctx: CanvasRenderingContext2D, t: number) => {
   withT(ctx, tr(t, -100, T.signalAt - 4, 10), () => waitingDashCard(ctx, t));
   withT(ctx, tr(t, T.signalAt, T.alertAt - 6, 10), () => signalCard(ctx, t));
   withT(ctx, tr(t, T.alertAt, T.closedAt - 2, 10), () => alertCard(ctx, t));
-  withT(ctx, tr(t, T.closedAt, T.controlAt - 6, 10), () => closedCard(ctx, t));
-  withT(ctx, tr(t, T.controlAt), () => controlCard(ctx, t));
+  withT(ctx, tr(t, T.closedAt), () => closedCard(ctx, t));
 };
 
 // ─── The screen ──────────────────────────────────────────────────────────────
@@ -716,6 +805,7 @@ const PAGE_DRAW: Record<PageId, (ctx: CanvasRenderingContext2D, t: number) => vo
   settings: settingsPage,
   auto: autoPage,
   dash: dashPage,
+  control: controlPage,
 };
 
 export const drawCopyScreen = (ctx: CanvasRenderingContext2D, t: number) => {

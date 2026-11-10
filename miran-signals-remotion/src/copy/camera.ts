@@ -61,14 +61,14 @@ export const SHOTS: Record<string, Shot> = {
       focus: fy(fmt),
     };
   },
-  // 7–8. In control, then a slow pull back as the end card comes in.
+  // 7–8. In control (a slow arc, the screen kept readable), then a pull back into the end card.
   control: (t, fmt) => ({
     target: TARGET,
-    az: drift(t, 1600, 2000, 9, 3),
-    el: drift(t, 1600, 2000, 3, 4),
-    dist: drift(t, 1600, 2000, 4.72, 5.3) * ds(fmt),
+    az: drift(t, 1600, 2100, 8, 2),
+    el: drift(t, 1600, 2100, 3, 3.5),
+    dist: (drift(t, 1600, 2040, 4.74, 4.66) + drift(t, 2040, 2180, 0, 0.6)) * ds(fmt),
     hfov: 20,
-    roll: drift(t, 1600, 2000, 0.6, 0),
+    roll: drift(t, 1600, 2100, 0.6, 0),
     focus: fy(fmt),
   }),
 };
