@@ -21,7 +21,14 @@ export type Joint = {
 
 export type Eye = {joint: string; at: Vec; r: number};
 
-export type FigureDef = {id: string; metal: Metal; joints: Joint[]; eyes: Eye[]};
+export type FigureDef = {
+  id: string;
+  metal: Metal;
+  joints: Joint[];
+  eyes: Eye[];
+  /** Joints whose own fast moves count for motion blur (the root always does). */
+  blurJoints?: string[];
+};
 
 const S = (s: 1 | -1, v: Vec): Vec => [v[0], v[1], v[2] * s];
 
@@ -30,6 +37,7 @@ const S = (s: 1 | -1, v: Vec): Vec => [v[0], v[1], v[2] * s];
 export const BULL: FigureDef = {
   id: 'bull',
   metal: 'gold',
+  blurJoints: ['head'],
   joints: [
     {
       name: 'body',
@@ -126,6 +134,7 @@ const bearArm = (s: 1 | -1): Part => ({
 export const BEAR: FigureDef = {
   id: 'bear',
   metal: 'silver',
+  blurJoints: ['armL'],
   joints: [
     {
       name: 'body',

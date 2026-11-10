@@ -87,8 +87,8 @@ export const bearPose = (t: number): FigurePose => {
       scale: 0.9,
       joints: {
         head: [0, 0, 0.1 + 0.05 * push],
-        armL: [0.55 * threat, 0, 2.45 * threat + 0.2 * push + 0.03 * breathe],
-        armR: [-0.5 * threat, 0, 2.1 * threat + 0.15 * push],
+        armL: [-0.35 * threat, 0, 2.45 * threat + 0.2 * push + 0.03 * breathe],
+        armR: [0.3 * threat, 0, 2.1 * threat + 0.15 * push],
       },
       visible: t < BEAR_HOOK_SINK + 48,
     };
@@ -106,8 +106,9 @@ export const bearPose = (t: number): FigurePose => {
     scale: 1,
     joints: {
       head: [0, 0.06 * Math.sin(t / 60), 0.16 * raise - 0.18 * swipe + 0.05 * settle],
-      armL: [0.35 * raise - 0.2 * swipe, 0, arm],
-      armR: [-0.15, 0, 0.3 + 0.2 * raise - 0.3 * swipe + 0.03 * breathe],
+      // The near paw swings outside the body (negative x turns the +z arm outwards).
+      armL: [-0.12 - 0.3 * raise - 0.12 * swipe + 0.3 * settle, 0, arm],
+      armR: [0.15, 0, 0.3 + 0.2 * raise - 0.3 * swipe + 0.03 * breathe],
     },
     visible: t > BEAR_UP - 2 && t < BEAR_SINK + 54,
   };

@@ -42,6 +42,20 @@ export const metalMaterial = (metal: Metal | 'eye') => {
 
 const EYE = new THREE.SphereGeometry(1, 20, 14);
 
+/** Probe points riding on one joint, so its own fast moves (a swipe, a head toss) get motion blur. */
+const JointProbe: React.FC<{geo: THREE.BufferGeometry}> = ({geo}) => {
+  const ref = useRef<THREE.Group>(null);
+  const pts = useMemo(() => {
+    geo.computeBoundingBox();
+    const b = geo.boundingBox!;
+    const out: THREE.Vector3[] = [];
+    for (const x of [b.min.x, b.max.x]) for (const y of [b.min.y, b.max.y]) for (const z of [b.min.z, b.max.z]) out.push(new THREE.Vector3(x, y, z));
+    return out;
+  }, [geo]);
+  useProbe(ref, pts);
+  return <group ref={ref} />;
+};
+
 export const Figure: React.FC<{def: FigureDef; pose: (t: number) => FigurePose}> = ({def, pose}) => {
   const root = useRef<THREE.Group>(null);
   const groups = useRef<Record<string, THREE.Group | null>>({});
@@ -114,6 +128,7 @@ export const Figure: React.FC<{def: FigureDef; pose: (t: number) => FigurePose}>
             .map((e, i) => (
               <mesh key={i} geometry={EYE} material={eyeMat} position={[e.at[0] - p.j.pivot[0], e.at[1] - p.j.pivot[1], e.at[2] - p.j.pivot[2]]} scale={e.r} />
             ))}
+          {def.blurJoints?.includes(p.j.name) ? <JointProbe geo={p.geo} /> : null}
           {render(p.j.name)}
         </group>
       ));
