@@ -133,8 +133,8 @@ export const END = {
 
 export const COLORS = {
   /** The metals (colour is the metal's reflectance; roughness 0 = mirror; env = reflection strength). */
-  gold: {base: '#EDBE62', roughness: 0.2, env: 1.7},
-  silver: {base: '#D6DCE6', roughness: 0.17, env: 1.6},
+  gold: {base: '#E8B85A', roughness: 0.3, env: 1.8},
+  silver: {base: '#D2D8E2', roughness: 0.28, env: 1.7},
   /** The chart behind. */
   chartLine: '#F3D27A',
   candleUp: '#E0AE50',

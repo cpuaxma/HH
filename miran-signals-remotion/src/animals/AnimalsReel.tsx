@@ -10,6 +10,7 @@ import {Pipeline} from '../three/Pipeline';
 import {endFade} from '../ui/Overlays';
 import {AnimalsOverlays} from './Overlays';
 import {AnimalsScene} from './Scene';
+import {FigureMeshes} from './Figure';
 import {computeAnimalsCamera} from './camera';
 import {AnimalsFormat, T} from './data';
 import {AnimalsSoundTrack} from './sound';
@@ -43,9 +44,12 @@ export const AnimalsReel: React.FC<AnimalsReelProps> = ({showSafeZones, sfx = tr
             dpr={typeof window === 'undefined' ? 1 : Math.min(1, window.devicePixelRatio || 1)}
             gl={{antialias: false, preserveDrawingBuffer: true, powerPreference: 'high-performance', stencil: false}}
           >
-            <Pipeline fmt={fmt} camera={computeAnimalsCamera} bloom={noBloom} impactAt={noImpact}>
-              <AnimalsScene />
-            </Pipeline>
+            {/* The pipeline starts once the animals' meshes are loaded. */}
+            <FigureMeshes>
+              <Pipeline fmt={fmt} camera={computeAnimalsCamera} bloom={noBloom} impactAt={noImpact}>
+                <AnimalsScene />
+              </Pipeline>
+            </FigureMeshes>
           </ThreeCanvas>
         </AbsoluteFill>
       ) : null}

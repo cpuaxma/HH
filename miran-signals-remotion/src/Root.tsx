@@ -5,6 +5,7 @@ import {SoundTrack} from './sound';
 import {CopyReel, CopyReelProps, CopySfxOnly} from './copy/CopyReel';
 import {LAYOUT as COPY_LAYOUT, T as COPY_T} from './copy/data';
 import {AnimalsReel, AnimalsReelProps, AnimalsSfxOnly} from './animals/AnimalsReel';
+import {AnimalsLookdev} from './animals/Lookdev';
 import {LAYOUT as ANIMALS_LAYOUT, T as ANIMALS_T} from './animals/data';
 
 /** The sound effects on their own, for exporting a WAV to mix elsewhere. */
@@ -97,5 +98,7 @@ export const RemotionRoot: React.FC = () => (
       defaultProps={{showSafeZones: false, sfx: true} satisfies AnimalsReelProps}
     />
     <Composition id="MiranAnimalsSfx" component={AnimalsSfxOnly} durationInFrames={ANIMALS_T.durationInFrames} fps={ANIMALS_T.fps} width={1080} height={1920} />
+    {/* A turntable of the sculpted animals, for checking them (not a deliverable). */}
+    <Composition id="MiranAnimalsLookdev" component={AnimalsLookdev} durationInFrames={30} fps={60} width={1080} height={1920} />
   </>
 );

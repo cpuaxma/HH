@@ -2,7 +2,7 @@
 
 A 35.0-second Arabic educational reel (1080×1920 and 1080×1350, 60fps, 2100 frames) about what the market animals mean. It's built in the same Remotion project as the signals and copy trading reels and reuses their look: the navy studio and its lighting (`Studio`), the render pipeline, the gold Miran Gold phone and screen theme, the end card, the finish and the sound kit.
 
-Five animals, each an **original stylised sculpture in polished gold or silver metal, built in code** (see "How the animals are made" below). A gold price chart sits on the wall behind them and reacts to each one.
+Five animals, each an **original cast-metal sculpture in satin gold or silver, built in code** (see "How the animals are made" below). A gold price chart sits on the wall behind them and reacts to each one.
 
 | # | Time | On screen | The chart behind |
 |---|---|---|---|
@@ -116,11 +116,20 @@ Everything for this reel is in **`src/animals/data.ts`**:
 
 ## How the animals are made
 
-All five are original designs made for this reel, sculpted in code. No 3D model, photo, post or channel design was used, copied or traced, so there's no third-party licence to note.
+All five are original designs made for this reel, sculpted in code. No 3D model, photo, post or channel design was used, copied or traced, so there's no third-party licence to note. They're built as statues, not toys: real proportions and anatomy, smooth cast surfaces with crisp form changes, eyes set in sockets under lids (no bead eyes), and a satin metal finish.
 
-- `src/animals/sdf.ts`: each body part is a signed distance field built from ellipsoids and tapered capsules, joined with smooth unions so the joins read as one cast surface. Small shapes are carved out too (nostrils, ear hollows, the whale's throat grooves). Each part is meshed once with marching cubes, with smooth normals from the field, and cached.
-- `src/animals/figures.ts`: the five rigs. Each animal is a body plus jointed parts the story poses: the bull's head and horns, the bear's head and arms, the whale's tail, and each bird's inner wings and wing tips.
-- `src/animals/Figure.tsx`: the materials are fully metallic physical materials (gold and silver, with a light clear coat), lit by the shared studio.
+- The bull is a fighting bull: the hump of neck muscle, a deep chest, a tucked waist, cloven hooves, a curly forehead and forward-sweeping horns, one foreleg a step ahead.
+- The bear is a grizzly on its hind legs: a heavy body, the shoulder hump, the head held low, combed fur, and long curved claws.
+- The whale is a humpback: long scalloped flippers, knobs on the head, throat pleats, and notched flukes.
+- The hawk and the dove are built from individual flight feathers (coverts, secondaries, fanned primaries, a fanned tail) with rows of small feathers over the body. The hawk has a heavy brow, a hooked beak and talons.
+
+How it works:
+
+- `src/animals/sdf.ts`: each part is a signed distance field made from ellipsoids, tapered capsules, blades and feathers, joined with smooth unions (each shape can have its own blend, so details stay crisp). On top of that: carved detail (nostrils, grooves, sockets), sculpted surface texture (combed fur, feather rows, pleats), and eyes and lids added after the carving. It's meshed with marching cubes, normals come from the field, and a cavity term baked from the whole figure darkens the creases.
+- `src/animals/figures.ts`: the five rigs: the body plus the jointed parts the story poses (the bull's head, the bear's head and arms, the whale's tail, and each bird's inner wings and wing tips).
+- `src/animals/bake.ts` and `scripts/bake-animals.ts`: meshing takes about 80 seconds, so the meshes are baked once into `public/animals/` (about 24 MB, not committed) and loaded in a moment. `npm run animals:bake` does it and skips the work when the sculpting files haven't changed. The render, stills and lookdev scripts run it first. Without a bake, the page meshes the animals itself (slower, same result).
+- `src/animals/Figure.tsx`: loads the meshes, holds the render until they're in, and gives the satin gold and silver materials with the baked cavity shading.
+- `npm run animals:lookdev`: a turntable of the five animals, six views each, in `out/animals-lookdev/`. Use it when you change a sculpture. `ONLY=bull npm run animals:bake` re-bakes just one animal.
 
 `src/animals/`:
 
@@ -129,7 +138,8 @@ All five are original designs made for this reel, sculpted in code. No 3D model,
 | `data.ts` | Copy, timings, colours, the chart, layout |
 | `story.ts` | Every animated value as a pure function of the frame: poses, wingbeats, floor rings, the chart's price, candles and clock |
 | `camera.ts` | One shot per animal, blended |
-| `sdf.ts`, `figures.ts`, `Figure.tsx` | The sculpted animals |
+| `sdf.ts`, `figures.ts`, `bake.ts`, `Figure.tsx` | The sculpted animals, their baked meshes and materials |
+| `Lookdev.tsx` | The turntable for checking the animals (`MiranAnimalsLookdev`, not a deliverable) |
 | `chart.ts` | The background chart, drawn on canvas each frame |
 | `screen.ts` | The phone's alert screen (the shared drawing kit) |
 | `Scene.tsx` | The studio, chart panel, floor rings, ripples, shadows, animals and phone |

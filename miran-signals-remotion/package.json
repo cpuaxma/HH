@@ -24,11 +24,13 @@
     "copy:blur:budget": "esbuild scripts/blur-budget-copy.ts --bundle --platform=node --outfile=scripts/tmp/blur-budget-copy.cjs --log-level=error && node scripts/tmp/blur-budget-copy.cjs vertical && node scripts/tmp/blur-budget-copy.cjs feed",
     "copy:preview": "PREVIEW=1 bash scripts/render-copy.sh",
     "copy:render": "bash scripts/render-copy.sh",
-    "animals:stills": "COMP=MiranAnimals node scripts/stills.mjs out/animals-stills 0.5 120,330,700,812,900,1062,1180,1450,1710,1980",
+    "animals:stills": "npm run animals:bake && COMP=MiranAnimals node scripts/stills.mjs out/animals-stills 0.5 120,330,700,812,900,1062,1180,1450,1710,1980",
     "animals:storyboard": "python3 scripts/storyboard-animals.py storyboard-animals.png out/animals-stills",
     "animals:preview": "PREVIEW=1 bash scripts/render-animals.sh",
     "animals:render": "bash scripts/render-animals.sh",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "animals:bake": "esbuild scripts/bake-animals.ts --bundle --platform=node --log-level=warning --outfile=scripts/tmp/bake-animals.cjs && node scripts/tmp/bake-animals.cjs",
+    "animals:lookdev": "npm run animals:bake && COMP=MiranAnimalsLookdev node scripts/stills.mjs out/animals-lookdev 0.5 0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29"
   },
   "dependencies": {
     "@fontsource/ibm-plex-sans-arabic": "5.2.9",
