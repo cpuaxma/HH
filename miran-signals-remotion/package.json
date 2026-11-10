@@ -1,0 +1,51 @@
+{
+  "name": "miran-signals-remotion",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Miran Gold: one trade, one news candle, two results. 26-second 1080x1920 Arabic 3D reel with iPhone-style phones (Remotion + React Three Fiber)",
+  "scripts": {
+    "studio": "remotion studio",
+    "stills": "node scripts/stills.mjs",
+    "stills:feed": "node scripts/stills.mjs out/stills-feed 0.5 90,280,560,640,780,820,1000,1180,1450 --feed",
+    "check:camera": "esbuild scripts/check-camera.ts --bundle --platform=node --outfile=scripts/tmp/check-camera.cjs --log-level=error && node scripts/tmp/check-camera.cjs vertical && node scripts/tmp/check-camera.cjs feed",
+    "blur:budget": "esbuild scripts/blur-budget.ts --bundle --platform=node --outfile=scripts/tmp/blur-budget.cjs --log-level=error && node scripts/tmp/blur-budget.cjs vertical && node scripts/tmp/blur-budget.cjs feed",
+    "preview": "remotion render MiranSignals out/preview.mp4 --scale=0.5 --crf=24 --x264-preset=veryfast --concurrency=1",
+    "render": "remotion render MiranSignals out/miran-signals.mp4 --concurrency=1 --crf=16 --x264-preset=slow --pixel-format=yuv420p --audio-codec=aac --audio-bitrate=320k",
+    "render:4x5": "remotion render MiranSignals4x5 out/miran-signals-4x5.mp4 --concurrency=1 --crf=16 --x264-preset=slow --pixel-format=yuv420p --audio-codec=aac --audio-bitrate=320k",
+    "render:silent": "remotion render MiranSignals out/miran-signals-silent.mp4 --concurrency=1 --crf=16 --x264-preset=slow --pixel-format=yuv420p --muted",
+    "sfx:make": "python3 scripts/make-sfx.py",
+    "sfx:wav": "remotion render MiranSignalsSfx out/miran-signals-sfx.wav --codec=wav",
+    "cover": "remotion still MiranSignals out/miran-signals-cover.png --frame=1200",
+    "render:all": "bash scripts/render-all.sh",
+    "scan": "python3 scripts/scan-frames.py",
+    "copy:stills": "COMP=MiranCopyTrading node scripts/stills.mjs out/copy-stills 0.5 150,480,600,700,1040,1250,1430,1520,1590,1740,2040,2280",
+    "copy:storyboard": "python3 scripts/storyboard-copy.py storyboard-copy-trading.png out/copy-stills",
+    "copy:check:camera": "esbuild scripts/check-camera-copy.ts --bundle --platform=node --outfile=scripts/tmp/check-camera-copy.cjs --log-level=error && node scripts/tmp/check-camera-copy.cjs vertical && node scripts/tmp/check-camera-copy.cjs feed",
+    "copy:blur:budget": "esbuild scripts/blur-budget-copy.ts --bundle --platform=node --outfile=scripts/tmp/blur-budget-copy.cjs --log-level=error && node scripts/tmp/blur-budget-copy.cjs vertical && node scripts/tmp/blur-budget-copy.cjs feed",
+    "copy:preview": "PREVIEW=1 bash scripts/render-copy.sh",
+    "copy:render": "bash scripts/render-copy.sh",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@fontsource/ibm-plex-sans-arabic": "5.2.9",
+    "@react-three/fiber": "9.4.0",
+    "@remotion/bundler": "4.0.537",
+    "@remotion/cli": "4.0.537",
+    "@remotion/layout-utils": "4.0.537",
+    "@remotion/media": "4.0.537",
+    "@remotion/motion-blur": "4.0.537",
+    "@remotion/renderer": "4.0.537",
+    "@remotion/three": "4.0.537",
+    "postprocessing": "6.37.8",
+    "react": "19.2.0",
+    "react-dom": "19.2.0",
+    "remotion": "4.0.537",
+    "three": "0.180.0"
+  },
+  "devDependencies": {
+    "@types/react": "19.2.2",
+    "@types/three": "0.180.0",
+    "esbuild": "0.25.10",
+    "typescript": "5.9.3"
+  }
+}
