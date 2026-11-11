@@ -1,0 +1,38 @@
+{
+  "fps": 60,
+  "duration": 12,
+  "presses": [
+    0.3125,
+    0.78125,
+    1.25
+  ],
+  "notesPerPress": 3,
+  "noteStagger": 0.09,
+  "noteBurnDelay": 0.6,
+  "noteBurnDur": 0.75,
+  "slowStart": 2.85,
+  "slowFull": 3.3,
+  "slowRate": 0.12,
+  "chiliDropStart": 2.9,
+  "impact": 3.75,
+  "ringDur": 1.25,
+  "pushStart": 4.0,
+  "funnelArrive": 5.2,
+  "tierLocks": [
+    5.3125,
+    5.625,
+    5.9375,
+    6.25
+  ],
+  "pourStart": 5.5,
+  "pourDur": 2.25,
+  "coinStart": 7.9,
+  "coinInterval": 0.085,
+  "coinCount": 16,
+  "panStart": 9.1,
+  "panEnd": 10.05,
+  "chiliEndStart": 9.3,
+  "chiliSettle": 10.0,
+  "turnStart": 9.75,
+  "turnEnd": 10.45
+}
