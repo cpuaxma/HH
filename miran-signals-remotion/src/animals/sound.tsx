@@ -26,7 +26,7 @@ export const getAnimalsCues = (): SoundCue[] => {
     c.push(cue(at + 9, 'thock', 0.3));
   });
 
-  // Through the floor: a low metal whoosh each time an animal goes down or comes up.
+  // A low metal whoosh each time an animal breaks up or assembles.
   for (const at of [T.bullAt - 34, T.bearAt - 24, T.bearAt + 20, T.whaleAt - 26]) c.push(cue(at, 'whoosh-metal', 0.22));
 
   // The bull: the label, two horn thrusts, the chart climbs.

@@ -1,4 +1,4 @@
-// «ما علاقة الحيوانات بالتداول؟»: the market animals, sculpted in gold and silver metal, in
+// «ما علاقة الحيوانات بالتداول؟»: the market animals as faceted gold and silver line art over
 // the same studio, pipeline, end card and sound kit as the other Miran Gold reels. One short
 // name label per animal; no captions (your voiceover explains it).
 import {ThreeCanvas} from '@remotion/three';
@@ -10,7 +10,7 @@ import {Pipeline} from '../three/Pipeline';
 import {endFade} from '../ui/Overlays';
 import {AnimalsOverlays} from './Overlays';
 import {AnimalsScene} from './Scene';
-import {FigureMeshes} from './Figure';
+import {AnimalArt} from './art/AnimalArt';
 import {computeAnimalsCamera} from './camera';
 import {AnimalsFormat, T} from './data';
 import {AnimalsSoundTrack} from './sound';
@@ -44,13 +44,11 @@ export const AnimalsReel: React.FC<AnimalsReelProps> = ({showSafeZones, sfx = tr
             dpr={typeof window === 'undefined' ? 1 : Math.min(1, window.devicePixelRatio || 1)}
             gl={{antialias: false, preserveDrawingBuffer: true, powerPreference: 'high-performance', stencil: false}}
           >
-            {/* The pipeline starts once the animals' meshes are loaded. */}
-            <FigureMeshes>
-              <Pipeline fmt={fmt} camera={computeAnimalsCamera} bloom={noBloom} impactAt={noImpact}>
-                <AnimalsScene />
-              </Pipeline>
-            </FigureMeshes>
+            <Pipeline fmt={fmt} camera={computeAnimalsCamera} bloom={noBloom} impactAt={noImpact}>
+              <AnimalsScene />
+            </Pipeline>
           </ThreeCanvas>
+          <AnimalArt fmt={fmt} />
         </AbsoluteFill>
       ) : null}
       {ready ? <AnimalsOverlays fmt={fmt} showSafeZones={showSafeZones} /> : null}

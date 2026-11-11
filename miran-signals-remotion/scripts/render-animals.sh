@@ -7,7 +7,6 @@
 #   FORMATS="MiranAnimals:miran-animals" bash scripts/render-animals.sh   # just one format
 set -euo pipefail
 cd "$(dirname "$0")/.."
-npm run --silent animals:bake
 mkdir -p out
 # Encoding settings live here on the command line, not in remotion.config.ts (that breaks the WAV render).
 X264="--concurrency=1 --crf=16 --x264-preset=slow --pixel-format=yuv420p --muted"

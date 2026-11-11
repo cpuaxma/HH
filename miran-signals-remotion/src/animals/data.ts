@@ -5,7 +5,7 @@
  * the brand is always written «Miran Gold»), the timings, the colours, the chart's moves and
  * the layout per format. Frames are at 60fps (60 = 1 second).
  *
- * The beats (one animal at a time, sculpted in gold or silver metal, with a gold price chart
+ * The beats (one animal at a time, faceted gold or silver line art, with a gold price chart
  * behind that reacts to each one):
  *   1. Hook: a bull and a bear face off. The chart chops sideways.
  *   2. The bull «الثور»: its horns thrust up and the chart climbs.
@@ -132,9 +132,7 @@ export const END = {
 // ─── Colours ─────────────────────────────────────────────────────────────────
 
 export const COLORS = {
-  /** The metals (colour is the metal's reflectance; roughness 0 = mirror; env = reflection strength). */
-  gold: {base: '#E8B85A', roughness: 0.3, env: 1.8},
-  silver: {base: '#D2D8E2', roughness: 0.28, env: 1.7},
+  // The animals' gold and silver tones are in art/render.ts (PALETTE).
   /** The chart behind. */
   chartLine: '#F3D27A',
   candleUp: '#E0AE50',

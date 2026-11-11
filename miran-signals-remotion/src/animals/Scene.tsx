@@ -1,7 +1,7 @@
-// The animals in the same navy studio as the other Miran Gold reels (the shared Studio:
-// cyclorama, key and gold rim lights, softbox, room reflections), with the gold chart on a
-// panel behind, floor rings where the animals come up and go down, the whale's ripples,
-// soft contact shadows, and the Miran Gold phone for the tie-in.
+// The animals reel's 3D studio: the same navy studio as the other Miran Gold reels (the shared
+// Studio: cyclorama, key and gold rim lights, softbox, room reflections), with the gold chart on
+// a panel behind, a pool of light on the floor and the Miran Gold phone for the tie-in. The
+// animals themselves are line art drawn over this (art/AnimalArt.tsx).
 import {useThree} from '@react-three/fiber';
 import {useCallback, useLayoutEffect, useMemo, useRef} from 'react';
 import {useCurrentFrame} from 'remotion';
@@ -13,10 +13,8 @@ import {useScreenTexture} from '../three/useScreenTexture';
 import {mixHex} from '../screens/draw';
 import {CHART_TEX, chartBrightness, chartKey, drawChart} from './chart';
 import {CHART, COLORS, T} from './data';
-import {Figure, FigurePose} from './Figure';
-import {BEAR, BULL, DOVE, HAWK, WHALE} from './figures';
 import {alertScreenKey, drawAlertScreen} from './screen';
-import {PHONE_BASE, bearPose, bullPose, dovePose, hawkPose, phonePose, phoneVisible, rings, ripples, stageGlow, tintMix, whalePose} from './story';
+import {PHONE_BASE, phonePose, phoneVisible, rings, stageGlow, tintMix} from './story';
 
 const ORB_SILVER = new THREE.Color('#7F93BE');
 /** The backdrop orbs follow the beat: warm gold for the bull, whale and dove; cool silver for the bear and hawk. */
@@ -98,27 +96,18 @@ const ringTexture = (inner: number, width: number, fill = 0.35) => {
 
 const additive = (map: THREE.Texture) => new THREE.MeshBasicMaterial({map, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, toneMapped: false});
 
-const MAX_RINGS = 3;
-const MAX_RIPPLES = 6;
+const MAX_RINGS = 1;
 
-/** Light pool, rings, ripples and soft shadows on the floor. */
+/** The pool of light on the floor in the beat's colour, and the ring the phone comes up through. */
 const Floor: React.FC = () => {
   const poolTex = useMemo(() => radialTexture(1.8), []);
   const ringTex = useMemo(() => ringTexture(0.72, 0.09), []);
-  const rippleTex = useMemo(() => ringTexture(0.92, 0.03, 0), []);
-  const shadowTex = useMemo(() => radialTexture(1.5), []);
   const pool = useRef<THREE.Mesh>(null);
   const poolMat = useMemo(() => additive(poolTex), [poolTex]);
   const ringMats = useMemo(() => Array.from({length: MAX_RINGS}, () => additive(ringTex)), [ringTex]);
-  const rippleMats = useMemo(() => Array.from({length: MAX_RIPPLES}, () => additive(rippleTex)), [rippleTex]);
   const ringRefs = useRef<(THREE.Mesh | null)[]>([]);
-  const rippleRefs = useRef<(THREE.Mesh | null)[]>([]);
-  const shadowMats = useMemo(() => Array.from({length: 4}, () => new THREE.MeshBasicMaterial({map: shadowTex, color: '#000', transparent: true, depthWrite: false})), [shadowTex]);
-  const shadowRefs = useRef<(THREE.Mesh | null)[]>([]);
-  const whaleColor = useMemo(() => new THREE.Color(COLORS.tint.whale), []);
 
   useAnimator((t) => {
-    // The pool of light in the beat's colour.
     const m = tintMix(t);
     const g = stageGlow(t);
     if (pool.current) {
@@ -136,57 +125,16 @@ const Floor: React.FC = () => {
       mesh.scale.set(r.r * 2.4, r.r * 2.4, 1);
       ringMats[i].color.set(r.color).multiplyScalar(1.1 * r.strength);
     });
-    const rp = ripples(t);
-    rippleRefs.current.forEach((mesh, i) => {
-      if (!mesh) return;
-      const r = rp[i];
-      mesh.visible = !!r && r.a > 0.001;
-      if (!r) return;
-      mesh.position.set(0.05, 0.007, -0.15);
-      mesh.scale.set(r.r * 2 * 1.5, r.r * 2, 1);
-      rippleMats[i].color.copy(whaleColor).multiplyScalar(0.9 * r.a);
-    });
-    // Soft shadows under whoever is on (or above) the floor.
-    const under = (p: FigurePose, w: number, d: number, height: number): [number, number, number, number, number] => {
-      const y = p.pos[1];
-      const onFloor = Math.max(0, Math.min(1, (y + 0.15) / 0.15));
-      const above = Math.max(0, y - height);
-      const k = p.visible === false ? 0 : onFloor / (1 + above * 1.4);
-      return [p.pos[0], p.pos[2], w * p.scale * (1 + above * 0.5), d * p.scale * (1 + above * 0.5), k];
-    };
-    const sh = [under(bullPose(t), 1.9, 0.8, 0), under(bearPose(t), 0.95, 0.9, 0), under(hawkPose(t), 1.2, 0.8, 0.2), under(dovePose(t), 1.0, 0.7, 0.2)];
-    shadowRefs.current.forEach((mesh, i) => {
-      if (!mesh) return;
-      const [x, z, w, d, k] = sh[i];
-      mesh.visible = k > 0.002;
-      mesh.position.set(x, 0.003, z);
-      mesh.scale.set(w, d, 1);
-      shadowMats[i].opacity = 0.62 * k;
-    });
   });
 
   return (
     <>
-      {shadowMats.map((m, i) => (
-        <mesh key={`s${i}`} ref={(r) => {
-            shadowRefs.current[i] = r;
-          }} rotation={[-Math.PI / 2, 0, 0]} material={m} renderOrder={1}>
-          <planeGeometry args={[1, 1]} />
-        </mesh>
-      ))}
       <mesh ref={pool} rotation={[-Math.PI / 2, 0, 0]} material={poolMat} renderOrder={2}>
         <planeGeometry args={[1, 1]} />
       </mesh>
       {ringMats.map((m, i) => (
         <mesh key={`r${i}`} ref={(r) => {
             ringRefs.current[i] = r;
-          }} rotation={[-Math.PI / 2, 0, 0]} material={m} renderOrder={2}>
-          <planeGeometry args={[1, 1]} />
-        </mesh>
-      ))}
-      {rippleMats.map((m, i) => (
-        <mesh key={`p${i}`} ref={(r) => {
-            rippleRefs.current[i] = r;
           }} rotation={[-Math.PI / 2, 0, 0]} material={m} renderOrder={2}>
           <planeGeometry args={[1, 1]} />
         </mesh>
@@ -215,11 +163,6 @@ export const AnimalsScene: React.FC = () => {
       <Studio orbs={orbs} />
       <ChartPanel />
       <Floor />
-      <Figure def={BULL} pose={bullPose} />
-      <Figure def={BEAR} pose={bearPose} />
-      <Figure def={WHALE} pose={whalePose} />
-      <Figure def={HAWK} pose={hawkPose} />
-      <Figure def={DOVE} pose={dovePose} />
       {phoneVisible(frame) ? <AlertPhone /> : null}
     </>
   );

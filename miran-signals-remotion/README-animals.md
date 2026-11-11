@@ -2,15 +2,15 @@
 
 A 35.0-second Arabic educational reel (1080×1920 and 1080×1350, 60fps, 2100 frames) about what the market animals mean. It's built in the same Remotion project as the signals and copy trading reels and reuses their look: the navy studio and its lighting (`Studio`), the render pipeline, the gold Miran Gold phone and screen theme, the end card, the finish and the sound kit.
 
-Five animals, each an **original cast-metal sculpture in satin gold or silver, built in code** (see "How the animals are made" below). A gold price chart sits on the wall behind them and reacts to each one.
+Five animals, each **original faceted line art in gold or silver, drawn in code**: a clean outline filled with lit facets, like a cut-metal emblem (see "How the animals are made" below). They're drawn in 2D over the 3D studio. A gold price chart sits on the wall behind them and reacts to each one.
 
 | # | Time | On screen | The chart behind |
 |---|---|---|---|
 | 1 | 0–4.0s | Hook: a gold bull and a silver bear face off, lean in and push. The question «ما علاقة الحيوانات بالتداول؟» | Chops sideways |
-| 2 | 4.0–8.2s | The bear drops through a ring of light in the floor. The bull takes centre stage and thrusts its horns up, twice. Label «الثور» | Climbs |
-| 3 | 8.2–12.3s | The bull sinks, the silver bear rises, raises a paw and swipes it down. Label «الدب» | Drops |
-| 4 | 12.3–16.7s | A gold whale surfaces through the floor with ripples, flicks its tail and dives. Label «الحوت» | One big candle forms (the chart's clock slows so you can watch it), highlighted |
-| 5 | 16.7–21.5s | A silver hawk dives from above to the floor, flares and hovers. Label «الصقر», then the note «ليس دائماً — السوق يتأثر بعوامل كثيرة» | Dips |
+| 2 | 4.0–8.2s | The bear breaks up into its facets, which drift away. The bull takes centre stage and thrusts its horns up, twice. Label «الثور» | Climbs |
+| 3 | 8.2–12.3s | The bull breaks up, the silver bear assembles facet by facet, standing, raises a paw and swipes it down. Label «الدب» | Drops |
+| 4 | 12.3–16.7s | A gold humpback rises into frame, flicks its tail and dives away. Label «الحوت» | One big candle forms (the chart's clock slows so you can watch it), highlighted |
+| 5 | 16.7–21.5s | A silver hawk dives in from above with its wings tucked, flares them open and hovers. Label «الصقر», then the note «ليس دائماً — السوق يتأثر بعوامل كثيرة» | Dips |
 | 6 | 21.5–25.6s | A gold dove flies up from below and rises. Label «الحمامة», with the same note | Lifts |
 | Tie-in | 25.6–30.0s | The gold Miran Gold phone rises between the hawk and the dove. A news alert: Live Activity «تنبيه أخبار من Miran Gold · قرار فائدة مرتقب», then a card «تنبيه أخبار / قرار فائدة مرتقب / تقلّبات محتملة في سعر الذهب» | Sideways (waiting) |
 | 7 | 30.0–35.0s | End card: logo, «Miran Gold», «إشارات • تنبيهات الأخبار • نسخ تلقائي», CTA «انضم إلى إشارات Miran Gold», risk disclaimer (on screen for 4.4s) | |
@@ -88,11 +88,11 @@ Everything for this reel is in **`src/animals/data.ts`**:
   - `SHOW_HOOK_TITLE`: whether the opening question is on screen.
 - **Numbers (the chart):** `CHART.price` is the chart's level (0 = bottom, 1 = top) as `[frame, level]` keyframes, one group per animal. `CHART.whale` sets the whale's candle (from → to) and how long the chart's clock lingers on it. `candle` is frames per candle, `candles` is how many show across, `noise` is the tick jitter, and `panel` is the chart's place and size in the studio. No numbers are shown on screen.
 - **Colours:**
-  - `COLORS.gold` / `COLORS.silver`: each metal's colour, roughness (lower is more mirror-like) and reflection strength.
+  - The animals' gold and silver tones: `PALETTE` in `src/animals/art/render.ts` (dark to light, the facet edges and the outline).
   - `COLORS.chartLine`, `candleUp`, `candleDown`, `grid`: the chart.
   - `COLORS.tint`: the light per beat (the chart's glow, the floor pool, the backdrop orbs).
   - `COLORS.phoneFrame` / `phoneBack`, `alert`: the phone.
-  - Which animal is gold and which silver: `metal` in `src/animals/figures.ts`.
+  - Which animal is gold and which silver: `metal` in `src/animals/art/shapes.ts`.
   - The navy studio and the brand colours are shared with the other reels (`src/data.ts`).
 - **Timings** are in `T`, in frames at 60fps:
 
@@ -112,42 +112,47 @@ Everything for this reel is in **`src/animals/data.ts`**:
   If you move a whole beat, move its `CHART.price` keyframes with it, and the shot windows in `src/animals/camera.ts`.
 - **Layout per format:** `LAYOUT.vertical` / `LAYOUT.feed` set the framing (`focus`, `distScale`), the title, the label and note, and the end card.
 - **Camera:** one shot per animal, plus the edit between them, in `src/animals/camera.ts` (`SHOTS`, `EDIT`).
-- **Poses and moves:** `src/animals/story.ts` (`bullPose`, `bearPose`, `whalePose`, `hawkPose`, `dovePose`, `phonePose`).
+- **Poses and moves:** the animals in `src/animals/art/poses.ts` (`bullArt`, `bearArt`, `whaleArt`, `hawkArt`, `doveArt`; `STAGE` sets where they stand and how big they are per format); the phone in `src/animals/story.ts` (`phonePose`).
 
 ## How the animals are made
 
-All five are original designs made for this reel, sculpted in code. No 3D model, photo, post or channel design was used, copied or traced, so there's no third-party licence to note. They're built as statues, not toys: real proportions and anatomy, smooth cast surfaces with crisp form changes, eyes set in sockets under lids (no bead eyes), and a satin metal finish.
+All five are original designs made for this reel, drawn in code. No 3D model, photo, illustration, post or channel design was used, copied or traced, so there's no third-party licence to note.
 
-- The bull is a fighting bull: the hump of neck muscle, a deep chest, a tucked waist, cloven hooves, a curly forehead and forward-sweeping horns, one foreleg a step ahead.
-- The bear is a grizzly on its hind legs: a heavy body, the shoulder hump, the head held low, combed fur, and long curved claws.
-- The whale is a humpback: long scalloped flippers, knobs on the head, throat pleats, and notched flukes.
-- The hawk and the dove are built from individual flight feathers (coverts, secondaries, fanned primaries, a fanned tail) with rows of small feathers over the body. The hawk has a heavy brow, a hooked beak and talons.
+The style is faceted line art, like a cut-metal emblem: each animal is a clean silhouette in profile (the hawk face on, heraldic style, with its head turned), filled with small triangular facets. Each facet is lit as if the shape were a low relief, so the light breaks across it. The facets have thin bright edges, there's a crisp gold or silver outline with a soft glow, and a few engraved detail lines (eyes, nostrils, muscle and fur lines, throat pleats, feathers). A band of light sweeps across each animal at its big moments.
 
-How it works:
+- The bull: neck hump, deep chest, cloven hooves, a broad forehead and forward-sweeping horns. Its head lowers in the face-off and tosses up on each thrust.
+- The bear: a grizzly on its hind legs, with a heavy body, a shoulder hump, a short snout, round ears and long claws. The near arm lifts and swipes down.
+- The whale: a humpback with long scalloped flippers, knobs on the head, throat pleats and flukes.
+- The hawk: body facing you, head in profile with a hooked beak and a heavy brow, fingered primaries and a fanned tail. Wings tucked for the dive, then spread.
+- The dove: in profile, a plump body, wings up with long rounded primaries. It flaps as it rises.
 
-- `src/animals/sdf.ts`: each part is a signed distance field made from ellipsoids, tapered capsules, blades and feathers, joined with smooth unions (each shape can have its own blend, so details stay crisp). On top of that: carved detail (nostrils, grooves, sockets), sculpted surface texture (combed fur, feather rows, pleats), and eyes and lids added after the carving. It's meshed with marching cubes, normals come from the field, and a cavity term baked from the whole figure darkens the creases.
-- `src/animals/figures.ts`: the five rigs: the body plus the jointed parts the story poses (the bull's head, the bear's head and arms, the whale's tail, and each bird's inner wings and wing tips).
-- `src/animals/bake.ts` and `scripts/bake-animals.ts`: meshing takes about 80 seconds, so the meshes are baked once into `public/animals/` (about 24 MB, not committed) and loaded in a moment. `npm run animals:bake` does it and skips the work when the sculpting files haven't changed. The render, stills and lookdev scripts run it first. Without a bake, the page meshes the animals itself (slower, same result).
-- `src/animals/Figure.tsx`: loads the meshes, holds the render until they're in, and gives the satin gold and silver materials with the baked cavity shading.
-- `npm run animals:lookdev`: a turntable of the five animals, six views each, in `out/animals-lookdev/`. Use it when you change a sculpture. `ONLY=bull npm run animals:bake` re-bakes just one animal.
+Animals arrive by assembling facet by facet, and leave by breaking into their facets, which drift away.
+
+How it works (`src/animals/art/`):
+
+- `shapes.ts`: the five animals. Each part (a body, a head, an arm, a wing) is a few outlines given as control points; a smooth curve runs through them, and `[x, y, 1]` marks a sharp corner. Parts that move turn about a pivot. The hawk's left wing is the right one mirrored.
+- `geo.ts`: the outline curves, points spread inside each shape, and a Delaunay triangulation (pure and deterministic).
+- `render.ts`: builds each part's facets once, then draws a frame of a figure from its pose as SVG: lit facets, edges, outlines, detail lines, the assemble and break-up effects, the light sweep.
+- `poses.ts`: where each animal is and how it moves, frame by frame, on the beats in `data.ts`.
+- `AnimalArt.tsx`: draws them over the 3D, with a soft shadow and a line of light under the bull and the bear.
+- `npm run animals:art` draws all five to `out/art-gallery.png` for checking a shape after you change it (`ONLY=bull`, and `POSES='{"parts":{"head":{"rot":-0.4}}}'` to try a pose).
 
 `src/animals/`:
 
 | File | What it does |
 |---|---|
 | `data.ts` | Copy, timings, colours, the chart, layout |
-| `story.ts` | Every animated value as a pure function of the frame: poses, wingbeats, floor rings, the chart's price, candles and clock |
+| `story.ts` | The 3D side as pure functions of the frame: the phone, the floor ring and light, the chart's price, candles and clock |
 | `camera.ts` | One shot per animal, blended |
-| `sdf.ts`, `figures.ts`, `bake.ts`, `Figure.tsx` | The sculpted animals, their baked meshes and materials |
-| `Lookdev.tsx` | The turntable for checking the animals (`MiranAnimalsLookdev`, not a deliverable) |
+| `art/` | The line-art animals (see above) |
 | `chart.ts` | The background chart, drawn on canvas each frame |
 | `screen.ts` | The phone's alert screen (the shared drawing kit) |
-| `Scene.tsx` | The studio, chart panel, floor rings, ripples, shadows, animals and phone |
+| `Scene.tsx` | The studio, chart panel, floor light and phone |
 | `Overlays.tsx` | The hook question, labels, note, «توضيحي» chip, the shared end card and finish |
 | `sound.tsx` | Cues for the shared sound effects |
 | `AnimalsReel.tsx` | The composition |
 
-Every animation is a pure function of the frame: no `useFrame`, no state and no screen recording. The flight paths and wingbeats are closed-form functions of the frame. The chart is redrawn once per frame and the animals posed per motion-blur sample, so fast moves (the swipe, the dive) get real motion blur and still moments stay sharp. No shared module was changed; the reel uses the optional parameters the copy trading reel added.
+Every animation is a pure function of the frame: no `useFrame`, no state and no screen recording. The flight paths and wingbeats are closed-form functions of the frame. The chart is redrawn once per frame. The 3D studio and phone get the pipeline's motion blur; the 2D animals are drawn crisp each frame. No shared module was changed; the reel uses the optional parameters the copy trading reel added.
 
 ## Compliance flags (for Miran Gold's sign-off)
 
