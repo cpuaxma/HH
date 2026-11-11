@@ -11,6 +11,8 @@ There is no text, no logo and nobody on screen. The last two seconds hold on the
 | 5–9s | The system | Four frosted-glass tiers slide in and lock, each with a click and a pulse of light. Glowing spheres pour in and swirl down through every tier. They leave the spout as gold coins that flip once and stack on the floor. The camera follows the flow down. |
 | 9–12s | The brand | The camera tilts up and turns away from the coins into empty space. The chili settles into frame, turns a quarter turn and rests while embers drift up. The camera holds still from 10s to 12s. |
 
+The rendered spot is [`exports/hpm-boost-ad.mp4`](exports/hpm-boost-ad.mp4): 1080×1920, 60fps, H.264 CRF 14, 3-sample motion blur, AAC stereo, 12.0s.
+
 ## Commands
 
 ```
