@@ -82,9 +82,8 @@ export const Phone: React.FC = () => {
     const glass = new THREE.MeshPhysicalMaterial({
       color: '#030303',
       metalness: 0,
-      roughness: 0.05,
-      clearcoat: 1,
-      clearcoatRoughness: 0.03,
+      // Slightly soft so the key light reads as a broad sheen, not a pin-point glint.
+      roughness: 0.15,
       envMapIntensity: 1.2,
     });
     const screenTex = makeScreenTexture();
@@ -93,9 +92,7 @@ export const Phone: React.FC = () => {
       emissive: '#ffffff',
       emissiveMap: screenTex,
       emissiveIntensity: 1.05,
-      roughness: 0.05,
-      clearcoat: 1,
-      clearcoatRoughness: 0.02,
+      roughness: 0.16,
       polygonOffset: true,
       polygonOffsetFactor: -2,
     });

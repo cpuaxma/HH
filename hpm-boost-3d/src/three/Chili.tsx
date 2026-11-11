@@ -42,7 +42,7 @@ export const chiliState = (t: number) => {
   } else if (t >= T.chiliEndStart) {
     visible = true;
     const d = t - T.chiliEndStart;
-    const drop = 7 * (1 - spring(d, 0.9, 0.74));
+    const drop = 4.6 * (1 - spring(d, 0.9, 0.74));
     const float = 0.028 * Math.sin(1.5 * (t - T.chiliSettle)) * smooth(prog(T.chiliSettle, T.chiliSettle + 0.8, t));
     pos.set(CHILI_END[0], CHILI_END[1] + drop + float + landingDip(t - T.chiliSettle, 0.0), CHILI_END[2]);
     const turn = spring(t - T.turnStart, 1.0, 0.8);

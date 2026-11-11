@@ -146,7 +146,7 @@ export const Funnel: React.FC = () => {
         );
       })}
       <primitive object={r.inst} ref={instRef} frustumCulled={false} visible={t > T.pourStart - 0.05 && t < 9.6} />
-      <mesh material={r.outletMat} position={[FUNNEL.x, FUNNEL.yBot - 0.25, FUNNEL.z]} rotation={[Math.PI / 2, 0, 0]}>
+      <mesh material={r.outletMat} position={[FUNNEL.x, FUNNEL.yBot - 0.25, FUNNEL.z]} rotation={[Math.PI / 2, 0, 0]} visible={t >= T.tierLocks[3]}>
         <torusGeometry args={[FUNNEL.rBot + 0.05, 0.08, 10, 64]} />
       </mesh>
       <primitive object={r.flowLight} />
