@@ -1,7 +1,7 @@
 "use client";
 import { AnimatePresence, motion } from "motion/react";
 import { LEVELS, setHeat, useHeat, type HeatLevel } from "@/lib/heat";
-import { Pepper3D } from "./pepper/Pepper3D";
+import { PepperPhoto } from "./pepper/PepperPhoto";
 import { Button } from "./Button";
 
 export function HeatScale() {
@@ -24,7 +24,7 @@ export function HeatScale() {
 
         <div className="mt-10 grid items-start gap-8 md:mt-16 lg:grid-cols-12 lg:gap-12">
           <div className="relative mx-auto aspect-square w-full max-w-[min(80vw,420px)] lg:sticky lg:top-24 lg:col-span-5 lg:max-w-none">
-            <Pepper3D placement="center" className="absolute inset-0" />
+            <PepperPhoto placement="center" className="absolute inset-0" />
           </div>
 
           <div className="lg:col-span-7">

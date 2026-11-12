@@ -1,12 +1,14 @@
 import { Button } from "./Button";
-import { Pepper3D } from "./pepper/Pepper3D";
+import { PepperPhoto } from "./pepper/PepperPhoto";
+import { Embers } from "./pepper/Embers";
 
 const LINES = ["Social media,", "served hot."];
 
 export function Hero() {
   return (
     <section id="top" aria-labelledby="hero-title" className="relative isolate flex min-h-[100svh] flex-col overflow-hidden">
-      <Pepper3D className="hero-pepper absolute inset-0 -z-10" />
+      <Embers className="absolute inset-0 -z-10" />
+      <PepperPhoto className="absolute inset-0 -z-10" />
       {/* Floor of the frame: lets the pepper sink into the page instead of ending on an edge. */}
       <div aria-hidden className="pointer-events-none absolute inset-x-0 bottom-0 -z-10 h-1/2 bg-gradient-to-t from-bg via-bg/75 lg:h-1/3 to-transparent" />
 

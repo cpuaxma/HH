@@ -199,15 +199,47 @@ p, li, blockquote, figcaption { text-wrap: pretty; }
 @keyframes sv-type { 0%, 60%, 100% { transform: none; opacity: 0.5; } 30% { transform: translateY(-3px); opacity: 1; } }
 @keyframes sv-grow { 0% { transform: scaleY(0.15); } 40%, 100% { transform: scaleY(1); } }
 
-/* Pre-rendered pepper, used when WebGL is missing or the frame rate falls under 50fps. */
-.pepper-still { position: absolute; object-fit: contain; transition: opacity 400ms ease; }
-.pepper-still--center { inset: 0; width: 100%; height: 100%; }
-.pepper-still--hero { left: 50%; top: 58%; width: 115vw; max-width: none; height: auto; transform: translate(-50%, -50%); }
+/* The real pepper. Placement uses left/top/width so Motion owns the transform. */
+.pepper-stage { position: absolute; transform-style: preserve-3d; will-change: transform; }
+.pepper-stage--hero { --pw: min(94vw, 520px); width: var(--pw); left: calc(50% - var(--pw) / 2 - 2vw); top: 28%; }
+@media (min-width: 768px) { .pepper-stage--hero { --pw: min(78vw, 640px); top: 30%; } }
 @media (min-width: 1024px) {
-  .pepper-still--hero { left: auto; right: -4vw; top: 50%; width: auto; height: 108vh; transform: translateY(-50%); }
+  .pepper-stage--hero { --pw: min(54vw, 108vh); left: auto; right: 2vw; top: 7vh; }
 }
-.pepper-still { animation: hp-float 6s var(--ease-in-out) infinite alternate; }
-@keyframes hp-float { from { translate: 0 -1.5%; rotate: -1deg; } to { translate: 0 1.5%; rotate: 1deg; } }
+.pepper-stage--center { inset: 4%; display: flex; align-items: center; }
+.pepper-stage--center .pepper-drop { width: 100%; }
+.pepper-drop { animation: hp-drop 1500ms cubic-bezier(0.3, 1.35, 0.5, 1) 250ms both; }
+@keyframes hp-drop {
+  from { transform: translateY(-65%) rotate(-14deg) scale(0.92); opacity: 0; }
+  35% { opacity: 1; }
+  to { transform: none; opacity: 1; }
+}
+.pepper-float { position: relative; aspect-ratio: 767 / 723; animation: hp-bob 7s var(--ease-in-out) infinite alternate; }
+@keyframes hp-bob { from { translate: 0 -1.6%; rotate: -1.5deg; } to { translate: 0 1.6%; rotate: 1.5deg; } }
+.pepper-img {
+  position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain;
+  transition: opacity 600ms var(--ease-out), filter 600ms var(--ease-out);
+  filter: drop-shadow(0 30px 40px rgb(0 0 0 / 0.55));
+}
+.pepper-glow {
+  position: absolute; inset: 12% 8% 10% 8%; border-radius: 50%;
+  background: radial-gradient(closest-side, rgb(var(--glow) / calc(0.22 + var(--heat) * 0.38)), transparent);
+  filter: blur(40px); transition: background 600ms var(--ease-out);
+}
+/* Gloss sweep, clipped to the pepper's own outline. */
+.pepper-sheen {
+  position: absolute; inset: 0; pointer-events: none; mix-blend-mode: screen;
+  -webkit-mask: url(/pepper/pepper-2.webp) center / contain no-repeat;
+  mask: url(/pepper/pepper-2.webp) center / contain no-repeat;
+  background: linear-gradient(112deg, transparent 38%, rgb(255 236 220 / 0.32) 48%, rgb(255 255 255 / 0.5) 50%, rgb(255 236 220 / 0.32) 52%, transparent 62%) 0 0 / 300% 100% no-repeat;
+  animation: hp-sheen 6s var(--ease-in-out) 1.6s infinite;
+}
+@keyframes hp-sheen { 0% { background-position: 100% 0; } 45%, 100% { background-position: -100% 0; } }
+.pepper-shadow {
+  position: absolute; left: 18%; right: 14%; bottom: -4%; height: 9%; border-radius: 50%;
+  background: radial-gradient(closest-side, rgb(0 0 0 / 0.65), transparent); filter: blur(10px);
+}
+@media (prefers-reduced-motion: reduce) { .pepper-sheen { display: none; } }
 
 /* Heat slider: the track fills with heat up to the thumb. */
 .heat-range { -webkit-appearance: none; appearance: none; height: 48px; background: transparent; touch-action: pan-y; }
