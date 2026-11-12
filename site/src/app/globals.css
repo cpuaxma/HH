@@ -1,0 +1,250 @@
+@import "tailwindcss";
+
+/* Hot Pepper Media — one world: warm near-black, cream ink, one red accent, heat as light. */
+@theme {
+  --color-bg: #0b0908;
+  --color-surface: #15110f;
+  --color-raised: #1d1815;
+  --color-ink: #f6efe6;
+  --color-muted: #a39789;
+  --color-faint: #6f655c;
+  --color-line: rgb(246 239 230 / 0.12);
+  --color-accent: #e23b24;
+  --color-accent-hot: #ff5a2e;
+  --color-ember: #ff7a1a;
+
+  --font-display: var(--font-display), "Arial Narrow", sans-serif;
+  --font-sans: var(--font-text), ui-sans-serif, system-ui, sans-serif;
+  --font-arabic: var(--font-arabic), "Geeza Pro", "Noto Sans Arabic", sans-serif;
+
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+  --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
+
+  --breakpoint-xs: 25rem;
+}
+
+:root {
+  /* Heat, 0 (bell pepper) to 1 (habanero). Written by the heat scale. */
+  --heat: 0.66;
+  --glow: 226 59 36;
+  --gutter: 1rem;
+  --safe-b: env(safe-area-inset-bottom, 0px);
+  --safe-t: env(safe-area-inset-top, 0px);
+  color-scheme: dark;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+@media (min-width: 768px) {
+  :root { --gutter: 2rem; }
+}
+@media (min-width: 1280px) {
+  :root { --gutter: 3rem; }
+}
+
+html {
+  background: var(--color-bg);
+  scrollbar-color: #3a302a var(--color-bg);
+  scrollbar-width: thin;
+}
+html.lenis, html.lenis body { height: auto; }
+.lenis.lenis-smooth { scroll-behavior: auto !important; }
+.lenis.lenis-stopped { overflow: hidden; }
+
+body {
+  /* No background here: html carries the ground so the fixed heat field (z -1) can glow through. */
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  font-size: 1rem;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: clip;
+  caret-color: var(--color-accent);
+  -webkit-tap-highlight-color: transparent;
+}
+
+::selection { background: var(--color-accent); color: #fff; }
+
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: var(--color-bg); }
+::-webkit-scrollbar-thumb { background: #3a302a; border-radius: 10px; border: 2px solid var(--color-bg); }
+::-webkit-scrollbar-thumb:hover { background: #57483f; }
+
+:focus-visible {
+  outline: 2px solid var(--color-accent-hot);
+  outline-offset: 3px;
+  border-radius: 6px;
+}
+
+a { text-underline-offset: 0.2em; text-decoration-thickness: 1px; }
+
+.font-display {
+  font-family: var(--font-display);
+  font-variation-settings: "opsz" 72;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 0.86;
+  text-wrap: balance;
+}
+
+.tabular { font-variant-numeric: tabular-nums; }
+
+.wrap {
+  width: 100%;
+  max-width: 1600px;
+  margin-inline: auto;
+  padding-inline: max(var(--gutter), env(safe-area-inset-left, 0px));
+}
+
+/* The page glow: a fixed field of heat that the heat scale turns up and down. */
+.heat-field {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(60vmax 45vmax at 78% 12%, rgb(var(--glow) / calc(0.10 + var(--heat) * 0.26)), transparent 70%),
+    radial-gradient(50vmax 40vmax at 10% 100%, rgb(255 122 26 / calc(var(--heat) * 0.14)), transparent 70%);
+  transition: background 600ms var(--ease-out);
+}
+
+/* Custom cursor only where a fine pointer can hover. */
+@media (hover: hover) and (pointer: fine) {
+  html.has-cursor, html.has-cursor * { cursor: none !important; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Hero type and load sequence. CSS keyframes run before hydration, so the headline never waits on JS. */
+.hero-title {
+  font-size: clamp(4.25rem, 21.5vw, 16rem);
+  letter-spacing: -0.025em;
+  line-height: 0.9;
+}
+@media (min-width: 1024px) {
+  .hero-title { font-size: min(19.1vw, 33vh); line-height: 0.84; }
+}
+.reveal-line > span {
+  animation: hp-rise 1100ms var(--ease-out) both;
+  animation-delay: calc(var(--i) * 110ms + 120ms);
+}
+.hero-fade {
+  animation: hp-fade 900ms var(--ease-out) both;
+  animation-delay: var(--d, 400ms);
+}
+@keyframes hp-rise {
+  from { transform: translateY(104%) skewY(4deg); }
+  to { transform: none; }
+}
+@keyframes hp-fade {
+  from { opacity: 0; transform: translateY(14px); filter: blur(6px); }
+  to { opacity: 1; transform: none; filter: none; }
+}
+
+/* Marquee */
+.marquee-row { font-size: clamp(3.75rem, 17vw, 10.5rem); line-height: 1.05; }
+.marquee-word {
+  font-family: var(--font-display);
+  font-variation-settings: "opsz" 72;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+/* Arabic: its own face, no tracking (tracking breaks the joins), isolated so bidi never reorders the run. */
+.marquee-ar {
+  font-family: var(--font-arabic);
+  font-weight: 700;
+  font-size: 0.68em;
+  letter-spacing: 0;
+  unicode-bidi: isolate;
+  white-space: nowrap;
+  line-height: 1.4;
+  transform: translateY(-0.04em);
+  display: inline-block;
+}
+.marquee-dot {
+  display: inline-block;
+  width: 0.16em;
+  height: 0.16em;
+  margin-inline: 0.42em;
+  border-radius: 999px;
+  background: currentColor;
+  opacity: 0.55;
+}
+.marquee-track { animation: hp-marquee 48s linear infinite; padding-inline-end: 0; will-change: transform; }
+.marquee-reverse { animation-direction: reverse; animation-duration: 56s; }
+@keyframes hp-marquee { from { transform: translateX(0); } to { transform: translateX(-100%); } }
+@media (prefers-reduced-motion: reduce) {
+  .marquee-track { animation: none; }
+  .marquee-toggle { display: none; }
+}
+
+/* Service visuals: small loops, 2.5–4s, resting under reduced motion. */
+.sv-rec { animation: sv-blink 1.6s steps(2, jump-none) infinite; }
+.sv-typing { animation: sv-type 1.2s var(--ease-in-out) infinite; }
+.sv-bar { transform-origin: bottom; animation: sv-grow 3.2s var(--ease-out) infinite; }
+@keyframes sv-blink { 50% { opacity: 0.2; } }
+@keyframes sv-type { 0%, 60%, 100% { transform: none; opacity: 0.5; } 30% { transform: translateY(-3px); opacity: 1; } }
+@keyframes sv-grow { 0% { transform: scaleY(0.15); } 40%, 100% { transform: scaleY(1); } }
+
+/* Pre-rendered pepper, used when WebGL is missing or the frame rate falls under 50fps. */
+.pepper-still { position: absolute; object-fit: contain; transition: opacity 400ms ease; }
+.pepper-still--center { inset: 0; width: 100%; height: 100%; }
+.pepper-still--hero { left: 50%; top: 58%; width: 115vw; max-width: none; height: auto; transform: translate(-50%, -50%); }
+@media (min-width: 1024px) {
+  .pepper-still--hero { left: auto; right: -4vw; top: 50%; width: auto; height: 108vh; transform: translateY(-50%); }
+}
+.pepper-still { animation: hp-float 6s var(--ease-in-out) infinite alternate; }
+@keyframes hp-float { from { translate: 0 -1.5%; rotate: -1deg; } to { translate: 0 1.5%; rotate: 1deg; } }
+
+/* Heat slider: the track fills with heat up to the thumb. */
+.heat-range { -webkit-appearance: none; appearance: none; height: 48px; background: transparent; touch-action: pan-y; }
+.heat-range::-webkit-slider-runnable-track {
+  height: 10px; border-radius: 99px;
+  background: linear-gradient(90deg, #6f9a34, #c9a227 33%, #e23b24 66%, #ff6a1f) 0 0 / var(--p) 100% no-repeat, rgb(246 239 230 / 0.12);
+}
+.heat-range::-moz-range-track { height: 10px; border-radius: 99px; background: rgb(246 239 230 / 0.12); }
+.heat-range::-moz-range-progress { height: 10px; border-radius: 99px; background: linear-gradient(90deg, #6f9a34, #e23b24); }
+.heat-range::-webkit-slider-thumb {
+  -webkit-appearance: none; appearance: none; width: 36px; height: 36px; margin-top: -13px; border-radius: 99px;
+  background: var(--color-ink); border: 6px solid var(--color-accent);
+  box-shadow: 0 6px 20px -4px rgb(226 59 36 / 0.7);
+  transition: transform 160ms var(--ease-out);
+}
+.heat-range:active::-webkit-slider-thumb { transform: scale(1.12); }
+.heat-range::-moz-range-thumb { width: 24px; height: 24px; border-radius: 99px; background: var(--color-ink); border: 6px solid var(--color-accent); }
+.heat-range:focus-visible { outline: none; }
+.heat-range:focus-visible::-webkit-slider-thumb { outline: 2px solid var(--color-accent-hot); outline-offset: 4px; }
+
+/* Placeholder reels */
+.reel-progress { animation: reel-prog 4s linear infinite; transform-origin: left; }
+@keyframes reel-prog { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+.reel-ring { animation: reel-ring 3.3s var(--ease-out) infinite; opacity: 0; }
+@keyframes reel-ring { 0% { transform: scale(0.2); opacity: 0.9; } 100% { transform: scale(2.1); opacity: 0; } }
+.reel-sweep { animation: reel-spin 4s linear infinite; }
+@keyframes reel-spin { to { transform: rotate(360deg); } }
+.reel-pop { animation: reel-pop 4s var(--ease-out) infinite; }
+@keyframes reel-pop { 0%, 15% { transform: scale(0.9); opacity: 0; } 30%, 85% { transform: none; opacity: 1; } 100% { opacity: 0; } }
+.reel-wipe { animation: reel-wipe 4s var(--ease-in-out) infinite alternate; clip-path: inset(0 0 0 50%); }
+.reel-wipe-line { animation: reel-line 4s var(--ease-in-out) infinite alternate; left: 50%; }
+@keyframes reel-wipe { from { clip-path: inset(0 0 0 85%); } to { clip-path: inset(0 0 0 15%); } }
+@keyframes reel-line { from { left: 85%; } to { left: 15%; } }
+.reel-word, .reel-num { opacity: 0; animation: reel-word 3s var(--ease-out) infinite; }
+@keyframes reel-word { 0% { opacity: 0; transform: scale(1.4); } 6%, 30% { opacity: 1; transform: none; } 36%, 100% { opacity: 0; transform: scale(0.96); } }
+.reel-ring-progress { stroke-dasharray: 100; animation: reel-dash 3s linear infinite; }
+@keyframes reel-dash { from { stroke-dashoffset: 100; } to { stroke-dashoffset: 0; } }
+.reel-blob { animation: reel-blob 4s var(--ease-in-out) infinite alternate; }
+@keyframes reel-blob { from { transform: translate(0, 0) scale(1); } to { transform: translate(12%, -8%) scale(1.15); } }
+.reels-paused .phone *, .reels-paused .phone *::before { animation-play-state: paused !important; }
+@media (prefers-reduced-motion: reduce) {
+  .reel-word:first-child, .reel-num:first-child { opacity: 1; }
+}
