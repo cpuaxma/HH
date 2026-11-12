@@ -23,7 +23,7 @@ export function Hero() {
           <p className="hero-fade max-w-[34ch] text-[1.0625rem] leading-relaxed text-ink/85 md:text-xl" style={{ "--d": "520ms" } as React.CSSProperties}>
             A social media marketing agency in Beirut. Strategy, content, community, ads and reporting for businesses of every kind.
           </p>
-          <div id="hero-actions" className="hero-fade grid gap-3 sm:grid-cols-2 lg:flex lg:shrink-0" style={{ "--d": "640ms" } as React.CSSProperties}>
+          <div id="hero-actions" data-cta className="hero-fade grid gap-3 sm:grid-cols-2 lg:flex lg:shrink-0" style={{ "--d": "640ms" } as React.CSSProperties}>
             <Button href="#contact" className="w-full" wrapClassName="w-full">Book a call</Button>
             <Button href="#work" variant="ghost" className="w-full" wrapClassName="w-full">See the work</Button>
           </div>

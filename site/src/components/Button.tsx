@@ -16,7 +16,7 @@ export function Button({ href, children, variant = "primary", className = "", ma
     "transition-[transform,background-color,color,border-color] duration-[160ms] ease-[var(--ease-out)] active:scale-[0.97]";
   const look =
     variant === "primary"
-      ? "bg-accent text-white [@media(hover:hover)]:hover:bg-accent-hot"
+      ? "bg-accent-fill text-white [@media(hover:hover)]:hover:bg-accent-press"
       : "border border-ink/30 text-ink [@media(hover:hover)]:hover:border-ink [@media(hover:hover)]:hover:bg-ink/5";
   const a = (
     <a href={href} className={`${base} ${look} ${className}`} {...rest}>

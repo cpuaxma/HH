@@ -2,7 +2,7 @@
 
 function Frame({ children, className = "" }: { children: React.ReactNode; className?: string }) {
   return (
-    <div className={`relative h-full w-full overflow-hidden rounded-[14px] bg-raised p-4 text-[13px] leading-snug text-ink/80 shadow-[0_24px_60px_-20px_rgb(0_0_0/0.7)] ${className}`}>
+    <div aria-hidden className={`relative h-full w-full overflow-hidden rounded-[14px] bg-raised p-4 text-[13px] leading-snug text-ink/80 shadow-[0_24px_60px_-20px_rgb(0_0_0/0.7)] ${className}`}>
       {children}
     </div>
   );
@@ -17,15 +17,15 @@ export function StrategyVisual() {
         <span className="font-medium text-ink">Content calendar</span>
         <span className="rounded-full border border-line px-2 py-0.5 text-[11px] text-ink/60">Month 1</span>
       </div>
-      <div className="grid grid-cols-7 gap-1 text-center text-[10px] text-ink/40">
+      <div className="grid grid-cols-7 gap-1 text-center text-[10px] text-ink/60">
         {days.map((d, i) => <span key={i}>{d}</span>)}
       </div>
       <div className="mt-1 grid grid-cols-7 gap-1">
         {Array.from({ length: 28 }, (_, i) => {
           const tag = plan[i];
           return (
-            <div key={i} className={`flex aspect-square items-end rounded-md p-1 ${tag ? (tag === "Reel" ? "bg-accent/85 text-white" : tag === "Ad" ? "bg-ember/25 text-ember" : "bg-ink/10 text-ink/80") : "bg-ink/[0.03]"}`}>
-              {tag && <span className="text-[8.5px] font-medium leading-none">{tag}</span>}
+            <div key={i} className={`flex aspect-square items-end rounded-md p-1 ${tag ? (tag === "Reel" ? "bg-accent-fill text-white" : tag === "Ad" ? "bg-ember/25 text-[#ffc199]" : "bg-ink/10 text-ink/80") : "bg-ink/[0.03]"}`}>
+              {tag && <span className="text-[10px] font-medium leading-none">{tag}</span>}
             </div>
           );
         })}
@@ -69,11 +69,11 @@ export function CommunityVisual() {
       <div className="mb-3 flex items-center gap-2 border-b border-line pb-3">
         <span className="size-7 rounded-full bg-gradient-to-br from-ember to-accent" />
         <span className="font-medium text-ink">Messages</span>
-        <span className="ml-auto rounded-full bg-accent px-1.5 text-[10px] text-white">3</span>
+        <span className="ml-auto rounded-full bg-accent-fill px-1.5 text-[10px] text-white">3</span>
       </div>
       <div className="flex flex-1 flex-col justify-end gap-2">
         <p className="max-w-[80%] rounded-2xl rounded-bl-md bg-ink/10 px-3 py-2">Do you deliver to Hamra?</p>
-        <p className="ml-auto max-w-[80%] rounded-2xl rounded-br-md bg-accent px-3 py-2 text-white">We do. Send your order here and we&rsquo;ll confirm the time.</p>
+        <p className="ml-auto max-w-[80%] rounded-2xl rounded-br-md bg-accent-fill px-3 py-2 text-white">We do. Send your order here and we&rsquo;ll confirm the time.</p>
         <p className="max-w-[80%] rounded-2xl rounded-bl-md bg-ink/10 px-3 py-2">Perfect, sending it now</p>
         <div className="ml-auto flex gap-1 rounded-2xl bg-ink/10 px-3 py-2.5">
           <span className="sv-typing size-1.5 rounded-full bg-ink/60" />
@@ -91,10 +91,10 @@ export function AdsVisual() {
       <div className="overflow-hidden rounded-xl border border-line">
         <div className="flex items-center gap-2 px-3 py-2">
           <span className="size-6 rounded-full bg-ink/20" />
-          <div className="leading-tight"><p className="text-[12px] text-ink">Your business</p><p className="text-[10px] text-ink/50">Sponsored</p></div>
+          <div className="leading-tight"><p className="text-[12px] text-ink">Your business</p><p className="text-[11px] text-ink/65">Sponsored</p></div>
         </div>
         <div className="aspect-[4/3] bg-[radial-gradient(60%_70%_at_30%_30%,rgb(var(--glow)/0.7),transparent_70%),linear-gradient(135deg,#3a1a10,#120c0a)]" />
-        <div className="flex items-center justify-between bg-ink/5 px-3 py-2 text-[12px]"><span>Book a table</span><svg viewBox="0 0 16 16" className="size-3 text-ink/50" aria-hidden><path d="M6 3.5 10.5 8 6 12.5" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" /></svg></div>
+        <div className="flex items-center justify-between bg-ink/5 px-3 py-2 text-[12px]"><span>Book a table</span><svg viewBox="0 0 16 16" className="size-3 text-ink/65" aria-hidden><path d="M6 3.5 10.5 8 6 12.5" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" /></svg></div>
       </div>
       <div className="flex flex-wrap gap-1.5 text-[11px]">
         {["Beirut", "25–44", "Food & dining", "Instagram", "TikTok"].map((c) => (
@@ -111,7 +111,7 @@ export function ReportVisual() {
     <Frame className="flex flex-col">
       <div className="mb-4 flex items-center justify-between">
         <span className="font-medium text-ink">Monthly report</span>
-        <span className="text-[11px] text-ink/50">Reach · Saves · Messages</span>
+        <span className="text-[11px] text-ink/65">Reach · Saves · Messages</span>
       </div>
       <div className="relative flex flex-1 items-end gap-2">
         {bars.map((h, i) => (

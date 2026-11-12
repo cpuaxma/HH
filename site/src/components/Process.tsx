@@ -1,6 +1,7 @@
 "use client";
 import { useRef, useState } from "react";
 import { motion, useMotionValueEvent, useScroll } from "motion/react";
+import { useLenis } from "lenis/react";
 import { useMedia, DESKTOP, REDUCED } from "@/lib/useMedia";
 
 const STEPS = [
@@ -28,26 +29,38 @@ function Pinned() {
     setActive(Math.min(STEPS.length - 1, Math.floor(v * STEPS.length * 0.999)));
   });
   const glow = 0.1 + active * 0.12;
+  const lenis = useLenis();
+  const SEG = 45; // vh of scroll per step
+  const goTo = (i: number) => {
+    const el = ref.current;
+    if (!el) return;
+    const top = el.getBoundingClientRect().top + window.scrollY;
+    const y = top + ((i + 0.5) / STEPS.length) * (el.offsetHeight - window.innerHeight);
+    if (lenis) lenis.scrollTo(y); else window.scrollTo({ top: y, behavior: "smooth" });
+  };
 
   return (
-    <section id="process" ref={ref} aria-labelledby="process-title" className="relative" style={{ height: `${100 + STEPS.length * 80}vh` }}>
+    <section id="process" ref={ref} aria-labelledby="process-title" className="relative" style={{ height: `${100 + STEPS.length * SEG}vh` }}>
       <div className="sticky top-0 flex h-screen flex-col overflow-hidden pt-28 pb-12">
         <div aria-hidden className="pointer-events-none absolute inset-0 -z-10 transition-[background] duration-700 ease-[var(--ease-out)]"
           style={{ background: `radial-gradient(50% 60% at 75% 70%, rgb(var(--glow) / ${glow}), transparent 70%)` }} />
         <div className="wrap"><Heading /></div>
+        <ol className="sr-only">
+          {STEPS.map((s, i) => (<li key={s.name}><h3>{`Step ${i + 1}: ${s.name}`}</h3><p>{s.text}</p></li>))}
+        </ol>
 
-        <div className="wrap relative grid flex-1 grid-cols-12 items-end gap-8">
-          <ol className="relative col-span-8 h-full">
+        <div aria-hidden className="wrap relative grid flex-1 grid-cols-12 items-center gap-8">
+          <ol className="relative col-span-8 h-[min(52vh,30rem)]">
             {STEPS.map((s, i) => {
               const state = i === active ? "now" : i < active ? "past" : "next";
               return (
                 <li
                   key={s.name}
                   aria-current={state === "now" ? "step" : undefined}
-                  className="absolute inset-x-0 bottom-0 transition-[opacity,transform,filter] duration-700 ease-[var(--ease-out)]"
+                  className="absolute inset-x-0 top-1/2 transition-[opacity,transform,filter] duration-700 ease-[var(--ease-out)]"
                   style={{
                     opacity: state === "now" ? 1 : 0,
-                    transform: state === "now" ? "none" : state === "past" ? "translateY(-18%)" : "translateY(18%)",
+                    transform: `translateY(-50%) ${state === "now" ? "" : state === "past" ? "translateY(-18%)" : "translateY(18%)"}`,
                     filter: state === "now" ? "none" : "blur(10px)",
                   }}
                 >
@@ -57,7 +70,7 @@ function Pinned() {
               );
             })}
           </ol>
-          <div className="col-span-4 pb-[2vh]">
+          <div className="col-span-4">
             <div className="relative min-h-[7.5em] text-xl text-ink/80">
               {STEPS.map((s, i) => (
                 <p key={s.name} className="absolute inset-x-0 bottom-0 transition-[opacity,transform] duration-500 ease-[var(--ease-out)]"
@@ -67,14 +80,17 @@ function Pinned() {
               ))}
             </div>
             <div className="mt-8">
-              <div className="relative h-px bg-line">
+              <div className="relative h-[3px] overflow-hidden rounded-full bg-line">
                 <span className="absolute inset-y-0 left-0 w-full origin-left bg-accent" style={{ transform: `scaleX(${p})` }} />
               </div>
-              <ul className="mt-4 grid grid-cols-4 gap-2 text-sm">
+              <div className="mt-2 grid grid-cols-4 gap-1 text-sm">
                 {STEPS.map((s, i) => (
-                  <li key={s.name} className={`transition-colors duration-300 ${i === active ? "text-ink" : i < active ? "text-ink/55" : "text-ink/35"}`}>{s.name}</li>
+                  <button key={s.name} type="button" tabIndex={-1} onClick={() => goTo(i)}
+                    className={`min-h-11 rounded-lg text-left transition-colors duration-300 hover:text-ink ${i === active ? "text-ink" : "text-ink/60"}`}>
+                    {s.name}
+                  </button>
                 ))}
-              </ul>
+              </div>
             </div>
           </div>
         </div>

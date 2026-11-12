@@ -2,13 +2,14 @@
 import { AnimatePresence, motion } from "motion/react";
 import { LEVELS, setHeat, useHeat, type HeatLevel } from "@/lib/heat";
 import { Pepper3D } from "./pepper/Pepper3D";
+import { Button } from "./Button";
 
 export function HeatScale() {
   const level = useHeat();
   const L = LEVELS[level];
 
   return (
-    <section id="heat" aria-labelledby="heat-title" className="relative overflow-hidden py-24 md:py-36">
+    <section id="heat" aria-labelledby="heat-title" className="relative overflow-hidden pt-16 pb-24 md:pt-24 md:pb-36">
       <div aria-hidden className="pointer-events-none absolute inset-0 -z-10 transition-[background] duration-700 ease-[var(--ease-out)]"
         style={{ background: `radial-gradient(55% 45% at 30% 55%, rgb(${L.glow} / ${0.12 + L.heat * 0.32}), transparent 72%)` }} />
       <div className="wrap">
@@ -21,8 +22,8 @@ export function HeatScale() {
           </p>
         </div>
 
-        <div className="mt-10 grid items-center gap-8 md:mt-16 lg:grid-cols-12 lg:gap-12">
-          <div className="relative mx-auto aspect-square w-full max-w-[min(88vw,560px)] lg:col-span-5 lg:max-w-none">
+        <div className="mt-10 grid items-start gap-8 md:mt-16 lg:grid-cols-12 lg:gap-12">
+          <div className="relative mx-auto aspect-square w-full max-w-[min(80vw,420px)] lg:sticky lg:top-24 lg:col-span-5 lg:max-w-none">
             <Pepper3D placement="center" className="absolute inset-0" />
           </div>
 
@@ -37,7 +38,7 @@ export function HeatScale() {
                   transition={{ duration: 0.5, ease: [0.23, 1, 0.32, 1] }}
                 >
                   <p className="font-display text-[clamp(4rem,17vw,10rem)] uppercase">{L.name}</p>
-                  <p className="tabular mt-3 text-xl text-ink md:text-2xl">{L.shu}</p>
+                  <p className="tabular mt-3 text-xl text-ink md:text-2xl">{L.shu.replace(" SHU", "")} <span className="text-ink/60">Scoville heat units</span></p>
                   <p className="mt-2 max-w-[40ch] text-lg text-ink/70">{L.line}</p>
                 </motion.div>
               </AnimatePresence>
@@ -66,11 +67,11 @@ export function HeatScale() {
                     aria-pressed={level === i}
                     onClick={() => setHeat(i as HeatLevel)}
                     className={`min-h-14 rounded-2xl border px-4 py-3 text-left transition-[background-color,border-color,color,transform] duration-200 ease-[var(--ease-out)] active:scale-[0.97] ${
-                      level === i ? "border-accent bg-accent text-white" : "border-line text-ink/80 [@media(hover:hover)]:hover:border-ink/40 [@media(hover:hover)]:hover:text-ink"
+                      level === i ? "border-accent-fill bg-accent-fill text-white" : "border-line text-ink/80 [@media(hover:hover)]:hover:border-ink/40 [@media(hover:hover)]:hover:text-ink"
                     }`}
                   >
                     <span className="block font-medium">{lv.name}</span>
-                    <span className={`tabular block text-sm ${level === i ? "text-white/80" : "text-ink/50"}`}>{lv.shu}</span>
+                    <span className={`block text-sm ${level === i ? "text-white" : "text-ink/60"}`}>{lv.scope}</span>
                   </button>
                 ))}
               </div>
@@ -87,14 +88,18 @@ export function HeatScale() {
                       animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
                       exit={{ opacity: 0, transition: { duration: 0.12 } }}
                       transition={{ duration: 0.4, delay: i * 0.05, ease: [0.23, 1, 0.32, 1] }}
-                      className={`flex items-baseline gap-3 border-b border-line py-3 text-lg ${i === 0 && level > 0 ? "text-ink/60" : "text-ink"}`}
+                      className={`flex items-baseline gap-3 border-b border-line py-3 text-lg ${i === 0 && level > 0 ? "text-ink/60 sm:col-span-2" : "text-ink"}`}
                     >
-                      <span aria-hidden className="size-1.5 shrink-0 translate-y-[-0.2em] rounded-full bg-accent" />
+                      {!(i === 0 && level > 0) && <span aria-hidden className="size-1.5 shrink-0 translate-y-[-0.2em] rounded-full bg-accent" />}
                       {item}
                     </motion.li>
                   ))}
                 </AnimatePresence>
               </ul>
+              <div data-cta className="mt-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                <Button href="#contact" className="w-full sm:w-auto" wrapClassName="w-full sm:w-auto">{`Book a ${L.name} call`}</Button>
+                <p className="text-base text-ink/60">[Price for this level]</p>
+              </div>
             </div>
           </div>
         </div>

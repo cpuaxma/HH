@@ -25,6 +25,8 @@ export function Cursor() {
       setVisible(true);
       if (pressed.current) return;
       const t = e.target as Element | null;
+      // Text fields keep the system I-beam; the custom cursor steps aside.
+      if (t?.closest("input:not([type=radio]):not([type=range]), textarea, select")) { setVisible(false); return; }
       setState(t?.closest("a, button, [role=button], input, textarea, select, label, [data-cursor]") ? "link" : "idle");
     };
     const down = () => { pressed.current = true; setState("press"); };

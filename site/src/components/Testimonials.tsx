@@ -12,19 +12,19 @@ export function Testimonials() {
       <div className="wrap">
         <div className="grid gap-5 lg:grid-cols-12 lg:items-end">
           <h2 id="clients-title" className="font-display text-[clamp(3.5rem,14vw,8.5rem)] uppercase lg:col-span-8">What clients say</h2>
-          <p className="max-w-[36ch] text-lg text-ink/60 lg:col-span-4 lg:justify-self-end">
+          <p className="max-w-[36ch] text-lg text-ink/65 lg:col-span-4 lg:justify-self-end">
             [Placeholder section. Real quotes go here once clients approve them.]
           </p>
         </div>
 
         <figure className="mt-14 border-t border-line pt-10 md:mt-20 md:pt-14">
-          <span aria-hidden className="font-display block h-[0.5em] text-[clamp(6rem,20vw,14rem)] leading-none text-accent">&ldquo;</span>
-          <blockquote className="mt-6 max-w-[22ch] text-[clamp(1.75rem,5.4vw,4rem)] leading-[1.08] tracking-[-0.02em] text-ink">
+          <span aria-hidden className="font-display block h-[0.45em] text-[clamp(5rem,14vw,9rem)] leading-none text-accent">&ldquo;</span>
+          <blockquote className="mt-6 max-w-[26ch] text-[clamp(1.6rem,4.2vw,3rem)] leading-[1.15] tracking-[-0.02em] text-ink">
             {lead.quote}
           </blockquote>
           <figcaption className="mt-8 text-lg">
             <span className="block text-ink">{lead.name}</span>
-            <span className="block text-ink/55">{lead.role}</span>
+            <span className="block text-ink/60">{lead.role}</span>
           </figcaption>
         </figure>
 
@@ -34,7 +34,7 @@ export function Testimonials() {
               <blockquote className="max-w-[30ch] text-2xl leading-snug tracking-[-0.01em] text-ink/90">{q.quote}</blockquote>
               <figcaption className="mt-6">
                 <span className="block text-ink">{q.name}</span>
-                <span className="block text-ink/55">{q.role}</span>
+                <span className="block text-ink/60">{q.role}</span>
               </figcaption>
             </figure>
           ))}

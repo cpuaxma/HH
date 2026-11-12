@@ -120,8 +120,8 @@ function Pepper({ lite, reduced, layout, onLowFps, onReady, capture, skipIntro }
     const phone = layout === "phone";
     const center = layout === "center";
     const sp = center ? 0 : scrollP;
-    const baseX = center ? 0 : phone ? -0.15 : viewport.width * 0.2;
-    const baseY = center ? -0.05 : phone ? -viewport.height * 0.06 : -0.1;
+    const baseX = center ? 0 : phone ? -0.15 : viewport.width * 0.245;
+    const baseY = center ? -0.05 : phone ? -viewport.height * 0.06 : viewport.height * 0.035;
     g.position.set(baseX, baseY + dr.y - sp * (phone ? 1.4 : 2.2), 0);
     g.rotation.set(tilt.current.x + sp * 0.9, 0, -0.62 + tilt.current.z + sp * 0.5);
     if (!reduced && !capture) s.rotation.y += d * (0.32 + spinVel.current);

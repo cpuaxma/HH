@@ -48,7 +48,7 @@ function Wipe() {
 function Type() {
   const words = ["This", "week", "only"];
   return (
-    <div className="absolute inset-0 flex items-center justify-center bg-accent">
+    <div className="absolute inset-0 flex items-center justify-center bg-accent-fill">
       {words.map((w, i) => (
         <span key={w} className="reel-word font-display absolute text-[4.2em] uppercase text-white" style={{ animationDelay: `${i * 1}s` }}>{w}</span>
       ))}
@@ -100,7 +100,7 @@ export function Phone({ reel }: { reel: (typeof REELS)[number] }) {
   const Scene = SCENES[reel.id];
   return (
     <div className="phone relative aspect-[9/19.5] h-full select-none rounded-[2.6em] bg-[#1b1715] p-[0.55em] shadow-[0_40px_80px_-30px_rgb(0_0_0/0.9),inset_0_0_0_1px_rgb(255_255_255/0.08)]">
-      <div className="relative h-full w-full overflow-hidden rounded-[2.1em] bg-black text-white">
+      <div aria-hidden className="relative h-full w-full overflow-hidden rounded-[2.1em] bg-black text-white">
         <Scene />
         {/* Story-style progress, status bar and island. */}
         <div className="absolute inset-x-[0.9em] top-[2.6em] h-[3px] overflow-hidden rounded bg-white/25">
@@ -118,9 +118,9 @@ export function Phone({ reel }: { reel: (typeof REELS)[number] }) {
           <Icon d="M21 4 10 15M21 4l-7 17-4-6-6-4 17-7Z" />
         </div>
         <div className="absolute inset-x-[0.9em] bottom-[1.3em] text-[0.8em]">
-          <span className="mb-[0.5em] inline-flex rounded-full bg-white px-[0.7em] py-[0.15em] text-[0.85em] font-semibold uppercase tracking-wide text-black">Placeholder</span>
+          <span className="mb-[0.5em] inline-flex rounded-full bg-white px-[0.7em] py-[0.15em] text-[0.95em] font-semibold uppercase tracking-wide text-black">Placeholder</span>
           <p className="font-semibold">@[client_handle]</p>
-          <p className="text-white/75">{reel.kind}</p>
+          <p className="text-white/90">{reel.kind}</p>
         </div>
       </div>
     </div>

@@ -7,6 +7,7 @@ export const LEVELS = [
   {
     name: "Bell pepper",
     shu: "0 SHU",
+    scope: "The basics, done right",
     heat: 0.08,
     pepper: "#5f8f2a",
     glow: "196 120 52",
@@ -16,6 +17,7 @@ export const LEVELS = [
   {
     name: "Jalapeño",
     shu: "2,500–8,000 SHU",
+    scope: "Posting and replies",
     heat: 0.36,
     pepper: "#2f5f1f",
     glow: "214 82 38",
@@ -25,6 +27,7 @@ export const LEVELS = [
   {
     name: "Cayenne",
     shu: "30,000–50,000 SHU",
+    scope: "Plus paid ads",
     heat: 0.66,
     pepper: "#c81d0e",
     glow: "226 59 36",
@@ -34,6 +37,7 @@ export const LEVELS = [
   {
     name: "Habanero",
     shu: "100,000–350,000 SHU",
+    scope: "Every platform",
     heat: 1,
     pepper: "#f2620c",
     glow: "255 92 22",

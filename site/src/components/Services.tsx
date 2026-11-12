@@ -1,7 +1,7 @@
 "use client";
-import { useId, useState } from "react";
+import { useId, useRef, useState } from "react";
 import { AnimatePresence, motion, useMotionValue, useSpring } from "motion/react";
-import { useMedia, FINE_POINTER, REDUCED } from "@/lib/useMedia";
+import { useMedia, DESKTOP, FINE_POINTER, REDUCED } from "@/lib/useMedia";
 import { AdsVisual, CommunityVisual, ContentVisual, ReportVisual, StrategyVisual } from "./ServiceVisuals";
 
 const SERVICES = [
@@ -14,6 +14,9 @@ const SERVICES = [
 
 export function Services() {
   const fine = useMedia(FINE_POINTER);
+  const desktop = useMedia(DESKTOP);
+  const hoverMode = fine && desktop;
+  const rowBox = useRef<{ top: number; bottom: number } | null>(null);
   const reduced = useMedia(REDUCED);
   const [hover, setHover] = useState<number | null>(null);
   const [open, setOpen] = useState<number | null>(0);
@@ -40,50 +43,59 @@ export function Services() {
         <ul
           className="border-t border-line"
           onPointerMove={(e) => {
-            if (!fine) return;
-            // Sit beside the cursor, never on the name under it; flip to the left near the right edge.
-            const W = 272, gap = 48;
-            const right = e.clientX + gap + W < window.innerWidth - 24;
-            x.set(right ? e.clientX + gap : e.clientX - gap - W);
-            y.set(Math.min(Math.max(e.clientY - 170, 96), window.innerHeight - 364));
+            if (!hoverMode) return;
+            // Follow the cursor sideways, but sit above or below the hovered row so it never covers it.
+            const W = 272, H = 340, gap = 20;
+            x.set(Math.min(Math.max(e.clientX - W / 2, 24), window.innerWidth - W - 24));
+            const r = rowBox.current;
+            if (!r) return;
+            const above = r.top - gap - H;
+            y.set(above > 88 ? above : Math.min(r.bottom + gap, window.innerHeight - H - 16));
           }}
-          onPointerLeave={() => setHover(null)}
+          onPointerLeave={() => { setHover(null); rowBox.current = null; }}
         >
           {SERVICES.map((s, i) => {
             const isOpen = open === i;
-            const dim = fine && hover !== null && hover !== i;
+            const dim = hoverMode && hover !== null && hover !== i;
             return (
               <li
                 key={s.name}
                 className="svc-row border-b border-line transition-opacity duration-300 ease-[var(--ease-out)]"
                 style={{ opacity: dim ? 0.38 : 1 }}
-                onPointerEnter={() => fine && setHover(i)}
+                onPointerEnter={(e) => {
+                  if (!hoverMode) return;
+                  const b = e.currentTarget.getBoundingClientRect();
+                  rowBox.current = { top: b.top, bottom: b.bottom };
+                  setHover(i);
+                }}
               >
-                {/* Touch: the whole row is a button that opens the detail. Desktop: the detail is always shown. */}
-                <button
-                  type="button"
-                  className="group flex w-full items-center gap-4 py-5 text-left md:py-7 lg:pointer-events-none lg:grid lg:cursor-default lg:grid-cols-12 lg:gap-8"
-                  aria-expanded={isOpen}
-                  aria-controls={`${uid}-${i}`}
-                  onClick={() => setOpen(isOpen ? null : i)}
-                  tabIndex={undefined}
-                >
-                  <span
-                    className={`font-display flex-1 text-[clamp(2.6rem,11vw,6.25rem)] uppercase lg:col-span-8 lg:whitespace-nowrap lg:text-[min(6.2vw,6rem)] transition-[transform,color] duration-500 ease-[var(--ease-out)] ${
-                      hover === i ? "text-accent lg:translate-x-4" : ""
-                    }`}
-                  >
-                    {s.name}
-                  </span>
-                  <span className="hidden max-w-[34ch] text-lg text-ink/70 lg:col-span-4 lg:block">{s.text}</span>
-                  <span aria-hidden className={`relative flex size-12 shrink-0 items-center justify-center rounded-full border border-line transition-[transform,background-color,border-color] duration-300 ease-[var(--ease-out)] lg:hidden ${isOpen ? "rotate-45 border-accent bg-accent" : ""}`}>
-                    <span className="absolute h-0.5 w-4 rounded bg-ink" />
-                    <span className="absolute h-4 w-0.5 rounded bg-ink" />
-                  </span>
-                </button>
+                {hoverMode ? (
+                  <div className="grid grid-cols-12 items-center gap-8 py-7">
+                    <h3 className={`font-display col-span-8 whitespace-nowrap text-[min(6.2vw,6rem)] uppercase transition-[transform,color] duration-500 ease-[var(--ease-out)] ${hover === i ? "translate-x-4 text-accent" : ""}`}>
+                      {s.name}
+                    </h3>
+                    <p className="col-span-4 max-w-[34ch] text-lg text-ink/70">{s.text}</p>
+                  </div>
+                ) : (
+                  <h3>
+                    <button
+                      type="button"
+                      className="group flex w-full items-center gap-4 py-5 text-left md:py-7 lg:grid lg:grid-cols-12 lg:gap-8"
+                      aria-expanded={isOpen}
+                      aria-controls={`${uid}-${i}`}
+                      onClick={() => setOpen(isOpen ? null : i)}
+                    >
+                      <span className="font-display flex-1 text-[clamp(2.6rem,11vw,6.25rem)] uppercase lg:col-span-8 lg:whitespace-nowrap lg:text-[min(6.2vw,6rem)]">{s.name}</span>
+                      <span aria-hidden className={`relative flex size-12 shrink-0 items-center justify-center rounded-full border border-line transition-[transform,background-color,border-color] duration-300 ease-[var(--ease-out)] lg:col-span-4 lg:justify-self-end ${isOpen ? "rotate-45 border-accent-fill bg-accent-fill" : ""}`}>
+                        <span className="absolute h-0.5 w-4 rounded bg-ink" />
+                        <span className="absolute h-4 w-0.5 rounded bg-ink" />
+                      </span>
+                    </button>
+                  </h3>
+                )}
                 <div
                   id={`${uid}-${i}`}
-                  className="grid transition-[grid-template-rows] duration-500 ease-[var(--ease-drawer)] lg:hidden"
+                  className={`grid transition-[grid-template-rows] duration-500 ease-[var(--ease-drawer)] ${hoverMode ? "hidden" : ""}`}
                   style={{ gridTemplateRows: isOpen ? "1fr" : "0fr" }}
                 >
                   <div className="min-h-0 overflow-hidden" inert={!isOpen}>
@@ -100,7 +112,7 @@ export function Services() {
       </div>
 
       {/* Desktop: the hovered row's visual floats beside the cursor. */}
-      {fine && (
+      {hoverMode && (
         <motion.div
           aria-hidden
           className="pointer-events-none fixed left-0 top-0 z-20 hidden h-[340px] w-[272px] lg:block"

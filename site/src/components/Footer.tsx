@@ -11,15 +11,15 @@ export function Footer() {
         </div>
         <nav aria-label="Footer" className="grid grid-cols-2 gap-8 text-base sm:grid-cols-3 lg:col-span-7">
           <div>
-            <h2 className="mb-4 text-sm text-ink/45">Site</h2>
+            <h2 className="mb-4 text-sm text-ink/60">Site</h2>
             <ul className="grid gap-1">
-              {[["#services", "Services"], ["#work", "Work"], ["#process", "Process"], ["#clients", "Clients"], ["#contact", "Contact"]].map(([h, l]) => (
+              {[["#services", "Services"], ["#heat", "Heat levels"], ["#work", "Work"], ["#process", "Process"], ["#clients", "Clients"], ["#contact", "Contact"]].map(([h, l]) => (
                 <li key={h}><a href={h} className="inline-flex min-h-11 items-center text-ink/80 transition-colors hover:text-ink">{l}</a></li>
               ))}
             </ul>
           </div>
           <div className="col-span-2 sm:col-span-1">
-            <h2 className="mb-4 text-sm text-ink/45">Contact</h2>
+            <h2 className="mb-4 text-sm text-ink/60">Contact</h2>
             <ul className="grid gap-1">
               <li><a href={whatsappHref} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-11 items-center text-ink/80 transition-colors hover:text-ink">WhatsApp</a></li>
               <li><a href={instagramHref} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-11 items-center text-ink/80 transition-colors hover:text-ink">Instagram</a></li>
@@ -27,12 +27,12 @@ export function Footer() {
             </ul>
           </div>
           <div>
-            <h2 className="mb-4 text-sm text-ink/45">Based in</h2>
+            <h2 className="mb-4 text-sm text-ink/60">Based in</h2>
             <p className="text-ink/80">Beirut, Lebanon</p>
           </div>
         </nav>
       </div>
-      <div className="wrap mt-14 flex flex-col gap-2 border-t border-line pt-6 text-sm text-ink/45 sm:flex-row sm:justify-between">
+      <div className="wrap mt-14 flex flex-col gap-2 border-t border-line pt-6 text-sm text-ink/60 sm:flex-row sm:justify-between">
         <p>© 2026 Hot Pepper Media</p>
         <a href="#top" className="inline-flex min-h-11 items-center transition-colors hover:text-ink sm:min-h-0">Back to top</a>
       </div>

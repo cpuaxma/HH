@@ -96,7 +96,7 @@ export function Work() {
             </li>
           ))}
           <li className="flex shrink-0 snap-center items-center lg:h-[58vh]">
-            <a href="#contact" className="group flex h-full w-[64vw] flex-col justify-end rounded-[2rem] border border-line p-6 transition-[border-color,transform] duration-300 ease-[var(--ease-out)] active:scale-[0.98] sm:w-[38vw] lg:w-[34vw] lg:p-10 [@media(hover:hover)]:hover:border-accent">
+            <a href="#contact" data-cta className="group flex h-full w-[64vw] flex-col justify-end rounded-[2rem] border border-line p-6 transition-[border-color,transform] duration-300 ease-[var(--ease-out)] active:scale-[0.98] sm:w-[38vw] lg:w-[34vw] lg:p-10 [@media(hover:hover)]:hover:border-accent">
               <span className="font-display text-[clamp(3rem,13vw,5rem)] uppercase lg:text-[min(7vw,14vh)]">Your reel next</span>
               <span className="mt-4 inline-flex items-center gap-2 text-lg text-ink/75 transition-colors group-hover:text-ink">
                 Book a call about yours
@@ -108,7 +108,7 @@ export function Work() {
 
         <div className="wrap mt-6 flex items-center justify-between lg:mt-[6vh]">
           <p className="tabular text-sm text-ink/60 lg:hidden" aria-live="polite">
-            {Math.min(index + 1, REELS.length)} / {REELS.length}
+            {Math.min(index + 1, REELS.length + 1)} / {REELS.length + 1}
           </p>
           <p className="hidden text-sm text-ink/60 lg:block">Scroll to move through the reels</p>
           <button

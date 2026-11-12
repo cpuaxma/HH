@@ -33,9 +33,9 @@ export function Nav() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  // The phone bar stays away from screens that already show "Book a call".
+  // The phone bar stays away from screens that already show a booking button ([data-cta]).
   useEffect(() => {
-    const watched = ["hero-actions", "contact"].map((id) => document.getElementById(id)).filter(Boolean) as Element[];
+    const watched = Array.from(document.querySelectorAll("[data-cta]"));
     const seen = new Map<Element, boolean>();
     const io = new IntersectionObserver((entries) => {
       entries.forEach((e) => seen.set(e.target, e.isIntersecting));
@@ -115,7 +115,7 @@ export function Nav() {
       >
         <div aria-hidden className="pointer-events-none absolute inset-0 bg-[radial-gradient(80%_50%_at_80%_0%,rgb(var(--glow)/0.28),transparent_70%)]" />
         <nav aria-label="Menu" className="wrap relative flex flex-1 flex-col justify-center">
-          {[...LINKS, { href: "#contact", label: "Contact" }].map((l, i) => (
+          {LINKS.map((l, i) => (
             <a
               key={l.href}
               ref={i === 0 ? firstLink : undefined}

@@ -11,6 +11,8 @@
   --color-line: rgb(246 239 230 / 0.12);
   --color-accent: #e23b24;
   --color-accent-hot: #ff5a2e;
+  --color-accent-fill: #d9341e;
+  --color-accent-press: #c42d18;
   --color-ember: #ff7a1a;
 
   --font-display: var(--font-display), "Arial Narrow", sans-serif;
@@ -79,6 +81,7 @@ body {
 }
 
 a { text-underline-offset: 0.2em; text-decoration-thickness: 1px; }
+p, li, blockquote, figcaption { text-wrap: pretty; }
 
 .font-display {
   font-family: var(--font-display);
@@ -112,7 +115,7 @@ a { text-underline-offset: 0.2em; text-decoration-thickness: 1px; }
 
 /* Custom cursor only where a fine pointer can hover. */
 @media (hover: hover) and (pointer: fine) {
-  html.has-cursor, html.has-cursor * { cursor: none !important; }
+  html.has-cursor, html.has-cursor *:not(input):not(textarea):not(select) { cursor: none; }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -150,7 +153,7 @@ a { text-underline-offset: 0.2em; text-decoration-thickness: 1px; }
 }
 
 /* Marquee */
-.marquee-row { font-size: clamp(3.75rem, 17vw, 10.5rem); line-height: 1.05; }
+.marquee-row { font-size: clamp(3.75rem, 17vw, 10.5rem); line-height: 1.05; padding-block: 0.14em; }
 .marquee-word {
   font-family: var(--font-display);
   font-variation-settings: "opsz" 72;
