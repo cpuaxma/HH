@@ -1,0 +1,30 @@
+{
+  "name": "miran-gold-history",
+  "private": true,
+  "version": "1.0.0",
+  "scripts": {
+    "studio": "remotion studio",
+    "render": "remotion render GoldHistoryAR out/gold-history-ar.mp4 --codec=h264 --crf=18 --gl=swangle",
+    "still": "remotion still GoldHistoryAR --gl=swangle",
+    "typecheck": "tsc --noEmit",
+    "export:phone": "ffmpeg -y -loglevel error -i out/gold-history-ar.mp4 -c:v libx264 -preset slow -crf 17 -maxrate 14M -bufsize 28M -profile:v high -level:v 4.2 -pix_fmt yuv420p -color_primaries bt709 -color_trc bt709 -colorspace bt709 -tag:v avc1 -movflags +faststart -an out/gold-history-ar-phone.mp4"
+  },
+  "dependencies": {
+    "@fontsource/ibm-plex-sans-arabic": "^5.3.0",
+    "@react-three/fiber": "8.17.10",
+    "@remotion/cli": "4.0.539",
+    "@remotion/layout-utils": "4.0.539",
+    "@remotion/motion-blur": "4.0.539",
+    "@remotion/paths": "4.0.539",
+    "@remotion/three": "4.0.539",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "remotion": "4.0.539",
+    "three": "0.169.0"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.12",
+    "@types/three": "0.169.0",
+    "typescript": "^5.6.3"
+  }
+}
