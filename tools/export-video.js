@@ -2,6 +2,9 @@
 // Usage: node tools/export-video.js [fps=60] [out=exports/hot-pepper-intro.mp4] [page=index.html]
 // e.g.   node tools/export-video.js 30 exports/miran-gold.mp4 miran-gold/index.html
 // The page may carry extra URL options: miran-gold/index.html?nocaptions
+// Set SIZE=1080x1080 (WIDTHxHEIGHT) for a size other than 1080x1920.
+// Set SCALE=2 to render at 2x pixel density (SIZE 1080x1920 -> a 2160x3840 video).
+// Add OUT=1080x1920 to downsample that render back to 1080p (supersampled, sharper edges and texture).
 // Needs Node with the `playwright` package (Chromium) and ffmpeg on PATH.
 const { chromium } = require('playwright');
 const { spawn } = require('child_process');
@@ -18,7 +21,9 @@ const page_url = 'file://' + path.resolve(__dirname, '..', page_file) + '?t=0' +
   // behind a proxy, Chromium needs it passed explicitly to reach Google Fonts
   const proxy = process.env.HTTPS_PROXY || process.env.https_proxy;
   const browser = await chromium.launch(proxy ? { proxy: { server: proxy } } : {});
-  const page = await browser.newPage({ viewport: { width: 1080, height: 1920 }, deviceScaleFactor: 1 });
+  const [width, height] = (process.env.SIZE || '1080x1920').split('x').map(Number);
+  const scale = +(process.env.SCALE || 1);
+  const page = await browser.newPage({ viewport: { width, height }, deviceScaleFactor: scale });
   page.on('pageerror', e => console.error('page error:', e.message));
   await page.goto(page_url);
   await page.waitForFunction(() => !document.querySelector('#stage').classList.contains('waiting'));
@@ -27,12 +32,15 @@ const page_url = 'file://' + path.resolve(__dirname, '..', page_file) + '?t=0' +
 
   const ff = spawn('ffmpeg', ['-y', '-loglevel', 'error',
     '-f', 'image2pipe', '-framerate', String(fps), '-i', '-',
+    ...(process.env.OUT ? ['-vf', `scale=${process.env.OUT.replace('x', ':')}:flags=lanczos`] : []),
     '-c:v', 'libx264', '-preset', 'slow', '-crf', '12', '-profile:v', 'high',
     '-pix_fmt', 'yuv420p', '-movflags', '+faststart', out], { stdio: ['pipe', 'inherit', 'inherit'] });
 
   // render(t) with still=false steps the timeline exactly like playback (one-frame flashes included)
   await page.evaluate(() => { lastT = -1; });
-  for (let k = 0; k <= frames; k++) {
+  // a page with LOOP = true is a seamless loop: its last frame would repeat frame 0, so leave it out
+  const loop = await page.evaluate(() => typeof LOOP !== 'undefined' && LOOP === true);
+  for (let k = 0; k < frames + (loop ? 0 : 1); k++) {
     await page.evaluate(t => render(t), k / fps);
     const png = await page.screenshot({ type: 'png' });
     if (!ff.stdin.write(png)) await new Promise(r => ff.stdin.once('drain', r));
