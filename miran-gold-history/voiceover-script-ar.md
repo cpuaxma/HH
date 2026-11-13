@@ -8,7 +8,7 @@ Two beats are timed to the voice:
 - **The 1971 chain** snaps on «انفصل».
 - **The chart** draws from 1971 to 2026 while line 9 is spoken.
 
-After the last line the logo screen holds until 1:00.0 for outro music.
+The outro screen is in English, so line 12 is in English too. After it, the logo screen holds until 1:00.0 for outro music.
 
 ## Version A: headlines only
 
@@ -25,7 +25,7 @@ After the last line the logo screen holds until 1:00.0 for outro music.
 | 9 | 0:39.0 | 5.9 s | من خمسة وثلاثين دولاراً، إلى أكثر من أربعة آلاف دولار. |
 | 10 | 0:45.0 | 4.9 s | كل الذَّهَب المستخرج في التاريخ، مكعب ضلعه اثنان وعشرون متراً. |
 | 11 | 0:50.0 | 4.3 s | ستة آلاف عام، وما زال الذَّهَب مخزناً للقيمة. |
-| 12 | 0:54.4 | 4.1 s | انضم إلى مجتمع ميران جُولد. الرابط في البايو. |
+| 12 | 0:54.4 | 4.1 s | Join the Miran Gold community. Link in bio. *(English, as on screen)* |
 
 ## Version B: longer
 
@@ -74,7 +74,7 @@ These are the same as Version A, plus a short follow-on (in bold) in the scenes 
 ستة آلاف عام، وما زال الذَّهَب مخزناً للقيمة.
 ```
 ```
-انضم إلى مجتمع ميران جُولد. الرابط في البايو.
+Join the Miran Gold community. Link in bio.
 ```
 
 For Version A, paste the lines from its table instead.
@@ -95,6 +95,5 @@ For Version A, paste the lines from its table instead.
   - «حُليّ» is marked so it is read as jewellery.
   - «سُكّت» and «سُكّ» are marked so they are read as "were minted".
   - «حمّى» carries a shadda.
-  - «جُولد» is marked so it is read "gold/jold".
 - **Voice:** use a native Arabic voice, the same one as the gold and silver reels. Stability around 40–50%, style low, speed 1.0.
 - **Music:** keep it about 15–18 dB below the voice while it's speaking. In the last 1.5 seconds it can come up.

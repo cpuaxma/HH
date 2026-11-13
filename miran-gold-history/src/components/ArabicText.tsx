@@ -79,7 +79,9 @@ export const ArabicText: React.FC<{
   color?: string;
   weight?: number;
   style?: React.CSSProperties;
-}> = ({block, size, start = 0, exitEnd, maxWidth = LAYOUT.contentWidth, color = COLORS.text, weight = FONT.body, style}) => {
+  /** 'ltr' for English lines (words then enter left to right). */
+  dir?: 'rtl' | 'ltr';
+}> = ({block, size, start = 0, exitEnd, maxWidth = LAYOUT.contentWidth, color = COLORS.text, weight = FONT.body, style, dir = 'rtl'}) => {
   const frame = useCurrentFrame();
   const refs = useRef<(HTMLSpanElement | null)[]>([]);
   const [fit, setFit] = useState<number[] | null>(null);
@@ -117,7 +119,7 @@ export const ArabicText: React.FC<{
 
   let idx = 0;
   return (
-    <div dir="rtl" style={{fontFamily: FONT.family, textAlign: 'center', lineHeight: FONT.lineHeight, color, ...style}}>
+    <div dir={dir} style={{fontFamily: FONT.family, textAlign: 'center', lineHeight: FONT.lineHeight, color, ...style}}>
       {lines.map(({line, items}, li) => {
         const nominal = line.size ?? size;
         const fontSize = Math.max(LAYOUT.minSize, nominal * (fit?.[li] ?? 1));
@@ -176,11 +178,12 @@ export const Label: React.FC<{
   weight?: number;
   color?: string;
   style?: React.CSSProperties;
-}> = ({text, size, p, q = 0, tone = null, weight = FONT.key, color = COLORS.text, style}) => {
+  dir?: 'rtl' | 'ltr';
+}> = ({text, size, p, q = 0, tone = null, weight = FONT.key, color = COLORS.text, style, dir = 'rtl'}) => {
   const blur = MOTION.wordBlur * (1 - p) + MOTION.wordBlur * q;
   return (
     <span
-      dir="rtl"
+      dir={dir}
       style={{
         display: 'inline-block',
         fontFamily: FONT.family,

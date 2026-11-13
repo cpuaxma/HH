@@ -11,7 +11,7 @@ export type Line = {text: string; delay?: number; size?: number};
 export type TextBlock = {lines: Line[]; accents?: Partial<Record<Accent, string[]>>};
 
 export const TITLE = 'تاريخ الذهب في ٦٠ ثانية';
-export const BRAND = 'ميران جولد';
+export const BRAND = 'MIRAN GOLD';
 
 export const S1_HOOK: TextBlock = {
   lines: [{text: '٦٠٠٠ عام من الذهب… في ٦٠ ثانية.'}, {text: 'قصة المعدن الذي لم يفقد بريقه.', delay: 36, size: 40}],
@@ -100,8 +100,10 @@ export const S11_TODAY: TextBlock = {
   accents: {gold: ['الذهب', '٦٠٠٠']},
 };
 
+// The outro is in English.
 export const S12_CTA: TextBlock = {
-  lines: [{text: 'انضم إلى مجتمع ميران جولد.'}, {text: 'الرابط في البايو.', size: 40}],
+  lines: [{text: 'Join the Miran Gold community.'}, {text: 'Link in bio.', size: 40}],
+  accents: {gold: ['Miran', 'Gold']},
 };
-export const S12_BUTTON = 'انضم على تيليجرام';
-export const S12_DISCLAIMER = 'محتوى تعليمي فقط وليس نصيحة مالية.';
+export const S12_BUTTON = 'Join on Telegram';
+export const S12_DISCLAIMER = 'Educational content only. Not financial advice.';

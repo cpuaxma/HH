@@ -53,20 +53,21 @@ export const Cta: React.FC = () => {
       <At x={540} y={HAS_LOGO ? LOGO.y + LOGO.size / 2 + 62 : LOGO.y}>
         <Label
           text={BRAND}
-          size={HAS_LOGO ? 58 : 110}
+          dir="ltr"
+          size={HAS_LOGO ? 50 : 96}
           p={brand}
           weight={FONT.key}
-          style={{backgroundImage: GOLD_GRADIENT, WebkitBackgroundClip: 'text', backgroundClip: 'text', color: 'transparent'}}
+          style={{letterSpacing: '0.24em', marginRight: '-0.24em', backgroundImage: GOLD_GRADIENT, WebkitBackgroundClip: 'text', backgroundClip: 'text', color: 'transparent'}}
         />
       </At>
 
       <Headline top={1000}>
-        <ArabicText block={S12_CTA} size={52} start={T.text} />
+        <ArabicText block={S12_CTA} size={52} start={T.text} dir="ltr" />
       </Headline>
 
       <At x={540} y={1268}>
         <div
-          dir="rtl"
+          dir="ltr"
           style={{
             position: 'relative',
             overflow: 'hidden',
@@ -101,7 +102,7 @@ export const Cta: React.FC = () => {
       </At>
 
       <div style={{position: 'absolute', left: 0, right: 0, bottom: 1920 - LAYOUT.disclaimerBottom, textAlign: 'center'}}>
-        <Label text={S12_DISCLAIMER} size={22} p={disclaimer} weight={FONT.body} color="rgba(245,241,232,0.5)" />
+        <Label text={S12_DISCLAIMER} dir="ltr" size={22} p={disclaimer} weight={FONT.body} color="rgba(245,241,232,0.5)" />
       </div>
     </AbsoluteFill>
   );

@@ -1,8 +1,7 @@
 import React from 'react';
-import {AbsoluteFill, Img, interpolate, Sequence, staticFile, useCurrentFrame} from 'remotion';
+import {AbsoluteFill, interpolate, Sequence, useCurrentFrame} from 'remotion';
 import {BRAND} from './strings';
-import {COLORS, EASE, FONT, GOLD_GRADIENT, LAYOUT, SAFE, SceneKey, SCENES, VIDEO} from './theme';
-import {enter, hexA} from './motion';
+import {COLORS, EASE, FONT, GOLD_GRADIENT, LAYOUT, SceneKey, SCENES} from './theme';
 import {BackgroundGlow, Vignette} from './components/BackgroundGlow';
 import {Grain} from './components/Grain';
 import {EraTint, GodRays, GoldDust, TimeGates} from './components/World';
@@ -48,38 +47,10 @@ const Wordmark: React.FC = () => {
   const out = interpolate(frame, [SCENES.cta[0] + 2, SCENES.cta[0] + 18], [0, 1], {extrapolateLeft: 'clamp', extrapolateRight: 'clamp', easing: EASE.exit});
   return (
     <div
-      dir="rtl"
-      style={{position: 'absolute', top: LAYOUT.wordmarkTop, left: 0, right: 0, textAlign: 'center', fontFamily: FONT.family, fontWeight: FONT.key, fontSize: 28, lineHeight: 1.5, opacity: 0.7 * (1 - out)}}
+      dir="ltr"
+      style={{position: 'absolute', top: LAYOUT.wordmarkTop + 4, left: 0, right: 0, textAlign: 'center', fontFamily: FONT.family, fontWeight: FONT.key, fontSize: 24, letterSpacing: '0.32em', textIndent: '0.32em', lineHeight: 1.5, opacity: 0.75 * (1 - out)}}
     >
       <span style={{backgroundImage: GOLD_GRADIENT, WebkitBackgroundClip: 'text', backgroundClip: 'text', color: 'transparent'}}>{BRAND}</span>
-    </div>
-  );
-};
-
-const BOTTOM_LOGO = 96;
-
-/** Small Miran Gold logo at the bottom centre, just above the platform-UI safe zone, for the whole reel. */
-const BottomLogo: React.FC = () => {
-  const frame = useCurrentFrame();
-  const appear = enter(frame, 8, 40);
-  const out = interpolate(frame, [SCENES.cta[0] + 2, SCENES.cta[0] + 16], [0, 1], {extrapolateLeft: 'clamp', extrapolateRight: 'clamp', easing: EASE.exit});
-  if (out >= 1) return null;
-  return (
-    <div
-      style={{
-        position: 'absolute',
-        left: (VIDEO.width - BOTTOM_LOGO) / 2,
-        top: VIDEO.height - SAFE.bottom - 24 - BOTTOM_LOGO,
-        width: BOTTOM_LOGO,
-        height: BOTTOM_LOGO,
-        borderRadius: '50%',
-        opacity: 0.9 * appear * (1 - out),
-        transform: `scale(${0.85 + 0.15 * appear})`,
-        filter: out > 0.01 ? `blur(${out * 8}px)` : undefined,
-        boxShadow: `0 0 32px ${hexA(COLORS.goldA, 0.22)}`,
-      }}
-    >
-      <Img src={staticFile('logo.png')} style={{width: BOTTOM_LOGO, height: BOTTOM_LOGO, borderRadius: '50%'}} />
     </div>
   );
 };
@@ -109,7 +80,6 @@ export const Reel: React.FC = () => (
     <YearHud />
     <Wordmark />
     <Vignette />
-    <BottomLogo />
     <Grain />
   </AbsoluteFill>
 );

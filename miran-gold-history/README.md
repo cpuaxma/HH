@@ -8,7 +8,8 @@ A 60-second vertical Arabic reel built in Remotion (1080×1920, 60fps, 3600 fram
 - **Flying through time.** The camera dollies forward through a corridor of gold "time gates", each engraved with its year. Gold dust streams past on each dolly. In scene 11 the camera pulls back down the whole corridor as the gates light up in their era tints (`src/components/World.tsx`).
 - **Year odometer HUD.** A chrome-gold year rolls between eras and follows the price chart from 1971 to 2026 (`src/components/YearHud.tsx`).
 - **Atmosphere.** Light rays fall on the gold, there is a per-era colour tint, and a molten bloom appears when the gold recasts.
-- **Kept from the series:** per-word RTL text with a sheen, Eastern Arabic numerals, the safe zones, the small bottom logo, and the CTA.
+- **Kept from the series:** per-word RTL text with a sheen, Eastern Arabic numerals, the safe zones, and the CTA.
+- **English branding:** the small "MIRAN GOLD" wordmark at the top and the whole outro (CTA) are in English. There is no logo at the bottom in this reel.
 
 ## Render
 
@@ -32,4 +33,4 @@ All strings and numbers are in `src/strings.ts`, including the price path for th
 - `src/heroTrack.ts`: the 3D gold's forms, poses, melts and beats.
 - `src/scenes/Early.tsx`: scenes 1–5. `src/scenes/Later.tsx`: scenes 6–11, plus the banknote-and-chain rig for 1944–1971. `src/scenes/Cta.tsx`: the CTA.
 - `src/components/three/*`: the procedural studio lighting, the gold forms and the 3D hero.
-- `public/logo.png`: the logo, small at the bottom throughout and large in the CTA.
+- `public/logo.png`: the logo, shown large in the CTA.
