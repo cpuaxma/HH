@@ -67,11 +67,13 @@ export type SceneConfig = {
   id: SceneId;
   from: number; // seconds
   to: number; // seconds
-  /** One entry per line, read right to left. Wrap a word in *asterisks* to set it in gold. */
+  /** One entry per line, in reading order. Wrap a word in *asterisks* to set it in gold. */
   lines: string[];
   fontSize: number;
   /** Vertical position of the headline block (its top edge). */
   textTop: number;
+  /** Reading direction; Arabic scenes are 'rtl' (the default), the English outro is 'ltr'. */
+  dir?: 'rtl' | 'ltr';
 };
 
 export const SCENES: SceneConfig[] = [
@@ -119,9 +121,10 @@ export const SCENES: SceneConfig[] = [
     id: 'endcard',
     from: 27,
     to: 30,
-    lines: ['تابع *ميران* *جولد*', 'وتعلّم أكثر'],
+    lines: ['Follow *Miran* *Gold*', 'and learn more'],
     fontSize: 84,
     textTop: 1230,
+    dir: 'ltr',
   },
 ];
 

@@ -14,12 +14,12 @@ const tokenize = (line: string): Token[] =>
     });
 
 /**
- * The scene's headline, revealed word by word (right to left, in reading order).
+ * The scene's headline, revealed word by word in reading order (right to left for Arabic).
  * Each word is its own span, so Arabic letters still join inside the word and the line order is
- * set by `direction: rtl`. Lines are broken in the config, never by the browser (nowrap).
+ * set by `direction` (rtl for Arabic, ltr for the English outro). Lines are broken in the config, never by the browser (nowrap).
  */
 export const Headline: React.FC<{underline?: boolean}> = ({underline = true}) => {
-  const {lines, fontSize, textTop, id} = useScene();
+  const {lines, fontSize, textTop, id, dir = 'rtl'} = useScene();
   const f = useSceneFrame();
   const ref = useRef<HTMLDivElement>(null);
   const tokens = lines.map(tokenize);
@@ -60,7 +60,7 @@ export const Headline: React.FC<{underline?: boolean}> = ({underline = true}) =>
         top: textTop,
         left: SAFE.side,
         right: SAFE.side,
-        direction: 'rtl',
+        direction: dir,
         fontFamily: FONT.family,
         fontWeight: FONT.headlineWeight,
         fontSize,
@@ -76,9 +76,10 @@ export const Headline: React.FC<{underline?: boolean}> = ({underline = true}) =>
           style={{
             display: 'flex',
             flexDirection: 'row',
+            direction: dir,
             justifyContent: 'center',
             flexWrap: 'nowrap',
-            columnGap: '0.26em',
+            columnGap: dir === 'rtl' ? '0.26em' : '0.24em',
             whiteSpace: 'nowrap',
             overflow: 'visible',
           }}
