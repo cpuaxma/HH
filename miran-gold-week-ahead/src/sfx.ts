@@ -33,9 +33,9 @@ export const CUES: Cue[] = [
   {frame: 120, sfx: 'pop', volume: 0.7, note: 'Hook: price lands + −% chip'},
   {frame: 150, sfx: 'click_ui', volume: 0.6, note: 'Hook: day strip, Monday active'},
   // 2 · Card stack
-  {frame: 195, sfx: 'swish_short', volume: 0.6, note: 'Stack: card 1 (Wednesday)'},
-  {frame: 225, sfx: 'swish_short', volume: 0.6, note: 'Stack: card 2 (holiday)'},
-  {frame: 255, sfx: 'swish_short', volume: 0.6, note: 'Stack: card 3 (jobs)'},
+  {frame: 182, sfx: 'swish_short', volume: 0.6, note: 'Stack: card 1 (Wednesday)'},
+  {frame: 206, sfx: 'swish_short', volume: 0.6, note: 'Stack: card 2 (holiday)'},
+  {frame: 230, sfx: 'swish_short', volume: 0.6, note: 'Stack: card 3 (jobs)'},
   {frame: 300, sfx: 'pop', volume: 0.7, note: 'Stack: "next week" pill'},
   // 3 · 01
   {frame: 360, sfx: 'whoosh', volume: 0.6, note: 'Whip-pan into chapter 01'},
@@ -44,7 +44,7 @@ export const CUES: Cue[] = [
   {frame: 420, sfx: 'click_ui', volume: 0.6, note: 'Wednesday active'},
   // 4 · Wednesday: inflation thermometer
   {frame: 480, sfx: 'swish_short', volume: 0.6, note: 'Wednesday card in'},
-  {frame: 515, sfx: 'riser_1s', volume: 0.45, note: 'Thermometer column rises'},
+  {frame: 552, sfx: 'riser_1s', volume: 0.45, note: 'Riser into the above-target hit'},
   {frame: 520, sfx: 'counter_roll', volume: 0.4, note: 'Value counts to the latest reading', durationInFrames: 70},
   {frame: 590, sfx: 'pop', volume: 0.65, note: 'Latest reading lands'},
   {frame: 612, sfx: 'impact_soft', volume: 0.7, note: '"Above target" chip, column glows red'},
@@ -53,6 +53,7 @@ export const CUES: Cue[] = [
   {frame: 730, sfx: 'tick', volume: 0.4, note: 'Column wobbles (unknown)'},
   {frame: 750, sfx: 'click_ui', volume: 0.6, note: 'GDP chip'},
   // 5 · Seesaw
+  {frame: 838, sfx: 'whoosh', volume: 0.5, note: 'Whip-pan from the thermometer to the seesaw'},
   {frame: 860, sfx: 'tick', volume: 0.5, note: 'Inflation chip (up)'},
   {frame: 890, sfx: 'tick', volume: 0.5, note: 'Rates chip (up)'},
   {frame: 930, sfx: 'whoosh', volume: 0.45, note: 'Seesaw tips: dollar up, gold down'},

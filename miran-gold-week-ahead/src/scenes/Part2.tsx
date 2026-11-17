@@ -312,7 +312,7 @@ export const S11Outro: React.FC<{e: Edition}> = ({e}) => {
   };
   const btn = spring({frame: f - 120, fps, config: SPRING.pill});
   const pulse = f > 130 ? (Math.sin((f - 130) / 9) + 1) / 2 : 0;
-  const arrowLen = 1500;
+  const arrowLen = 1560;
   return (
     <AbsoluteFill>
       {/* big diagonal gold arrow mark behind */}
@@ -330,7 +330,7 @@ export const S11Outro: React.FC<{e: Edition}> = ({e}) => {
           stroke="url(#arrowG)"
           strokeWidth={70}
           strokeLinejoin="miter"
-          strokeDasharray={arrowLen}
+          strokeDasharray={`${arrowLen} ${arrowLen * 2}`}
           strokeDashoffset={arrowLen * (1 - arrowDraw)}
         />
         <path d="M 860 740 L 1040 720 L 1020 900 Z" fill={C.gold0} opacity={0.24 * lin(f, 40, 56)} />

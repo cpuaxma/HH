@@ -38,10 +38,10 @@ export const WeekAhead: React.FC<WeekAheadProps> = ({edition, showBackground, wi
       <Shot id="s3" {...SHOTS.s3} enter="whip" exit="zoom">
         <ChapterNumeral n="01" impactAt={30} />
       </Shot>
-      <Shot id="s4" {...SHOTS.s4} enter="cut" exit="mask">
+      <Shot id="s4" {...SHOTS.s4} enter="cut" exit="whip">
         <S4Wednesday e={e} />
       </Shot>
-      <Shot id="s5" {...SHOTS.s5} enter="mask" exit="whip">
+      <Shot id="s5" {...SHOTS.s5} enter="whip" exit="whip">
         <S5Chain e={e} />
       </Shot>
       <Shot id="s6" {...SHOTS.s6} enter="whip" exit="zoom">

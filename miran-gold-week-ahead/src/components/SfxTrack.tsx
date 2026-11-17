@@ -36,7 +36,7 @@ export const SfxTrack: React.FC<{captions: Record<string, Caption>; durationInFr
         />
       ) : null}
       {CUES.filter((c) => has(c.sfx)).map((c, i) => (
-        <Sequence key={`${c.sfx}-${c.frame}-${i}`} from={c.frame} durationInFrames={c.durationInFrames ?? 150} layout="none" name={`sfx ${c.sfx}`}>
+        <Sequence key={`${c.sfx}-${c.frame}-${i}`} from={c.frame} durationInFrames={c.durationInFrames ?? 300} layout="none" name={`sfx ${c.sfx}`}>
           <Audio src={staticFile(`sfx/${c.sfx}.wav`)} volume={c.volume} />
         </Sequence>
       ))}

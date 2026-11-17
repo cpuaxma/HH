@@ -199,7 +199,7 @@ export const S2Stack: React.FC<{e: Edition}> = ({e}) => {
         {e.stackPill}
       </div>
       {e.stack.map((c, i) => {
-        const at = 15 + i * 30;
+        const at = 2 + i * 24;
         const t = spring({frame: f - at, fps, config: SPRING.card});
         const fan = (1 - t) * (i - 1) * 9;
         return (
