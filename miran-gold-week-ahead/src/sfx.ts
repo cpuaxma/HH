@@ -31,17 +31,15 @@ export const CUES: Cue[] = [
   {frame: 60, sfx: 'impact_soft', volume: 0.9, note: 'Hook: price card lands, chart starts drawing'},
   {frame: 60, sfx: 'counter_roll', volume: 0.45, note: 'Hook: price rolls from record to latest', durationInFrames: 60},
   {frame: 120, sfx: 'pop', volume: 0.7, note: 'Hook: price lands + −% chip'},
-  {frame: 150, sfx: 'click_ui', volume: 0.6, note: 'Hook: day strip, Monday active'},
   // 2 · Card stack
-  {frame: 182, sfx: 'swish_short', volume: 0.6, note: 'Stack: card 1 (Wednesday)'},
-  {frame: 206, sfx: 'swish_short', volume: 0.6, note: 'Stack: card 2 (holiday)'},
-  {frame: 230, sfx: 'swish_short', volume: 0.6, note: 'Stack: card 3 (jobs)'},
-  {frame: 300, sfx: 'pop', volume: 0.7, note: 'Stack: "next week" pill'},
+  {frame: 180, sfx: 'swish_short', volume: 0.6, note: 'Week card rises in'},
+  {frame: 194, sfx: 'pop', volume: 0.55, note: 'Week: Wednesday "inflation" chip'},
+  {frame: 214, sfx: 'click_ui', volume: 0.6, note: 'Week: Thursday "holiday" chip'},
+  {frame: 234, sfx: 'click_ui', volume: 0.6, note: 'Week: Friday "short day" chip'},
+  {frame: 260, sfx: 'pop', volume: 0.6, note: 'Week: "and then: jobs report" chip'},
   // 3 · 01
   {frame: 360, sfx: 'whoosh', volume: 0.6, note: 'Whip-pan into chapter 01'},
   {frame: 390, sfx: 'impact_soft', volume: 0.85, note: 'Chapter numeral 01'},
-  {frame: 405, sfx: 'whoosh', volume: 0.35, note: 'Strip highlight slides to Wednesday'},
-  {frame: 420, sfx: 'click_ui', volume: 0.6, note: 'Wednesday active'},
   // 4 · Wednesday: inflation thermometer
   {frame: 480, sfx: 'swish_short', volume: 0.6, note: 'Wednesday card in'},
   {frame: 552, sfx: 'riser_1s', volume: 0.45, note: 'Riser into the above-target hit'},
@@ -65,11 +63,9 @@ export const CUES: Cue[] = [
   // 6 · 02
   {frame: 1140, sfx: 'whoosh', volume: 0.6, note: 'Whip-pan into chapter 02'},
   {frame: 1170, sfx: 'impact_soft', volume: 0.85, note: 'Chapter numeral 02'},
-  {frame: 1200, sfx: 'click_ui', volume: 0.6, note: 'Thursday active'},
   // 7 · Holiday
   {frame: 1290, sfx: 'paper', volume: 0.8, note: '"US holiday" stamp on Thursday'},
   {frame: 1372, sfx: 'swish_short', volume: 0.55, note: 'Friday tile in, clock half-fills'},
-  {frame: 1380, sfx: 'whoosh', volume: 0.35, note: 'Strip highlight slides to Friday'},
   {frame: 1400, sfx: 'click_ui', volume: 0.6, note: '"Early close" chip'},
   {frame: 1436, sfx: 'whoosh', volume: 0.5, note: 'Tiles out, liquidity tank in'},
   {frame: 1465, sfx: 'riser_1s', volume: 0.45, note: 'Tank drains'},
@@ -79,7 +75,6 @@ export const CUES: Cue[] = [
   // 8 · 03
   {frame: 1620, sfx: 'whoosh', volume: 0.6, note: 'Whip-pan into chapter 03'},
   {frame: 1650, sfx: 'impact_soft', volume: 0.85, note: 'Chapter numeral 03'},
-  {frame: 1680, sfx: 'whoosh', volume: 0.4, note: 'Strip peeks at the following week'},
   // 9 · Jobs report
   {frame: 1740, sfx: 'swish_short', volume: 0.6, note: 'Jobs report card in'},
   {frame: 1770, sfx: 'whoosh', volume: 0.4, note: 'Seesaw in, starts wobbling'},

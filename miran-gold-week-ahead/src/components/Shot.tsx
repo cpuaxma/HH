@@ -61,13 +61,15 @@ const ShotInner: React.FC<{
     op *= x > 0.9 ? (1 - x) * 10 : 1;
   }
   let ty = 0;
-  if (enterKind === 'rise' && e < 1) {
-    ty += (1 - e) * 60;
-    op *= e;
+  if (enterKind === 'rise') {
+    const er = interpolate(f, [6, 22], [0, 1], {...CLAMP, easing: EASE.enter});
+    ty += (1 - er) * 60;
+    op *= er;
   }
-  if (exitKind === 'rise' && x > 0) {
-    ty -= x * 50;
-    op *= 1 - x;
+  if (exitKind === 'rise') {
+    const xr = interpolate(f, [total - 18, total - 7], [0, 1], {...CLAMP, easing: EASE.exit});
+    ty -= xr * 50;
+    op *= 1 - xr;
   }
   if (enterKind === 'fade') op *= e;
   if (exitKind === 'fade') op *= 1 - x;

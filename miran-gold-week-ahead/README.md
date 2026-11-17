@@ -3,6 +3,8 @@
 A recurring bi-weekly reel: a calendar breakdown of the events that could move gold in the coming week.
 Remotion, 1080×1920, 60fps, 42s (3s intro hook «ماذا ينتظر الذهب في الأسبوع القادم؟» + main reel + 4s outro). Arabic (RTL) body; English wordmark and outro.
 
+Design (v3): monochrome blue + gold. The headline is the hero (eyebrow label, 2 lines at ~100px with line 2 in gold, small source line), every element sits on one 100px right edge, flat cards, minimal top bar (logo + one pill), outro ends on a gold ring from the logo.
+
 Edition #1 covers **Mon 23 – Fri 27 Nov 2026** (uploaded the week before).
 
 ## Make the next edition
@@ -47,8 +49,9 @@ node scripts/export-cues.mjs          # → out/sfx_cues.csv
 - `src/timeline.ts` — `INTRO` (intro length), shot slots (relative to the end of the intro), caption timing, day-strip moves.
 - `src/scenes/Intro.tsx` — the 3s intro hook (coin + orbiting weekdays + slam title + zoom-through). Title text: `intro` in edition.json.
 - `src/compositions/WeekAhead.tsx` — the composition (shots, persistent UI, captions, audio).
-- `src/scenes/Part1.tsx` — hook, card stack, Wednesday thermometer, seesaw.
-- `src/scenes/Part2.tsx` — holiday (calendar/clock → liquidity tank), jobs report, collapse → logo, outro.
+- `src/scenes/V3.tsx` — all current scenes: intro, price card, week calendar, chapter numerals, Wednesday thermometer, seesaw, holiday (calendar/clock → liquidity tank), jobs report, collapse → logo, outro.
+- `src/components/Headline.tsx` — the headline system (eyebrow, masked word rise, line 2 gold, source line); text auto-fits the column.
+- `src/scenes/Part1.tsx`, `Part2.tsx`, `Intro.tsx` — the earlier (v2) scenes, kept for reference; not used by the composition.
 - `src/components/` — `DayStrip`, `GlassCard`, `ChapterNumeral`, `LineChartDraw`/`CountUp`/`BarChartQ`/`Gauge` (Charts),
   `Thermometer`/`Seesaw`/`Tank` (Explainers), `CauseChain`, `NodeConstellation`, `ArabicWordReveal`, `Caption2Line`,
   `Persistent` (wordmark, date pill, disclaimer), `Shot` (camera push + whip/mask/zoom transitions), `SfxTrack`.

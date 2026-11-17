@@ -33,11 +33,11 @@ const MaskedLine: React.FC<{text: string; start: number; exitAt: number; size: n
   const f = useCurrentFrame();
   const words = splitWords(text);
   return (
-    <div dir="rtl" style={{display: 'flex', flexWrap: 'nowrap', columnGap: size * 0.26, overflow: 'hidden', paddingBottom: size * 0.16, marginBottom: -size * 0.12}}>
+    <div dir="rtl" style={{display: 'flex', flexWrap: 'nowrap', columnGap: size * 0.26, overflow: 'hidden', paddingTop: size * 0.3, marginTop: -size * 0.3, paddingBottom: size * 0.2, marginBottom: -size * 0.16}}>
       {words.map((w, i) => {
         const t = interpolate(f, [start + i * 3, start + i * 3 + 20], [0, 1], {...CLAMP, easing: EASE.enter});
         const x = interpolate(f, [exitAt + i * 1, exitAt + i * 1 + 12], [0, 1], {...CLAMP, easing: EASE.exit});
-        const y = (1 - t) * 110 - x * 110;
+        const y = (1 - t) * 140 - x * 150;
         return (
           <span key={i} style={{display: 'inline-block', transform: `translateY(${y}%)`, color, whiteSpace: 'nowrap'}}>
             {NEEDS_ISOLATE.test(w) ? (

@@ -549,18 +549,16 @@ export const V3Collapse: React.FC = () => {
 export const V3Outro: React.FC<{e: Edition}> = ({e}) => {
   const f = useCurrentFrame();
   const o = e.outro;
-  const arrow = interpolate(f, [0, 40], [0, 1], {...CLAMP, easing: EASE.move});
+  const arrow = interpolate(f, [0, 60], [0, 1], {...CLAMP, easing: EASE.move});
   const rise = (at: number) => interpolate(f, [at, at + 20], [0, 1], {...CLAMP, easing: EASE.enter});
   const line = (at: number): React.CSSProperties => ({transform: `translateY(${(1 - rise(at)) * 110}%)`, display: 'inline-block'});
   const mask: React.CSSProperties = {overflow: 'hidden', paddingBottom: 12, marginBottom: -12};
   return (
     <AbsoluteFill>
-      {/* big diagonal arrow mark */}
-      <svg width={1080} height={1920} style={{position: 'absolute', inset: 0}}>
-        <g opacity={0.2 * arrow} transform={`translate(${(1 - arrow) * -80} ${(1 - arrow) * 80})`}>
-          <path d="M 180 1500 L 940 740" stroke={C.peri} strokeWidth={150} strokeLinecap="round" />
-          <path d="M 700 700 L 990 690 L 980 980" fill="none" stroke={C.peri} strokeWidth={150} strokeLinecap="round" strokeLinejoin="round" />
-        </g>
+      {/* Miran Gold ring (from the logo's circle), drawing behind the copy */}
+      <svg width={1080} height={1920} style={{position: 'absolute', inset: 0, overflow: 'visible'}}>
+        <circle cx={860} cy={980} r={430} fill="none" stroke={C.gold1} strokeOpacity={0.22} strokeWidth={46} strokeDasharray={2 * Math.PI * 430} strokeDashoffset={2 * Math.PI * 430 * (1 - arrow)} transform={`rotate(${-120 + f * 0.15} 860 980)`} strokeLinecap="round" />
+        <circle cx={860} cy={980} r={330} fill="none" stroke={C.peri} strokeOpacity={0.14} strokeWidth={3} strokeDasharray={2 * Math.PI * 330} strokeDashoffset={2 * Math.PI * 330 * (1 - arrow)} transform={`rotate(${60 - f * 0.1} 860 980)`} />
       </svg>
       <div style={{position: 'absolute', left: LAYOUT.marginX, top: 760, fontFamily: EN, color: C.text}}>
         <div style={{...mask}}>
