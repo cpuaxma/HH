@@ -3,197 +3,211 @@ import {AbsoluteFill, Img, interpolate, spring, staticFile, useCurrentFrame, use
 import {C, EASE, FONT, GOLD, LAYOUT, SPRING} from '../brand';
 import type {Edition} from '../edition';
 import {ArText, Bdi, goldText} from '../components/ArabicWordReveal';
-import {BarChartQ, LineChartDraw} from '../components/Charts';
+import {LineChartDraw} from '../components/Charts';
+import {Seesaw, Tank} from '../components/Explainers';
 import {HalfClock} from '../components/DayStrip';
 import {GlassCard, Source, Tag} from '../components/GlassCard';
 import {Icon, PulseDot} from '../components/Icons';
-import {NodeConstellation} from '../components/NodeConstellation';
 import {enter, lin} from '../components/motion';
 import {Burst} from './Part1';
 
 const CLAMP = {extrapolateLeft: 'clamp', extrapolateRight: 'clamp'} as const;
 const CARD_LEFT = (1080 - LAYOUT.cardWidth) / 2 - 10;
 
-/* ───────────── 7 · HOLIDAY ───────────── */
+/* ───────────── 7 · HOLIDAY: calendar + clock, then the liquidity tank ───────────── */
 export const S7Holiday: React.FC<{e: Edition}> = ({e}) => {
   const f = useCurrentFrame();
   const {fps} = useVideoConfig();
   const h = e.holiday;
-  const t = spring({frame: f, fps, config: SPRING.card});
+  // phase A: two big tiles
+  const thuIn = spring({frame: f, fps, config: SPRING.card});
   const stamp = spring({frame: f - 30, fps, config: {damping: 11, stiffness: 220, mass: 0.7}});
-  const friIn = spring({frame: f - 110, fps, config: SPRING.card});
-  const clock = interpolate(f, [120, 150], [0, 0.5], {...CLAMP, easing: EASE.move});
-  const thin = interpolate(f, [180, 220], [0, 1], {...CLAMP, easing: EASE.move});
-  const lineDraw = interpolate(f, [230, 320], [0, 1], {...CLAMP, easing: EASE.move});
-  const panelIn = lin(f, 160, 180);
-  // a price line whose wiggle grows where liquidity thins (illustrative)
-  const vals = Array.from({length: 40}, (_, i) => {
-    const amp = i < 22 ? 4 : 4 + (i - 22) * 2.2;
-    return 50 + Math.sin(i * 1.7) * amp + Math.sin(i * 0.6) * amp * 0.6;
+  const friIn = spring({frame: f - 112, fps, config: SPRING.card});
+  const clock = interpolate(f, [122, 150], [0, 0.5], {...CLAMP, easing: EASE.move});
+  const chip = spring({frame: f - 140, fps, config: SPRING.pill});
+  const outA = interpolate(f, [168, 186], [0, 1], {...CLAMP, easing: EASE.exit});
+  // phase B: tank drains → price line gets jumpy
+  const bIn = spring({frame: f - 180, fps, config: SPRING.card});
+  const drain = interpolate(f, [205, 262], [0.88, 0.28], {...CLAMP, easing: EASE.move});
+  const link = enter(f, 258, 18);
+  const lineDraw = interpolate(f, [268, 346], [0, 1], {...CLAMP, easing: EASE.move});
+  const vals = Array.from({length: 36}, (_, i) => {
+    const amp = i < 12 ? 5 : 5 + (i - 12) * 2.6;
+    return 50 + Math.sin(i * 1.9) * amp + Math.sin(i * 0.7) * amp * 0.5;
   });
-  const row = (children: React.ReactNode, op: number, y: number) => (
-    <div style={{display: 'flex', alignItems: 'center', gap: 22, height: 128, opacity: op, transform: `translateY(${y}px)`}}>{children}</div>
-  );
-  const iconBox = (child: React.ReactNode, tone: string) => (
-    <div style={{width: 84, height: 84, borderRadius: 22, background: `${tone}1F`, border: `1px solid ${tone}66`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0}}>
-      {child}
-    </div>
+  const TILE_W = 370;
+  const TILE_H = 470;
+  const tile = (left: number, inT: number, children: React.ReactNode) => (
+    <GlassCard
+      tilt={6 * (1 - inT)}
+      style={{
+        position: 'absolute',
+        left,
+        top: 560,
+        width: TILE_W,
+        height: TILE_H,
+        opacity: Math.min(1, inT * 1.6) * (1 - outA),
+        transform: `translateY(${(1 - inT) * 70 - outA * 60}px) scale(${1 - outA * 0.08})`,
+      }}
+    >
+      <div dir="rtl" style={{height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 22, fontFamily: FONT.ar, color: C.text, position: 'relative'}}>
+        {children}
+      </div>
+    </GlassCard>
   );
   return (
     <AbsoluteFill>
-      <GlassCard
-        tilt={6 * (1 - t)}
-        style={{position: 'absolute', left: CARD_LEFT, top: 520, width: LAYOUT.cardWidth, height: 730, opacity: Math.min(1, t * 1.6), transform: `translateY(${(1 - t) * 80}px)`}}
-      >
-        <div dir="rtl" style={{padding: '22px 36px', fontFamily: FONT.ar, color: C.text, position: 'relative', height: '100%', boxSizing: 'border-box'}}>
-          {row(
+      {f < 190 ? (
+        <>
+          {tile(
+            545,
+            thuIn,
             <>
-              {iconBox(<Icon name="calendarOff" size={50} color={C.red} t={f} />, C.red)}
-              <div style={{display: 'flex', flexDirection: 'column'}}>
-                <span style={{fontSize: 26, color: C.label, fontWeight: 500}}>
-                  <ArText text={h.thu.day} />
-                </span>
-                <span style={{fontSize: 40, fontWeight: 700, lineHeight: 1.25}}>{h.thu.title}</span>
-                <span style={{fontSize: 25, color: C.label, fontWeight: 500}}>{h.thu.detail}</span>
-              </div>
+              <Icon name="calendar" size={190} color={C.label} t={f} stroke={2} />
+              <span style={{fontSize: 52, fontWeight: 700}}>{h.thu.day}</span>
               <div
                 style={{
-                  marginRight: 'auto',
-                  padding: '8px 20px',
-                  border: `3px solid ${C.red}`,
-                  borderRadius: 12,
+                  position: 'absolute',
+                  top: 150,
+                  padding: '10px 24px',
+                  border: `4px solid ${C.red}`,
+                  borderRadius: 14,
                   color: C.red,
-                  fontSize: 32,
+                  fontSize: 40,
                   fontWeight: 700,
-                  transform: `rotate(-8deg) scale(${2.2 - 1.2 * stamp})`,
+                  background: 'rgba(6,11,26,0.75)',
+                  transform: `rotate(-10deg) scale(${2.4 - 1.4 * stamp})`,
                   opacity: Math.min(1, stamp * 2),
-                  boxShadow: `0 0 ${(1 - stamp) * 40}px ${C.red}`,
-                  background: 'rgba(255,90,95,0.08)',
+                  boxShadow: `0 0 ${(1 - stamp) * 50}px ${C.red}`,
                   whiteSpace: 'nowrap',
                 }}
               >
                 {h.thu.stamp}
               </div>
             </>,
-            lin(f, 4, 20),
-            0,
           )}
-          <div style={{height: 1, background: 'rgba(212,175,55,0.2)', margin: '6px 0'}} />
-          {row(
+          {tile(
+            145,
+            friIn,
             <>
-              {iconBox(<HalfClock size={52} color={C.gold0} fill={clock} />, C.gold1)}
-              <div style={{display: 'flex', flexDirection: 'column'}}>
-                <span style={{fontSize: 26, color: C.label, fontWeight: 500}}>
-                  <ArText text={h.fri.day} />
-                </span>
-                <span style={{fontSize: 40, fontWeight: 700, lineHeight: 1.25}}>{h.fri.title}</span>
-                <span style={{fontSize: 25, color: C.label, fontWeight: 500}}>{h.fri.detail}</span>
+              <div style={{filter: 'drop-shadow(0 0 22px rgba(212,175,55,0.45))'}}>
+                <HalfClock size={190} color={C.gold0} fill={clock} />
               </div>
+              <span style={{fontSize: 52, fontWeight: 700}}>{h.fri.day}</span>
               <div
                 style={{
-                  marginRight: 'auto',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 10,
-                  padding: '6px 18px',
+                  padding: '6px 22px',
                   borderRadius: 999,
-                  background: 'rgba(212,175,55,0.12)',
-                  border: `1px solid ${C.glassBorder}`,
-                  whiteSpace: 'nowrap',
+                  background: GOLD,
+                  color: C.bg0,
+                  fontSize: 30,
+                  fontWeight: 700,
+                  opacity: chip,
+                  transform: `scale(${0.6 + 0.4 * chip})`,
                 }}
               >
-                <PulseDot f={f} color={C.gold0} size={10} />
-                <Bdi style={{fontSize: 32, fontWeight: 700}}>{h.fri.time}</Bdi>
-                <span style={{fontSize: 22, color: C.label, fontWeight: 500}}>{h.fri.timeZone}</span>
+                {h.fri.chip}
               </div>
             </>,
-            Math.min(1, friIn * 1.5),
-            (1 - friIn) * 30,
           )}
-          {/* liquidity panel */}
-          <div style={{marginTop: 16, opacity: panelIn, position: 'relative'}}>
-            <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8}}>
-              <span style={{fontSize: 28, fontWeight: 700}}>{h.liquidityLabel}</span>
-              <Tag text={h.tag} />
-            </div>
-            <div style={{position: 'relative', height: 250}}>
-              <div style={{position: 'absolute', inset: 0, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', padding: '0 20px'}}>
-                {e.days.map((d, i) => {
-                  const full = 1;
-                  const target = h.liquidity[i] ?? 1;
-                  const v = full + (target - full) * thin;
-                  const grow = spring({frame: f - (166 + i * 5), fps, config: SPRING.bar});
-                  const low = target < 0.6;
-                  return (
-                    <div key={d.key} style={{display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, width: 110}}>
-                      <div
-                        style={{
-                          width: 64,
-                          height: 120 * v * grow,
-                          borderRadius: '12px 12px 4px 4px',
-                          background: low && thin > 0.3 ? `linear-gradient(180deg, ${C.label}, rgba(138,147,173,0.25))` : `linear-gradient(180deg, ${C.gold0}, ${C.gold2})`,
-                          opacity: low ? 1 - thin * 0.3 : 0.85,
-                        }}
-                      />
-                      <span style={{fontSize: 22, color: low ? C.text : C.label, fontWeight: low ? 700 : 500}}>{d.ar}</span>
-                    </div>
-                  );
-                })}
-              </div>
-              {/* jumpy price line drawn over the thin days (right → left in time, like the strip) */}
-              <div style={{position: 'absolute', left: 20, top: 0, transform: 'scaleX(-1)', opacity: lin(f, 226, 236)}}>
-                <LineChartDraw id="liq" values={vals} min={0} max={100} width={700} height={84} color={C.gold0} progress={lineDraw} area={0} strokeWidth={4} />
-              </div>
-            </div>
+          <Source text={h.source} style={{position: 'absolute', top: 1050, left: 0, right: 0, textAlign: 'center', opacity: lin(f, 40, 60) * (1 - outA)}} />
+        </>
+      ) : null}
+
+      {f >= 176 ? (
+        <div style={{position: 'absolute', inset: 0, opacity: Math.min(1, bIn * 1.5), transform: `translateY(${(1 - bIn) * 60}px)`}}>
+          {/* tank (cause, right) */}
+          <div dir="rtl" style={{position: 'absolute', left: 680, top: 556, width: 230, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, fontFamily: FONT.ar, fontWeight: 700, fontSize: 36, color: C.text}}>
+            <span>{h.liquidityLabel}</span>
+            <svg width={30} height={30} viewBox="0 0 24 24" style={{transform: 'rotate(180deg)', opacity: lin(f, 210, 222)}}>
+              <path d="M12 3 L21 13 H15.5 V21 H8.5 V13 H3 Z" fill={C.red} />
+            </svg>
           </div>
-          <Source text={h.source} style={{position: 'absolute', left: 36, bottom: 18}} />
+          <div style={{position: 'absolute', left: 690, top: 620}}>
+            <Tank level={drain} f={f} width={210} height={400} />
+          </div>
+          {/* link arrow (RTL: cause → effect, right → left) */}
+          <svg width={110} height={40} style={{position: 'absolute', left: 570, top: 800, overflow: 'visible'}}>
+            <line x1={104} y1={20} x2={104 - 90 * link} y2={20} stroke={C.gold1} strokeWidth={4} strokeLinecap="round" />
+            {link > 0.9 ? <path d="M22 8 L6 20 L22 32" fill="none" stroke={C.gold1} strokeWidth={4} strokeLinecap="round" strokeLinejoin="round" /> : null}
+          </svg>
+          {/* price line (effect, left) */}
+          <div dir="rtl" style={{position: 'absolute', left: 150, top: 556, width: 400, textAlign: 'center', fontFamily: FONT.ar, fontWeight: 700, fontSize: 36, color: C.text, opacity: lin(f, 262, 276)}}>
+            {h.priceLabel}
+          </div>
+          <div style={{position: 'absolute', left: 150, top: 690, opacity: lin(f, 262, 272)}}>
+            <LineChartDraw id="liq" values={vals} min={0} max={100} width={400} height={260} color={C.gold0} progress={lineDraw} area={0.5 * lin(f, 330, 350)} strokeWidth={5} />
+          </div>
+          <div style={{position: 'absolute', top: 1060, left: 0, right: 0, display: 'flex', justifyContent: 'center', opacity: lin(f, 280, 296)}}>
+            <Tag text={h.tag} />
+          </div>
         </div>
-      </GlassCard>
+      ) : null}
     </AbsoluteFill>
   );
 };
 
-/* ───────────── 9 · NFP + CONSTELLATION ───────────── */
+/* ───────────── 9 · JOBS REPORT: card + undecided seesaw ───────────── */
 export const S9Nfp: React.FC<{e: Edition}> = ({e}) => {
   const f = useCurrentFrame();
   const {fps} = useVideoConfig();
   const n = e.nfp;
   const t = spring({frame: f, fps, config: SPRING.card});
+  const sIn = spring({frame: f - 30, fps, config: SPRING.card});
+  const q = spring({frame: f - 75, fps, config: {damping: 10, stiffness: 160}});
+  const wob = 10 * Math.sin((f - 40) / 15) * lin(f, 40, 80);
+  const glowQ = f > 150 ? 0.5 + 0.5 * Math.sin((f - 150) / 6) : 0;
   return (
     <AbsoluteFill>
       <GlassCard
         tilt={6 * (1 - t)}
-        style={{position: 'absolute', left: CARD_LEFT, top: 520, width: LAYOUT.cardWidth, height: 400, opacity: Math.min(1, t * 1.6), transform: `translateY(${(1 - t) * 80}px)`}}
+        style={{position: 'absolute', left: CARD_LEFT, top: 520, width: LAYOUT.cardWidth, height: 250, opacity: Math.min(1, t * 1.6), transform: `translateY(${(1 - t) * 80}px)`}}
       >
-        <div dir="rtl" style={{padding: '24px 36px', fontFamily: FONT.ar, color: C.text, display: 'flex', gap: 24, height: '100%', boxSizing: 'border-box'}}>
-          <div style={{flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between'}}>
-            <div>
-              <div style={{display: 'flex', alignItems: 'center', gap: 12}}>
-                <Icon name="briefcase" size={40} color={C.gold0} t={f} />
-                <span style={{fontSize: 28, color: C.label, fontWeight: 500}}>
-                  <ArText text={n.day} />
-                </span>
-              </div>
-              <div style={{fontSize: 40, fontWeight: 700, lineHeight: 1.3, marginTop: 8}}>{n.title}</div>
-              <div style={{display: 'flex', alignItems: 'center', gap: 12, marginTop: 6}}>
-                <span style={{fontFamily: FONT.en, fontWeight: 700, fontSize: 34, ...goldText()}}>{n.ticker}</span>
-                <span style={{fontSize: 24, color: C.label}}>· {n.subtitle}</span>
-              </div>
-            </div>
-            <div style={{display: 'flex', alignItems: 'center', gap: 10}}>
-              <div style={{display: 'flex', alignItems: 'center', gap: 10, padding: '6px 18px', borderRadius: 999, background: 'rgba(212,175,55,0.12)', border: `1px solid ${C.glassBorder}`}}>
-                <PulseDot f={f} color={C.gold0} size={10} />
-                <Bdi style={{fontSize: 30, fontWeight: 700}}>{n.time}</Bdi>
-                <span style={{fontSize: 22, color: C.label}}>{n.timeZone}</span>
-              </div>
-            </div>
-            <Source text={n.source} />
+        <div dir="rtl" style={{padding: '0 36px', height: '100%', display: 'flex', alignItems: 'center', gap: 28, fontFamily: FONT.ar, color: C.text}}>
+          <div style={{width: 128, height: 128, borderRadius: 30, background: 'rgba(212,175,55,0.12)', border: `1px solid ${C.glassBorder}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0}}>
+            <Icon name="briefcase" size={80} color={C.gold0} t={f} />
           </div>
-          <BarChartQ bars={n.bars} max={250} start={30} qAt={75} width={320} height={330} barWidth={74} />
+          <div style={{display: 'flex', flexDirection: 'column', gap: 12}}>
+            <span style={{fontSize: 46, fontWeight: 700, lineHeight: 1.2}}>{n.title}</span>
+            <div style={{display: 'flex', alignItems: 'center', gap: 10, padding: '6px 18px', borderRadius: 999, background: 'rgba(212,175,55,0.12)', border: `1px solid ${C.glassBorder}`, alignSelf: 'flex-start'}}>
+              <PulseDot f={f} color={C.gold0} size={10} />
+              <span style={{fontSize: 28, fontWeight: 700}}>
+                <ArText text={n.day} />
+              </span>
+              <span style={{color: C.label}}>·</span>
+              <Bdi style={{fontSize: 28, fontWeight: 700}}>{n.time}</Bdi>
+              <span style={{fontSize: 22, color: C.label}}>{n.timeZone}</span>
+            </div>
+          </div>
+          <Source text={n.source} style={{position: 'absolute', left: 36, bottom: 18}} />
         </div>
       </GlassCard>
-      <div style={{position: 'absolute', left: 130, top: 930}}>
-        <NodeConstellation nodes={n.nodes} centre={n.centre} start={100} width={800} height={330} />
+      <div style={{position: 'absolute', top: 820, left: 150, opacity: Math.min(1, sIn * 1.5), transform: `translateY(${(1 - sIn) * 50}px)`}}>
+        <Seesaw angle={wob} f={f} dollarLabel={e.seesaw.dollar} goldLabel={e.seesaw.gold} />
+        {/* the big "?" over the pivot */}
+        <div
+          style={{
+            position: 'absolute',
+            left: 380 - 58,
+            top: 40,
+            width: 116,
+            height: 116,
+            borderRadius: '50%',
+            background: 'rgba(11,24,56,0.9)',
+            border: `2px solid ${C.gold1}`,
+            boxShadow: `0 0 ${24 + glowQ * 36}px rgba(212,175,55,${0.35 + glowQ * 0.35})`,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontFamily: FONT.ar,
+            fontWeight: 700,
+            fontSize: 76,
+            opacity: Math.min(1, q * 1.5),
+            transform: `scale(${q})`,
+          }}
+        >
+          <span style={goldText()}>؟</span>
+        </div>
       </div>
     </AbsoluteFill>
   );

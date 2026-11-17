@@ -13,9 +13,7 @@ export type Edition = {
   price: {
     label: string;
     latest: number;
-    latestAsOf: string;
     record: number;
-    recordDate: string;
     recordLabel: string;
     nowLabel: string;
     source: string;
@@ -28,32 +26,26 @@ export type Edition = {
     day: string;
     time: string;
     timeZone: string;
-    gdp: {title: string; subtitle: string; unit: string; bars: Bar[]};
-    pce: {title: string; subtitle: string; last: number; lastLabel: string; target: number; targetLabel: string; max: number};
-    chip: {label: string; time: string};
+    title: string;
+    value: number;
+    valueMonth: string;
+    target: number;
+    targetLabel: string;
+    aboveLabel: string;
+    nextMonth: string;
+    alsoChip: string;
     source: string;
   };
-  chain: {tag: string; up: {header: string; steps: string[]}; down: {header: string; steps: string[]}};
+  seesaw: {tag: string; driver: string; rates: string; dollar: string; gold: string};
   holiday: {
-    thu: {day: string; title: string; detail: string; stamp: string};
-    fri: {day: string; title: string; detail: string; time: string; timeZone: string};
+    thu: {day: string; stamp: string};
+    fri: {day: string; chip: string};
     liquidityLabel: string;
-    liquidity: number[];
+    priceLabel: string;
     tag: string;
     source: string;
   };
-  nfp: {
-    day: string;
-    time: string;
-    timeZone: string;
-    title: string;
-    ticker: string;
-    subtitle: string;
-    bars: Bar[];
-    source: string;
-    nodes: string[];
-    centre: string;
-  };
+  nfp: {day: string; time: string; timeZone: string; title: string; source: string};
   captions: Record<string, Caption>;
   outro: {l1: string; l2: string; brand: string; cta: string; disclaimer: string};
 };
