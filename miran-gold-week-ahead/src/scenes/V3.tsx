@@ -557,10 +557,10 @@ export const V3Outro: React.FC<{e: Edition}> = ({e}) => {
     <AbsoluteFill>
       {/* Miran Gold ring (from the logo's circle), drawing behind the copy */}
       <svg width={1080} height={1920} style={{position: 'absolute', inset: 0, overflow: 'visible'}}>
-        <circle cx={860} cy={980} r={430} fill="none" stroke={C.gold1} strokeOpacity={0.22} strokeWidth={46} strokeDasharray={2 * Math.PI * 430} strokeDashoffset={2 * Math.PI * 430 * (1 - arrow)} transform={`rotate(${-120 + f * 0.15} 860 980)`} strokeLinecap="round" />
-        <circle cx={860} cy={980} r={330} fill="none" stroke={C.peri} strokeOpacity={0.14} strokeWidth={3} strokeDasharray={2 * Math.PI * 330} strokeDashoffset={2 * Math.PI * 330 * (1 - arrow)} transform={`rotate(${60 - f * 0.1} 860 980)`} />
+        <circle cx={860} cy={980} r={430} fill="none" stroke={C.gold1} strokeOpacity={0.22} strokeWidth={46} strokeDasharray={2 * Math.PI * 430} strokeDashoffset={2 * Math.PI * 430 * (1 - arrow)} transform={`rotate(${-120 + f * 0.45} 860 980)`} strokeLinecap="round" />
+        <circle cx={860} cy={980} r={330} fill="none" stroke={C.peri} strokeOpacity={0.14} strokeWidth={3} strokeDasharray={2 * Math.PI * 330} strokeDashoffset={2 * Math.PI * 330 * (1 - arrow)} transform={`rotate(${60 - f * 0.35} 860 980)`} />
       </svg>
-      <div style={{position: 'absolute', left: LAYOUT.marginX, top: 760, fontFamily: EN, color: C.text}}>
+      <div style={{position: 'absolute', left: LAYOUT.marginX, top: 760, fontFamily: EN, color: C.text, transform: `translateY(${-f * 0.12}px) scale(${1 + f * 0.00015})`, transformOrigin: 'left center'}}>
         <div style={{...mask}}>
           <div style={{...line(4), alignItems: 'center', gap: 22, display: 'flex'}}>
             <div style={{width: 96, height: 96, borderRadius: '50%', overflow: 'hidden'}}>
@@ -576,7 +576,7 @@ export const V3Outro: React.FC<{e: Edition}> = ({e}) => {
           <div style={{...line(34), fontWeight: 700, fontSize: 92, lineHeight: 1.12, color: C.gold1}}>{o.l2}</div>
         </div>
         <div style={{...mask, marginTop: 34}}>
-          <div style={{...line(56), display: 'flex', alignItems: 'center', gap: 14, fontWeight: 600, fontSize: 40}}>
+          <div style={{...line(56), display: 'flex', alignItems: 'center', gap: 14, fontWeight: 600, fontSize: 40, opacity: f > 80 ? 0.78 + 0.22 * Math.cos((f - 80) / 10) : 1}}>
             <Icon name="plane" size={42} color={C.text} stroke={2.6} />
             {o.cta}
           </div>
