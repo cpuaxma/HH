@@ -8,7 +8,7 @@ export const VIDEO = {width: 1080, height: 1920, fps: 60, durationInFrames: 2520
 export const BEAT = 30;
 
 /**
- * v3 palette: monochrome blue + gold (after the MultiFi reference).
+ * v3 palette: monochrome blue + gold (after the reference reel).
  * Blue does all the structure; gold is the only accent; red only for "down".
  */
 export const C = {
