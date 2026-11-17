@@ -5,13 +5,14 @@ import {Background} from '../components/Background';
 import {Captions} from '../components/Caption2Line';
 import {ChapterNumeral} from '../components/ChapterNumeral';
 import {DayStrip} from '../components/DayStrip';
-import {Persistent} from '../components/Persistent';
-import {SfxTrack} from '../components/SfxTrack';
+import {DisclaimerOnly, Persistent} from '../components/Persistent';
+import {IntroSfx, SfxTrack} from '../components/SfxTrack';
 import {Shot} from '../components/Shot';
 import {DEFAULT_EDITION, EDITIONS} from '../edition';
 import {S1Hook, S2Stack, S4Wednesday, S5Chain} from '../scenes/Part1';
 import {S10Collapse, S11Outro, S7Holiday, S9Nfp} from '../scenes/Part2';
-import {SHOTS} from '../timeline';
+import {INTRO, MAIN_LENGTH, OVERLAP, SHOTS} from '../timeline';
+import {IntroHook} from '../scenes/Intro';
 import {VIDEO} from '../brand';
 
 export type WeekAheadProps = {
@@ -29,6 +30,18 @@ export const WeekAhead: React.FC<WeekAheadProps> = ({edition, showBackground, wi
     <AbsoluteFill style={{backgroundColor: showBackground ? C.bg0 : 'transparent', overflow: 'hidden', fontFamily: FONT.ar}}>
       {showBackground ? <Background /> : null}
 
+      {/* 0–3s: intro hook */}
+      <Sequence durationInFrames={INTRO + OVERLAP} name="intro">
+        <IntroHook e={e} title={e.intro} />
+      </Sequence>
+      <Sequence durationInFrames={INTRO} name="intro disclaimer">
+        <DisclaimerOnly text={e.disclaimer} />
+      </Sequence>
+      {withAudio ? <IntroSfx /> : null}
+      {withAudio ? <SfxTrack captions={e.captions} durationInFrames={VIDEO.durationInFrames} withMusic sfx={false} /> : null}
+
+      {/* 3–42s: the template's shots, shifted by the intro */}
+      <Sequence from={INTRO} durationInFrames={MAIN_LENGTH} name="main">
       <Shot id="s1" {...SHOTS.s1} enter="cut" exit="fade">
         <S1Hook e={e} />
       </Shot>
@@ -64,10 +77,11 @@ export const WeekAhead: React.FC<WeekAheadProps> = ({edition, showBackground, wi
       </Sequence>
 
       <DayStrip edition={e} />
-      <Persistent edition={e} />
+      <Persistent edition={e} disclaimerOn />
       <Captions captions={e.captions} />
 
-      {withAudio ? <SfxTrack captions={e.captions} durationInFrames={VIDEO.durationInFrames} /> : null}
+      {withAudio ? <SfxTrack captions={e.captions} durationInFrames={VIDEO.durationInFrames} withMusic={false} /> : null}
+      </Sequence>
     </AbsoluteFill>
   );
 };

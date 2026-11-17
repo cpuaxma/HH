@@ -99,4 +99,18 @@ export const CUES: Cue[] = [
 export const CAPTION_TICK_VOLUME = 0.18;
 
 /** Music: −6dB under the outro hold, 1.5s tail at the end. */
-export const MUSIC = {volume: 0.5, duckFrom: 2100, duckDb: -6, tailFrames: 90};
+export const MUSIC = {volume: 0.5, duckFrom: 2280, duckDb: -6, tailFrames: 90}; // global frames (intro included)
+
+/** Intro hook cues (global frames, before the INTRO offset applies). */
+export const INTRO_CUES: Cue[] = [
+  {frame: 0, sfx: 'whoosh', volume: 0.55, note: 'Intro: speed streaks converge, coin drops'},
+  {frame: 2, sfx: 'riser_1s', volume: 0.6, note: 'Intro: riser into the title slam'},
+  {frame: 16, sfx: 'tick', volume: 0.35, note: 'Intro: title word 1'},
+  {frame: 24, sfx: 'tick', volume: 0.35, note: 'Intro: title word 2'},
+  {frame: 32, sfx: 'tick', volume: 0.35, note: 'Intro: title word 3'},
+  {frame: 48, sfx: 'pop', volume: 0.5, note: 'Intro: line 2 word 1'},
+  {frame: 56, sfx: 'pop', volume: 0.5, note: 'Intro: line 2 word 2'},
+  {frame: 62, sfx: 'impact_soft', volume: 0.95, note: 'Intro: last word lands, shake + particle burst'},
+  {frame: 64, sfx: 'chime_gold', volume: 0.5, note: 'Intro: gold sheen on the question'},
+  {frame: 156, sfx: 'whoosh', volume: 0.7, note: 'Intro: zoom-through + gold flash into the price card'},
+];

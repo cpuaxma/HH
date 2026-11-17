@@ -9,7 +9,7 @@ import {Icon} from './Icons';
 const CLAMP = {extrapolateLeft: 'clamp', extrapolateRight: 'clamp'} as const;
 
 /** Top-right: logo mark + "MIRAN GOLD" (English wordmark). Top-left: date pill. Bottom: disclaimer. */
-export const Persistent: React.FC<{edition: Edition}> = ({edition}) => {
+export const Persistent: React.FC<{edition: Edition; disclaimerOn?: boolean}> = ({edition, disclaimerOn}) => {
   const f = useCurrentFrame();
   const {fps} = useVideoConfig();
   const out = interpolate(f, [PERSISTENT_OUT - 14, PERSISTENT_OUT + 6], [0, 1], {...CLAMP, easing: EASE.exit});
@@ -17,7 +17,7 @@ export const Persistent: React.FC<{edition: Edition}> = ({edition}) => {
   const pill = spring({frame: f - STRIP.inAt + 6, fps, config: SPRING.pill});
   const sheenCycle = (f % 240) / 50;
   const sheen = sheenCycle <= 1 ? sheenCycle : -1;
-  const discIn = interpolate(f, [8, 30], [0, 1], CLAMP);
+  const discIn = disclaimerOn ? 1 : interpolate(f, [8, 30], [0, 1], CLAMP);
 
   return (
     <>
@@ -89,5 +89,29 @@ export const Persistent: React.FC<{edition: Edition}> = ({edition}) => {
         {edition.disclaimer}
       </div>
     </>
+  );
+};
+
+/** The disclaimer alone (used during the intro so it is on screen from frame 0). */
+export const DisclaimerOnly: React.FC<{text: string}> = ({text}) => {
+  const f = useCurrentFrame();
+  return (
+    <div
+      dir="rtl"
+      style={{
+        position: 'absolute',
+        top: LAYOUT.disclaimerY,
+        left: 0,
+        right: 0,
+        textAlign: 'center',
+        fontFamily: FONT.ar,
+        fontWeight: 500,
+        fontSize: 24,
+        color: C.text,
+        opacity: 0.6 * interpolate(f, [0, 12], [0, 1], CLAMP),
+      }}
+    >
+      {text}
+    </div>
   );
 };

@@ -9,6 +9,7 @@ export type Edition = {
   datePill: string;
   nextWeekTab: string;
   days: {key: string; ar: string; date: string; holiday?: boolean; shortDay?: boolean}[];
+  intro: {l1: string; l2: string};
   disclaimer: string;
   price: {
     label: string;

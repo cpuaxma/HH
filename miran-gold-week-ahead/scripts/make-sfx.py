@@ -2,7 +2,7 @@
 """Placeholder sound design for the Week Ahead reel (48 kHz, 16-bit stereo WAV).
 
 Everything is synthesised here from sines and filtered noise (original, license-free).
-It writes the 12 filenames the template expects into public/sfx/ and a 40s 120 BPM
+It writes the 12 filenames the template expects into public/sfx/ and a 42s 120 BPM
 bed into public/music/. Drop your own files in with the same names to replace them.
 
 Usage: python3 scripts/make-sfx.py   (needs numpy)
@@ -213,7 +213,7 @@ def bass_drop():
 # ── music bed: 120 BPM, 40s, warm and minimal ────────────────────────────────
 
 def music():
-    sec = 40.0
+    sec = 42.0
     beat = 0.5
     t = t_axis(sec)
     out = np.zeros(len(t))
@@ -221,7 +221,7 @@ def music():
     prog = [
         [146.83, 174.61, 220.0], [116.54, 146.83, 174.61], [174.61, 220.0, 261.63], [130.81, 164.81, 196.0],
         [146.83, 174.61, 220.0], [116.54, 146.83, 174.61], [174.61, 220.0, 261.63], [110.0, 138.59, 164.81],
-        [146.83, 185.0, 220.0], [146.83, 185.0, 220.0],
+        [146.83, 185.0, 220.0], [146.83, 185.0, 220.0], [146.83, 185.0, 220.0],
     ]
     for i, ch in enumerate(prog):
         a = int(SR * i * 4.0)

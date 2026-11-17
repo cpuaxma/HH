@@ -4,6 +4,11 @@
  * Kept free of imports so scripts/export-cues.mjs can load it with plain Node.
  */
 
+/** Intro hook before the template's shots; everything below is relative to its end. */
+export const INTRO = 180;
+/** The English outro is trimmed to 4s so the whole reel is 42.0s. */
+export const MAIN_LENGTH = 2340;
+
 export type ShotId = 's1' | 's2' | 's3' | 's4' | 's5' | 's6' | 's7' | 's8' | 's9' | 's10' | 's11';
 
 export const SHOTS: Record<ShotId, {from: number; to: number}> = {

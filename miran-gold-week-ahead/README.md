@@ -1,7 +1,7 @@
 # Miran Gold — The Week Ahead (الأسبوع القادم)
 
 A recurring bi-weekly reel: a calendar breakdown of the events that could move gold in the coming week.
-Remotion, 1080×1920, 60fps, 40s. Arabic (RTL) body; English wordmark and outro.
+Remotion, 1080×1920, 60fps, 42s (3s intro hook «ماذا ينتظر الذهب في الأسبوع القادم؟» + main reel + 4s outro). Arabic (RTL) body; English wordmark and outro.
 
 Edition #1 covers **Mon 23 – Fri 27 Nov 2026** (uploaded the week before).
 
@@ -36,7 +36,7 @@ node scripts/export-cues.mjs          # → out/sfx_cues.csv
 - `public/sfx/*.wav` — the 12 expected names (`whoosh, swish_short, pop, click_ui, tick, riser_1s, impact_soft,
   chime_gold, typing, counter_roll, paper, bass_drop`). The current files are **placeholders** synthesised by
   `python3 scripts/make-sfx.py`. Drop your own files in with the same names to replace them.
-- `public/music/` — the first audio file found is the bed (placeholder: `bed_120bpm.wav`, 120 BPM, 40s).
+- `public/music/` — the first audio file found is the bed (placeholder: `bed_120bpm.wav`, 120 BPM, 42s).
   It ducks −6dB under the outro and fades over the last 1.5s.
 - Cue list: `src/sfx.ts` (frame, sound, volume, note). Caption ticks (every 2nd word, low volume) are added
   automatically. `out/sfx_cues.csv` mirrors all of it for rebuilding the mix in an editor.
@@ -44,7 +44,8 @@ node scripts/export-cues.mjs          # → out/sfx_cues.csv
 ## Where things live
 
 - `src/brand.ts` — colours, fonts, easing, springs, beat length, safe zones.
-- `src/timeline.ts` — shot slots, caption timing, day-strip moves.
+- `src/timeline.ts` — `INTRO` (intro length), shot slots (relative to the end of the intro), caption timing, day-strip moves.
+- `src/scenes/Intro.tsx` — the 3s intro hook (coin + orbiting weekdays + slam title + zoom-through). Title text: `intro` in edition.json.
 - `src/compositions/WeekAhead.tsx` — the composition (shots, persistent UI, captions, audio).
 - `src/scenes/Part1.tsx` — hook, card stack, Wednesday thermometer, seesaw.
 - `src/scenes/Part2.tsx` — holiday (calendar/clock → liquidity tank), jobs report, collapse → logo, outro.

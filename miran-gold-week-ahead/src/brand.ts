@@ -2,7 +2,7 @@ import {Easing} from 'remotion';
 
 /** Miran Gold brand tokens for the "Week Ahead" series. Everything visual reads from here. */
 
-export const VIDEO = {width: 1080, height: 1920, fps: 60, durationInFrames: 2400};
+export const VIDEO = {width: 1080, height: 1920, fps: 60, durationInFrames: 2520}; // 3s intro + 39s main
 
 /** 120 BPM bed: one beat = 0.5s = 30 frames at 60fps. */
 export const BEAT = 30;

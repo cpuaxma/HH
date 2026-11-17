@@ -2,7 +2,7 @@ import React from 'react';
 import {Audio} from '@remotion/media';
 import {getStaticFiles, interpolate, Sequence, staticFile} from 'remotion';
 import type {Caption} from '../edition';
-import {CAPTION_TICK_VOLUME, CUES, MUSIC} from '../sfx';
+import {CAPTION_TICK_VOLUME, CUES, INTRO_CUES, MUSIC} from '../sfx';
 import {CAPTIONS} from '../timeline';
 import {captionWordFrames} from './ArabicWordReveal';
 
@@ -18,14 +18,14 @@ export const captionTicks = (captions: Record<string, Caption>) =>
  * Wires <Audio> for every cue whose file exists in public/sfx/, plus the first file found in
  * public/music/ as the bed (ducked −6dB under the outro, 1.5s tail fade).
  */
-export const SfxTrack: React.FC<{captions: Record<string, Caption>; durationInFrames: number}> = ({captions, durationInFrames}) => {
+export const SfxTrack: React.FC<{captions: Record<string, Caption>; durationInFrames: number; withMusic?: boolean; sfx?: boolean}> = ({captions, durationInFrames, withMusic = true, sfx = true}) => {
   const files = new Set(getStaticFiles().map((f) => f.name));
   const has = (name: string) => files.has(`sfx/${name}.wav`);
   const music = getStaticFiles().find((f) => f.name.startsWith('music/') && /\.(wav|mp3|m4a|aac|ogg)$/i.test(f.name));
   const duck = Math.pow(10, MUSIC.duckDb / 20);
   return (
     <>
-      {music ? (
+      {music && withMusic ? (
         <Audio
           src={music.src}
           volume={(fr) =>
@@ -35,18 +35,32 @@ export const SfxTrack: React.FC<{captions: Record<string, Caption>; durationInFr
           }
         />
       ) : null}
-      {CUES.filter((c) => has(c.sfx)).map((c, i) => (
+      {(sfx ? CUES : []).filter((c) => has(c.sfx)).map((c, i) => (
         <Sequence key={`${c.sfx}-${c.frame}-${i}`} from={c.frame} durationInFrames={c.durationInFrames ?? 300} layout="none" name={`sfx ${c.sfx}`}>
           <Audio src={staticFile(`sfx/${c.sfx}.wav`)} volume={c.volume} />
         </Sequence>
       ))}
-      {has('tick')
+      {sfx && has('tick')
         ? captionTicks(captions).map((fr, i) => (
             <Sequence key={`tick-${fr}-${i}`} from={fr} durationInFrames={20} layout="none" name="caption tick">
               <Audio src={staticFile('sfx/tick.wav')} volume={CAPTION_TICK_VOLUME} />
             </Sequence>
           ))
         : null}
+    </>
+  );
+};
+
+/** Intro cues (global frames). */
+export const IntroSfx: React.FC = () => {
+  const files = new Set(getStaticFiles().map((f) => f.name));
+  return (
+    <>
+      {INTRO_CUES.filter((c) => files.has(`sfx/${c.sfx}.wav`)).map((c, i) => (
+        <Sequence key={`intro-${c.sfx}-${c.frame}-${i}`} from={c.frame} durationInFrames={300} layout="none" name={`intro sfx ${c.sfx}`}>
+          <Audio src={staticFile(`sfx/${c.sfx}.wav`)} volume={c.volume} />
+        </Sequence>
+      ))}
     </>
   );
 };
