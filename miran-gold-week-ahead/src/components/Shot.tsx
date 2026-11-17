@@ -5,7 +5,7 @@ import {OVERLAP} from '../timeline';
 
 const CLAMP = {extrapolateLeft: 'clamp', extrapolateRight: 'clamp'} as const;
 
-export type TransitionKind = 'cut' | 'whip' | 'mask' | 'zoom' | 'fade' | 'squash';
+export type TransitionKind = 'cut' | 'whip' | 'mask' | 'zoom' | 'fade' | 'squash' | 'rise';
 
 /**
  * Wraps a shot: places it on the timeline (overlapping the next by OVERLAP frames),
@@ -60,6 +60,15 @@ const ShotInner: React.FC<{
     scaleY = 1 - 0.985 * x;
     op *= x > 0.9 ? (1 - x) * 10 : 1;
   }
+  let ty = 0;
+  if (enterKind === 'rise' && e < 1) {
+    ty += (1 - e) * 60;
+    op *= e;
+  }
+  if (exitKind === 'rise' && x > 0) {
+    ty -= x * 50;
+    op *= 1 - x;
+  }
   if (enterKind === 'fade') op *= e;
   if (exitKind === 'fade') op *= 1 - x;
 
@@ -73,7 +82,7 @@ const ShotInner: React.FC<{
       </svg>
       <AbsoluteFill
         style={{
-          transform: `translateX(${tx}px) scale(${scale * extraScale}) scaleY(${scaleY})`,
+          transform: `translate(${tx}px, ${ty}px) scale(${scale * extraScale}) scaleY(${scaleY})`,
           transformOrigin: '50% 45%',
           filter: blur > 0.5 ? `url(#${filterId})` : undefined,
         }}

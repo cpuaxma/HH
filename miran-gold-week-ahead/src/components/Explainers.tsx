@@ -45,8 +45,8 @@ export const Thermometer: React.FC<{
         </clipPath>
       </defs>
       {/* glass */}
-      <rect x={x - W / 2} y={top - 10} width={W} height={bottom - top + 40} rx={W / 2} fill="rgba(11,24,56,0.85)" stroke="rgba(212,175,55,0.35)" strokeWidth={2} />
-      <circle cx={x} cy={bottom + bulbR - 6} r={bulbR} fill="rgba(11,24,56,0.85)" stroke="rgba(212,175,55,0.35)" strokeWidth={2} />
+      <rect x={x - W / 2} y={top - 10} width={W} height={bottom - top + 40} rx={W / 2} fill="rgba(12,30,95,0.85)" stroke="rgba(167,188,254,0.35)" strokeWidth={2} />
+      <circle cx={x} cy={bottom + bulbR - 6} r={bulbR} fill="rgba(12,30,95,0.85)" stroke="rgba(167,188,254,0.35)" strokeWidth={2} />
       {/* liquid */}
       <g clipPath="url(#tubeClip)">
         <circle cx={x} cy={bottom + bulbR - 6} r={bulbR} fill="url(#merc)" />
@@ -152,7 +152,7 @@ export const Seesaw: React.FC<{
         </defs>
         {/* base + pivot */}
         <ellipse cx={px} cy={py + 98} rx={170} ry={10} fill="rgba(0,0,0,0.35)" />
-        <path d={`M ${px} ${py + 4} L ${px + 52} ${py + 96} L ${px - 52} ${py + 96} Z`} fill="rgba(11,24,56,0.95)" stroke="rgba(212,175,55,0.55)" strokeWidth={2} />
+        <path d={`M ${px} ${py + 4} L ${px + 52} ${py + 96} L ${px - 52} ${py + 96} Z`} fill="rgba(12,30,95,0.95)" stroke="rgba(167,188,254,0.55)" strokeWidth={2} />
         <g transform={`rotate(${angle} ${px} ${py})`}>
           <rect x={px - L - 30} y={py - 9} width={2 * L + 60} height={18} rx={9} fill="url(#beamG)" style={{filter: 'drop-shadow(0 6px 10px rgba(0,0,0,0.4))'}} />
         </g>
@@ -174,7 +174,7 @@ export const Seesaw: React.FC<{
           position: 'absolute',
           left: lx - COIN / 2,
           top: ly - COIN / 2,
-          filter: goldGlow && goldGlow.op > 0 ? `drop-shadow(0 0 ${26 * goldGlow.op}px ${goldGlow.color})` : 'drop-shadow(0 0 16px rgba(212,175,55,0.45))',
+          filter: goldGlow && goldGlow.op > 0 ? `drop-shadow(0 0 ${26 * goldGlow.op}px ${goldGlow.color})` : 'drop-shadow(0 0 16px rgba(167,188,254,0.45))',
         }}
       >
         <Coin size={COIN} f={f} />
@@ -212,7 +212,7 @@ export const Tank: React.FC<{level: number; f: number; width: number; height: nu
           <rect x={4} y={4} width={width - 8} height={height - 8} rx={36} />
         </clipPath>
       </defs>
-      <rect x={0} y={0} width={width} height={height} rx={40} fill="rgba(11,24,56,0.75)" stroke="rgba(212,175,55,0.4)" strokeWidth={2} />
+      <rect x={0} y={0} width={width} height={height} rx={40} fill="rgba(12,30,95,0.75)" stroke="rgba(167,188,254,0.4)" strokeWidth={2} />
       <g clipPath="url(#tankClip)">
         <path d={`${wave(0)} L ${width} ${height} L 0 ${height} Z`} fill="url(#liqG)" />
         <path d={wave(1.4)} fill="none" stroke="#FFF3C4" strokeOpacity={0.6} strokeWidth={3} />

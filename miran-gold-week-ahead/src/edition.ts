@@ -1,15 +1,16 @@
 import edition20261123 from './editions/2026-11-23/edition.json';
 
-export type Caption = {l1: string; l2: string; oneLine?: boolean};
+export type Caption = {l1: string; l2: string; oneLine?: boolean; eyebrow?: string; source?: string};
 export type Bar = {label: string; value: number | null; display?: string};
 
 export type Edition = {
   id: string;
   fileName: string;
   datePill: string;
+  topPill: string;
   nextWeekTab: string;
   days: {key: string; ar: string; date: string; holiday?: boolean; shortDay?: boolean}[];
-  intro: {l1: string; l2: string};
+  intro: {l1: string; l2: string; eyebrow?: string};
   disclaimer: string;
   price: {
     label: string;

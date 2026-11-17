@@ -1,49 +1,40 @@
 import React from 'react';
-import {AbsoluteFill, useCurrentFrame} from 'remotion';
+import {AbsoluteFill, interpolate, useCurrentFrame} from 'remotion';
 import {C} from '../brand';
 
 /**
- * Deep navy radial gradient + soft gold bloom near the bottom (~8%), a faint drifting grid,
- * and slow-moving grain. Never flat, never static.
+ * v3 background: deep blue that brightens toward the bottom-right, a faint 72px grid,
+ * a soft glow behind the visual zone and slow grain. `outroAt` (global frame) lifts the
+ * whole thing to the brighter outro blue.
  */
-export const Background: React.FC = () => {
+export const Background: React.FC<{outroAt?: number}> = ({outroAt}) => {
   const f = useCurrentFrame();
-  const gridShift = (f * 0.25) % 60;
-  const bloomX = 50 + Math.sin(f / 240) * 6;
+  const drift = (f * 0.12) % 72;
   const grainX = (f * 0.7) % 256;
   const grainY = (f * 0.45) % 256;
+  const lift = outroAt === undefined ? 0 : interpolate(f, [outroAt - 10, outroAt + 30], [0, 1], {extrapolateLeft: 'clamp', extrapolateRight: 'clamp'});
   return (
     <AbsoluteFill style={{backgroundColor: C.bg0, overflow: 'hidden'}}>
-      <AbsoluteFill
-        style={{
-          background: `radial-gradient(120% 75% at 50% 32%, ${C.bg2} 0%, ${C.bg1} 38%, ${C.bg0} 100%)`,
-        }}
-      />
-      <AbsoluteFill
-        style={{
-          background: `radial-gradient(60% 28% at ${bloomX}% 104%, rgba(212,175,55,0.16) 0%, rgba(212,175,55,0.06) 45%, rgba(212,175,55,0) 100%)`,
-        }}
-      />
-      {/* faint grid, drifting up-left */}
+      <AbsoluteFill style={{background: `linear-gradient(170deg, ${C.bg0} 0%, ${C.bg1} 45%, #0E2578 78%, ${C.bg2} 100%)`}} />
+      <AbsoluteFill style={{background: 'radial-gradient(70% 45% at 85% 100%, rgba(40,90,255,0.35) 0%, rgba(40,90,255,0) 70%)'}} />
+      {/* soft glow behind the visual zone */}
+      <AbsoluteFill style={{background: 'radial-gradient(42% 22% at 50% 36%, rgba(60,110,255,0.22) 0%, rgba(60,110,255,0) 100%)'}} />
+      {/* outro: brighter blue, as in the reference */}
+      <AbsoluteFill style={{opacity: lift, background: 'linear-gradient(160deg, #0C1E5F 0%, #1640C0 55%, #1D66E2 100%)'}} />
       <AbsoluteFill
         style={{
           backgroundImage: `linear-gradient(${C.grid} 1px, transparent 1px), linear-gradient(90deg, ${C.grid} 1px, transparent 1px)`,
-          backgroundSize: '60px 60px',
-          backgroundPosition: `${-gridShift}px ${-gridShift}px`,
-          maskImage: 'radial-gradient(85% 60% at 50% 45%, black 0%, transparent 100%)',
-          WebkitMaskImage: 'radial-gradient(85% 60% at 50% 45%, black 0%, transparent 100%)',
+          backgroundSize: '72px 72px',
+          backgroundPosition: `${-drift}px ${-drift * 0.5}px`,
         }}
       />
-      {/* grain */}
-      <svg width="100%" height="100%" style={{position: 'absolute', inset: 0, opacity: 0.09, mixBlendMode: 'overlay'}}>
+      <svg width="100%" height="100%" style={{position: 'absolute', inset: 0, opacity: 0.06, mixBlendMode: 'overlay'}}>
         <filter id="grain">
           <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" seed={Math.floor(f / 3) % 8} stitchTiles="stitch" />
           <feColorMatrix type="saturate" values="0" />
         </filter>
         <rect x={-grainX} y={-grainY} width="1400" height="2300" filter="url(#grain)" />
       </svg>
-      {/* vignette */}
-      <AbsoluteFill style={{background: 'radial-gradient(110% 80% at 50% 45%, transparent 55%, rgba(0,0,0,0.55) 100%)'}} />
     </AbsoluteFill>
   );
 };

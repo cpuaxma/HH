@@ -7,25 +7,31 @@ export const VIDEO = {width: 1080, height: 1920, fps: 60, durationInFrames: 2520
 /** 120 BPM bed: one beat = 0.5s = 30 frames at 60fps. */
 export const BEAT = 30;
 
+/**
+ * v3 palette: monochrome blue + gold (after the MultiFi reference).
+ * Blue does all the structure; gold is the only accent; red only for "down".
+ */
 export const C = {
-  bg0: '#060B1A',
-  bg1: '#0B1838',
-  bg2: '#0E1F47',
-  gold0: '#F7DE8C',
-  gold1: '#D4AF37',
-  gold2: '#A8801F',
-  text: '#F3F0E8',
-  label: '#8A93AD',
-  red: '#FF5A5F',
-  green: '#4ADE80',
-  glassFill: 'rgba(11, 24, 56, 0.70)',
-  glassBorder: 'rgba(212, 175, 55, 0.25)',
-  glassHi: 'rgba(255, 255, 255, 0.10)',
-  grid: 'rgba(138, 147, 173, 0.06)',
+  bg0: '#091949', // top
+  bg1: '#0B1D57', // middle
+  bg2: '#1335B5', // bottom-right bloom
+  peri: '#A7BCFE', // periwinkle: eyebrows, sources, secondary
+  periDim: 'rgba(167,188,254,0.65)',
+  gold0: '#FFE08A',
+  gold1: '#F5C451',
+  gold2: '#C8922A',
+  text: '#FFFFFF',
+  label: '#A7BCFE',
+  red: '#FF5A6E',
+  green: '#F5C451', // no green in v3: "support for gold" reads in gold
+  glassFill: 'rgba(52,74,150,0.30)',
+  glassBorder: 'rgba(167,188,254,0.22)',
+  glassHi: 'rgba(255,255,255,0.08)',
+  grid: 'rgba(140,165,255,0.07)',
 };
 
-export const GOLD = `linear-gradient(100deg, ${C.gold2} 0%, ${C.gold1} 30%, ${C.gold0} 55%, ${C.gold1} 78%, ${C.gold2} 100%)`;
-export const GOLD_V = `linear-gradient(180deg, ${C.gold0} 0%, ${C.gold1} 55%, ${C.gold2} 100%)`;
+export const GOLD = `linear-gradient(180deg, ${C.gold0} 0%, ${C.gold1} 60%, ${C.gold1} 100%)`;
+export const GOLD_V = GOLD;
 
 export const FONT = {
   ar: "'IBM Plex Sans Arabic', sans-serif",
@@ -61,15 +67,24 @@ export const MOTION = {
 };
 
 /** Layout. IG/TikTok UI: no text in the top 220px or bottom 380px; right 140px clear of the action rail. */
-export const SAFE = {top: 220, bottom: 380, right: 140, left: 60};
+/** Layout (v3): one strong right edge; visual zone on top, headline zone below. */
+export const SAFE = {top: 220, bottom: 380, right: 100, left: 100};
 export const LAYOUT = {
-  topBarY: 232, // persistent wordmark + date pill
-  stripY: 330, // day strip
-  stageTop: 500,
-  stageBottom: 1270,
-  captionTop: 1290,
-  disclaimerY: 1505, // bottom edge of disclaimer sits at 1540 = 1920 − 380
-  contentLeft: 120,
-  contentRight: 960, // 1080 − 120; rail-sensitive elements stay ≤ 940
-  cardWidth: 820,
+  topBarY: 262, // logo + pill row
+  visualTop: 420,
+  visualBottom: 980,
+  eyebrowY: 1030,
+  headlineY: 1086,
+  sourceY: 1436,
+  disclaimerY: 1500,
+  marginX: 100,
+  contentW: 880,
+  cardWidth: 880,
+  // legacy keys kept for older components
+  stripY: 330,
+  stageTop: 420,
+  stageBottom: 980,
+  captionTop: 1086,
+  contentLeft: 100,
+  contentRight: 980,
 };

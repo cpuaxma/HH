@@ -5,6 +5,7 @@ import '@fontsource/ibm-plex-sans-arabic/700.css';
 import '@fontsource/poppins/500.css';
 import '@fontsource/poppins/600.css';
 import '@fontsource/poppins/700.css';
+import '@fontsource/poppins/800.css';
 import {VIDEO} from './brand';
 import {WeekAhead} from './compositions/WeekAhead';
 import {DEFAULT_EDITION} from './edition';
@@ -17,7 +18,8 @@ Promise.all([
   document.fonts.load(`700 40px "IBM Plex Sans Arabic"`, AR),
   document.fonts.load(`500 40px "Poppins"`, 'Miran 01'),
   document.fonts.load(`600 40px "Poppins"`, 'Miran 01'),
-  document.fonts.load(`700 40px "Poppins"`, 'Miran 01'),
+  document.fonts.load(`700 40px "Poppins"`, "Miran 01"),
+  document.fonts.load(`800 40px "Poppins"`, "$3,855 -31%"),
 ])
   .then(() => continueRender(fontHandle))
   .catch((err) => cancelRender(err));
