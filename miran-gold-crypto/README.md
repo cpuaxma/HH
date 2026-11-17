@@ -9,7 +9,7 @@ A 30-second vertical Arabic explainer (1080×1920, 30fps, 900 frames) built in R
 | 10–17s | Gold blocks link into a chain; a light pulse runs along it | تعمل عبر البلوكتشين: دفتر رقمي مشترك يسجّل كل عملية |
 | 17–23s | A transaction travels between wallets, network nodes verify it, a lock closes | آلاف المشاركين يتحققون من كل عملية، ولا يمكن تعديلها |
 | 23–27s | Gold candlesticks draw in with a rising arrow | تداولها متاح على مدار ٢٤ ساعة |
-| 27–30s | End card: the logo in a soft gold glow | Follow Miran Gold and learn more (English) |
+| 27–30s | End card: the logo in a soft gold glow | Join our Telegram (English) |
 
 ## Render
 

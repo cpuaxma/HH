@@ -121,9 +121,9 @@ export const SCENES: SceneConfig[] = [
     id: 'endcard',
     from: 27,
     to: 30,
-    lines: ['Follow *Miran* *Gold*', 'and learn more'],
-    fontSize: 84,
-    textTop: 1230,
+    lines: ['Join our *Telegram*'],
+    fontSize: 92,
+    textTop: 1250,
     dir: 'ltr',
   },
 ];

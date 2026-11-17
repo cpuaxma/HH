@@ -11,7 +11,7 @@ import {TOTAL_FRAMES, VIDEO} from './config';
 // Cairo (Google Fonts) ships inside the bundle via @fontsource, so nothing is fetched at render time.
 // Hold the render until every weight is ready.
 const fontHandle = delayRender('Loading Cairo');
-const SAMPLE = 'ما هي العملات الرقمية؟ يسجّل ٢٤ ساعة 01 Follow Miran Gold';
+const SAMPLE = 'ما هي العملات الرقمية؟ يسجّل ٢٤ ساعة 01 Join our Telegram';
 Promise.all(['600', '700', '800'].map((w) => document.fonts.load(`${w} 40px "Cairo"`, SAMPLE)))
   .then(() => continueRender(fontHandle))
   .catch((err) => cancelRender(err));
