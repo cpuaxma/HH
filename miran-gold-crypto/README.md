@@ -15,7 +15,7 @@ A 30-second vertical Arabic explainer (1080×1920, 30fps, 900 frames) built in R
 
 ```
 npm install
-npx remotion render CryptoExplainer out/crypto-explainer.mp4
+npm run render     # renders out/crypto-explainer.mp4, then trims the AAC padding so it is exactly 30.000s
 ```
 
 `remotion.config.ts` sets H.264, CRF 18, yuv420p, bt709 and always writes an audio stream (silent if there is no audio yet). To use an installed Chromium headless shell instead of downloading one, set `REMOTION_BROWSER=/path/to/chrome-headless-shell`.

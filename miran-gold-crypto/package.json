@@ -4,9 +4,10 @@
   "version": "1.0.0",
   "scripts": {
     "studio": "remotion studio",
-    "render": "remotion render CryptoExplainer out/crypto-explainer.mp4",
+    "render": "remotion render CryptoExplainer out/crypto-explainer.mp4 && npm run trim",
     "still": "remotion still CryptoExplainer",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "trim": "ffmpeg -y -loglevel error -i out/crypto-explainer.mp4 -t 30 -c:v copy -c:a aac -b:a 192k -movflags +faststart out/.trim.mp4 && mv out/.trim.mp4 out/crypto-explainer.mp4"
   },
   "dependencies": {
     "@fontsource/cairo": "5.3.0",

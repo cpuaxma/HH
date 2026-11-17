@@ -33,17 +33,21 @@ export const Headline: React.FC<{underline?: boolean}> = ({underline = true}) =>
   useLayoutEffect(() => {
     const el = ref.current;
     if (!el) return;
-    const box = el.getBoundingClientRect();
-    const scale = box.width / el.offsetWidth || 1;
+    if (el.offsetWidth === 0) return; // not laid out yet (e.g. a premounted sequence)
+    const maxWidth = VIDEO.width - SAFE.side * 2;
     el.querySelectorAll<HTMLElement>('[data-line]').forEach((line) => {
-      if (line.scrollWidth > line.clientWidth + 1) {
-        console.warn(`TEXT OVERFLOW [${id}] line "${line.textContent}" ${line.scrollWidth}px > ${line.clientWidth}px`);
+      // measure the words themselves, not the (full-width) line box
+      const words = Array.from(line.children) as HTMLElement[];
+      const left = Math.min(...words.map((w) => w.offsetLeft));
+      const right = Math.max(...words.map((w) => w.offsetLeft + w.offsetWidth));
+      if (right - left > maxWidth || left < 0 || right > line.offsetWidth) {
+        console.warn(`TEXT OVERFLOW [${id}] line "${line.textContent}" is ${right - left}px wide (max ${maxWidth}px)`);
       }
     });
     const top = textTop;
     const bottom = textTop + el.offsetHeight;
     if (top < SAFE.top || bottom > SAFE_BOTTOM_Y) {
-      console.warn(`TEXT OUTSIDE SAFE ZONE [${id}] ${top}–${bottom}px (scale ${scale})`);
+      console.warn(`TEXT OUTSIDE SAFE ZONE [${id}] ${top}–${bottom}px`);
     }
   }, [id, textTop]);
 
