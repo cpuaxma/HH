@@ -12,9 +12,9 @@ export const BEAT = 30;
  * Blue does all the structure; gold is the only accent; red only for "down".
  */
 export const C = {
-  bg0: '#091949', // top
-  bg1: '#0B1D57', // middle
-  bg2: '#1335B5', // bottom-right bloom
+  bg0: '#07123A', // top
+  bg1: '#0A1848', // middle
+  bg2: '#0F2C96', // bottom-right bloom
   peri: '#A7BCFE', // periwinkle: eyebrows, sources, secondary
   periDim: 'rgba(167,188,254,0.65)',
   gold0: '#FFE08A',
@@ -24,7 +24,7 @@ export const C = {
   label: '#A7BCFE',
   red: '#FF5A6E',
   green: '#F5C451', // no green in v3: "support for gold" reads in gold
-  glassFill: 'rgba(52,74,150,0.30)',
+  glassFill: 'rgba(44,64,135,0.30)',
   glassBorder: 'rgba(167,188,254,0.22)',
   glassHi: 'rgba(255,255,255,0.08)',
   grid: 'rgba(140,165,255,0.07)',

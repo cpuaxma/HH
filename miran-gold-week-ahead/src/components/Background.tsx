@@ -15,12 +15,12 @@ export const Background: React.FC<{outroAt?: number}> = ({outroAt}) => {
   const lift = outroAt === undefined ? 0 : interpolate(f, [outroAt - 10, outroAt + 30], [0, 1], {extrapolateLeft: 'clamp', extrapolateRight: 'clamp'});
   return (
     <AbsoluteFill style={{backgroundColor: C.bg0, overflow: 'hidden'}}>
-      <AbsoluteFill style={{background: `linear-gradient(170deg, ${C.bg0} 0%, ${C.bg1} 45%, #0E2578 78%, ${C.bg2} 100%)`}} />
-      <AbsoluteFill style={{background: 'radial-gradient(70% 45% at 85% 100%, rgba(40,90,255,0.35) 0%, rgba(40,90,255,0) 70%)'}} />
+      <AbsoluteFill style={{background: `linear-gradient(170deg, ${C.bg0} 0%, ${C.bg1} 45%, #0C1F66 78%, ${C.bg2} 100%)`}} />
+      <AbsoluteFill style={{background: 'radial-gradient(70% 45% at 85% 100%, rgba(40,90,255,0.26) 0%, rgba(40,90,255,0) 70%)'}} />
       {/* soft glow behind the visual zone */}
-      <AbsoluteFill style={{background: 'radial-gradient(42% 22% at 50% 36%, rgba(60,110,255,0.22) 0%, rgba(60,110,255,0) 100%)'}} />
+      <AbsoluteFill style={{background: 'radial-gradient(42% 22% at 50% 36%, rgba(60,110,255,0.17) 0%, rgba(60,110,255,0) 100%)'}} />
       {/* outro: brighter blue, as in the reference */}
-      <AbsoluteFill style={{opacity: lift, background: 'linear-gradient(160deg, #0C1E5F 0%, #1640C0 55%, #1D66E2 100%)'}} />
+      <AbsoluteFill style={{opacity: lift, background: 'linear-gradient(160deg, #08143F 0%, #0F2C8C 55%, #1446A8 100%)'}} />
       <AbsoluteFill
         style={{
           backgroundImage: `linear-gradient(${C.grid} 1px, transparent 1px), linear-gradient(90deg, ${C.grid} 1px, transparent 1px)`,
