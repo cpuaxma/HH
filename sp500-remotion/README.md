@@ -1,6 +1,6 @@
-# Miran Gold: S&P 500 explainer (Arabic, 30 s vertical)
+# Miran Gold: S&P 500 explainer (Arabic, 33 s vertical)
 
-A 1080×1920, 30 fps, 900-frame (exactly 30 s) Remotion video explaining the S&P 500 in Arabic, in the Miran Gold dark-gold look. Rendered output: `out/sp500.mp4` (H.264).
+A 1080×1920, 30 fps, 990-frame (exactly 33 s) Remotion video explaining the S&P 500 in Arabic, in the Miran Gold dark-gold look. Rendered output: `out/sp500.mp4` (H.264).
 
 | Time | Scene | File |
 |---|---|---|
@@ -9,7 +9,7 @@ A 1080×1920, 30 fps, 900-frame (exactly 30 s) Remotion video explaining the S&P
 | 0:09–0:15 | Dots pulse like a heartbeat while a gold line chart climbs behind them | `src/scenes/Scene3Heartbeat.tsx` |
 | 0:15–0:23 | Timeline from ١٩٥٧ (right) to today (left), growth curve with dips, ≈ ١٠٪ counter and footnote | `src/scenes/Scene4History.tsx` |
 | 0:23–0:27 | Camera pulls back from New York to a gold-dot globe with glowing connection arcs | `src/scenes/Scene5World.tsx` |
-| 0:27–0:30 | CTA ("تابعنا للمزيد من المحتوى التعليمي"), Telegram line ("وانضموا إلى قناتنا على تيليجرام") and logo with a shine sweep | `src/scenes/Scene6CTA.tsx` |
+| 0:27–0:33 | CTA ("تابعنا للمزيد من المحتوى التعليمي"), Telegram line ("وانضموا إلى قناتنا على تيليجرام") and logo with repeating shine sweeps (5.7 s outro) | `src/scenes/Scene6CTA.tsx` |
 
 ## Editing
 

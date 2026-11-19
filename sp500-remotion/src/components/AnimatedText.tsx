@@ -12,7 +12,7 @@ type Props = TextSpec & {
   /** scene-local frame where words start leaving (blur + fade); omit to stay */
   exit?: number;
   /** scene-local frame of the shine sweep across gold words */
-  shineAt?: number;
+  shineAt?: number | number[];
   size: number;
   /** vertical position of the anchor edge, in px */
   y: number;
@@ -84,7 +84,10 @@ export const AnimatedText: React.FC<Props> = ({
             const e = exit === undefined ? 0 : ease(frame, [exit + i * 2, exit + i * 2 + 13], [0, 1], EASE.in);
 
             const isGold = allGold || gold.includes(word.replace(/[.!؟?،…]+$/u, '')) || gold.includes(word);
-            const shine = shineAt === undefined ? 0 : ease(frame, [shineAt + i * 3, shineAt + i * 3 + 20], [0, 1], EASE.inOut);
+            // the most recent sweep that has started wins, so several sweeps can be queued
+            const starts = shineAt === undefined ? [] : Array.isArray(shineAt) ? shineAt : [shineAt];
+            const current = starts.filter((s) => frame >= s + i * 3).pop();
+            const shine = current === undefined ? 0 : ease(frame, [current + i * 3, current + i * 3 + 20], [0, 1], EASE.inOut);
 
             const enterBlur = variant === 'rise' ? (1 - p) * 12 : 0;
             const blur = enterBlur + e * 16;

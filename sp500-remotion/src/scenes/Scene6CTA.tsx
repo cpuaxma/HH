@@ -10,13 +10,16 @@ import {useTextOnly} from '../components/Debug';
 const C = CUES.cta;
 const FROM = SCENES.cta.from;
 
-/** 0:27-0:30 — everything settles; the call to action, the Telegram line and the logo with a gold shine sweep. */
+/** 0:27-0:33 — everything settles; the call to action, the Telegram line and the logo with a gold shine sweep. */
 export const Scene6CTA: React.FC = () => {
   const frame = useCurrentFrame();
   const textOnly = useTextOnly();
   const logoP = springIn(frame, C.logo, {damping: 18, stiffness: 90, mass: 0.9});
   const logoO = ease(frame, [C.logo, C.logo + 16], [0, 1]);
-  const shine = ease(frame, [C.logoShine, C.logoShine + 24], [0, 1], EASE.inOut);
+  const lastShine = C.logoShine.filter((s) => frame >= s).pop();
+  const shine = lastShine === undefined ? 0 : ease(frame, [lastShine, lastShine + 24], [0, 1], EASE.inOut);
+  // gentle breathing once the logo has landed
+  const breathe = 1 + 0.015 * Math.sin(Math.max(0, frame - C.logo - 20) / 14);
   const divider = ease(frame, [C.telegram + 8, C.telegram + 30], [0, 1], EASE.inOut);
 
   return (
@@ -38,7 +41,7 @@ export const Scene6CTA: React.FC = () => {
           }}
         />
       ) : null}
-      <Logo y={1350} size={180} shine={shine} opacity={logoO} scale={0.88 + 0.12 * logoP} />
+      <Logo y={1350} size={180} shine={shine} opacity={logoO} scale={(0.88 + 0.12 * logoP) * breathe} />
     </SceneFrame>
   );
 };

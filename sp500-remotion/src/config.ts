@@ -8,7 +8,7 @@ export const VIDEO = {
   width: 1080,
   height: 1920,
   fps: 30,
-  durationInFrames: 900, // exactly 30 seconds
+  durationInFrames: 990, // exactly 33 seconds
 };
 
 // ---------------------------------------------------------------------------------------------
@@ -58,8 +58,8 @@ export const SCENES = {
   sp500: {from: 90, duration: 190}, //      0:03 - 0:09.3
   heartbeat: {from: 270, duration: 190}, // 0:09 - 0:15.3
   history: {from: 450, duration: 250}, //   0:15 - 0:23.3
-  world: {from: 690, duration: 210}, //     0:23 - 0:30 (the globe settles behind the CTA)
-  cta: {from: 820, duration: 80}, //        0:27.3 - 0:30
+  world: {from: 690, duration: 300}, //     0:23 - 0:33 (the globe settles behind the CTA)
+  cta: {from: 820, duration: 170}, //       0:27.3 - 0:33 (5.7 s outro)
 };
 
 /** Global frames where the camera shakes and punches in (number landings, big reveals). */
@@ -130,9 +130,10 @@ export const CUES = {
     text: 4,
     telegram: 20,
     logo: 32,
-    logoShine: 48,
-    textShine: 28,
-    telegramShine: 56,
+    // shine sweeps repeat so the long outro keeps moving
+    logoShine: [48, 112],
+    textShine: [28, 92, 140],
+    telegramShine: [56, 124],
   },
 };
 
@@ -196,6 +197,7 @@ export const AUDIO = {
     {frame: 688, file: 'sfx/whoosh.mp3', volume: 0.45},
     {frame: 818, file: 'sfx/whoosh.mp3', volume: 0.4},
     {frame: 868, file: 'sfx/shine.mp3', volume: 0.5},
+    {frame: 932, file: 'sfx/shine.mp3', volume: 0.35},
   ],
 };
 

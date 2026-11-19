@@ -62,7 +62,8 @@ export const Scene5World: React.FC = () => {
   const frame = useCurrentFrame();
   const textOnly = useTextOnly();
 
-  const lon0 = -78 + frame * 0.34; // slow eastward spin
+  // slow eastward spin, slower still once the globe has settled behind the outro (keeps New York in view)
+  const lon0 = -78 + Math.min(frame, 150) * 0.34 + Math.max(0, frame - 150) * 0.12;
   const lat0 = 24;
   const pull = ease(frame, [0, C.pullBackEnd], [0, 1], EASE.inOut);
   // settle: the globe shrinks and dims into a faint backdrop behind the CTA
