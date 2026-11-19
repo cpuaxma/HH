@@ -29,7 +29,7 @@ Shared parts are in `src/components/`: the background (glow, dust, vignette), `A
 
 - `logo.png`: the Miran Gold logo, copied from the other Miran Gold projects in this repo. Replace it with your own file. Without it, "Miran Gold" appears in gold text instead.
 - `music.mp3`: background music. It loops at a low volume and fades out over the last 2 s. It is ducked automatically when a voiceover is present.
-- `voiceover.mp3`: plays from frame 0.
+- `voiceover.mp3`: plays from frame 0. The timed Arabic script is in `voiceover-script-ar.md`, with an editor guide track in `voiceover-guide.srt`.
 - `sfx/hit.mp3`, `sfx/whoosh.mp3`, `sfx/shine.mp3`: see `public/sfx/README.md`.
 
 Files that are missing are skipped. The project checks for them with `getStaticFiles()`, so it never fails on a missing file.
