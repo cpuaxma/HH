@@ -1,0 +1,3 @@
+node_modules/
+out/*
+!out/sp500.mp4

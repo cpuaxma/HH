@@ -1,0 +1,29 @@
+{
+  "name": "miran-gold-sp500",
+  "private": true,
+  "version": "1.0.0",
+  "scripts": {
+    "studio": "remotion studio",
+    "render": "remotion render SP500 out/sp500.mp4 --codec=h264 --crf=18",
+    "still": "remotion still SP500",
+    "typecheck": "tsc --noEmit",
+    "build:globe": "node scripts/build-globe-dots.mjs",
+    "check:safe": "node scripts/check-safe.mjs",
+    "stills": "node scripts/stills.mjs"
+  },
+  "dependencies": {
+    "@remotion/cli": "4.0.539",
+    "@remotion/google-fonts": "4.0.539",
+    "@remotion/media": "4.0.539",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "remotion": "4.0.539"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.12",
+    "d3-geo": "^3.1.2",
+    "topojson-client": "^3.1.0",
+    "typescript": "^5.6.3",
+    "world-atlas": "^2.0.2"
+  }
+}
