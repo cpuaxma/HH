@@ -10,24 +10,25 @@ import {useTextOnly} from '../components/Debug';
 const C = CUES.cta;
 const FROM = SCENES.cta.from;
 
-/** 0:28-0:30 — everything settles; the call to action and the logo with a gold shine sweep. */
+/** 0:27-0:30 — everything settles; the call to action, the Telegram line and the logo with a gold shine sweep. */
 export const Scene6CTA: React.FC = () => {
   const frame = useCurrentFrame();
   const textOnly = useTextOnly();
   const logoP = springIn(frame, C.logo, {damping: 18, stiffness: 90, mass: 0.9});
   const logoO = ease(frame, [C.logo, C.logo + 16], [0, 1]);
   const shine = ease(frame, [C.logoShine, C.logoShine + 24], [0, 1], EASE.inOut);
-  const divider = ease(frame, [C.text + 8, C.text + 30], [0, 1], EASE.inOut);
+  const divider = ease(frame, [C.telegram + 8, C.telegram + 30], [0, 1], EASE.inOut);
 
   return (
     <SceneFrame from={FROM} range={[FROM, FROM + SCENES.cta.duration + 30]}>
-      <AnimatedText {...TEXT.cta.line} enter={C.text} shineAt={C.textShine} size={78} y={860} anchor="center" />
+      <AnimatedText {...TEXT.cta.line} enter={C.text} shineAt={C.textShine} size={76} y={770} anchor="center" />
+      <AnimatedText {...TEXT.cta.telegram} enter={C.telegram} shineAt={C.telegramShine} size={60} y={1000} anchor="center" variant="rise" />
       {!textOnly ? (
         <div
           style={{
             position: 'absolute',
             left: 540,
-            top: 1085,
+            top: 1135,
             width: 520 * divider,
             height: 3,
             transform: 'translateX(-50%)',
@@ -37,7 +38,7 @@ export const Scene6CTA: React.FC = () => {
           }}
         />
       ) : null}
-      <Logo y={1340} size={190} shine={shine} opacity={logoO} scale={0.88 + 0.12 * logoP} />
+      <Logo y={1350} size={180} shine={shine} opacity={logoO} scale={0.88 + 0.12 * logoP} />
     </SceneFrame>
   );
 };

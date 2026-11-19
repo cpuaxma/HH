@@ -8,8 +8,8 @@ A 1080×1920, 30 fps, 900-frame (exactly 30 s) Remotion video explaining the S&P
 | 0:03–0:09 | ٥٠٠ morphs into "S&P 500", 500 dots fill in a staggered wave, 4 grow into Apple / Microsoft / NVIDIA / Amazon chips | `src/scenes/Scene2SP500.tsx` |
 | 0:09–0:15 | Dots pulse like a heartbeat while a gold line chart climbs behind them | `src/scenes/Scene3Heartbeat.tsx` |
 | 0:15–0:23 | Timeline from ١٩٥٧ (right) to today (left), growth curve with dips, ≈ ١٠٪ counter and footnote | `src/scenes/Scene4History.tsx` |
-| 0:23–0:28 | Camera pulls back from New York to a gold-dot globe with glowing connection arcs | `src/scenes/Scene5World.tsx` |
-| 0:28–0:30 | CTA and logo with a shine sweep | `src/scenes/Scene6CTA.tsx` |
+| 0:23–0:27 | Camera pulls back from New York to a gold-dot globe with glowing connection arcs | `src/scenes/Scene5World.tsx` |
+| 0:27–0:30 | CTA ("تابعنا للمزيد من المحتوى التعليمي"), Telegram line ("وانضموا إلى قناتنا على تيليجرام") and logo with a shine sweep | `src/scenes/Scene6CTA.tsx` |
 
 ## Editing
 

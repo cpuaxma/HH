@@ -59,7 +59,7 @@ export const SCENES = {
   heartbeat: {from: 270, duration: 190}, // 0:09 - 0:15.3
   history: {from: 450, duration: 250}, //   0:15 - 0:23.3
   world: {from: 690, duration: 210}, //     0:23 - 0:30 (the globe settles behind the CTA)
-  cta: {from: 840, duration: 60}, //        0:28 - 0:30
+  cta: {from: 820, duration: 80}, //        0:27.3 - 0:30
 };
 
 /** Global frames where the camera shakes and punches in (number landings, big reveals). */
@@ -123,14 +123,16 @@ export const CUES = {
     arcsStart: 40,
     arcEvery: 7,
     arcDuration: 26,
-    textShine: 110,
-    exit: 142,
+    textShine: 96,
+    exit: 126,
   },
   cta: {
     text: 4,
-    logo: 12,
-    logoShine: 26,
-    textShine: 34,
+    telegram: 20,
+    logo: 32,
+    logoShine: 48,
+    textShine: 28,
+    telegramShine: 56,
   },
 };
 
@@ -167,7 +169,8 @@ export const TEXT = {
     line: {text: 'لهذا يتابعه المستثمرون\nحول العالم', gold: ['حول', 'العالم']},
   },
   cta: {
-    line: {text: 'تابعنا لمزيد\nمن المحتوى التعليمي', gold: ['المحتوى', 'التعليمي']},
+    line: {text: 'تابعنا للمزيد\nمن المحتوى التعليمي', gold: ['المحتوى', 'التعليمي']},
+    telegram: {text: 'وانضموا إلى قناتنا\nعلى تيليجرام', gold: ['تيليجرام']},
     brand: 'Miran Gold',
   },
 };
@@ -191,8 +194,8 @@ export const AUDIO = {
     {frame: 448, file: 'sfx/whoosh.mp3', volume: 0.45},
     {frame: 627, file: 'sfx/hit.mp3', volume: 0.5},
     {frame: 688, file: 'sfx/whoosh.mp3', volume: 0.45},
-    {frame: 838, file: 'sfx/whoosh.mp3', volume: 0.4},
-    {frame: 866, file: 'sfx/shine.mp3', volume: 0.5},
+    {frame: 818, file: 'sfx/whoosh.mp3', volume: 0.4},
+    {frame: 868, file: 'sfx/shine.mp3', volume: 0.5},
   ],
 };
 
