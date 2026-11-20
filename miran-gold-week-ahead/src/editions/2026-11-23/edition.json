@@ -42,11 +42,11 @@
   "price": {
     "_note": "Refresh `latest` to the most recent spot close on render day.",
     "label": "سعر الذهب",
-    "latest": 3855,
+    "latest": 3524.8,
     "record": 5589,
     "recordLabel": "القمة",
     "nowLabel": "الآن",
-    "source": "المصدر: StoneX · FX Leaders",
+    "source": "المصدر: StoneX (القمة) · إغلاق 20 نوفمبر",
     "path": [
       5589,
       5050,
@@ -58,7 +58,9 @@
       4640,
       4130,
       4150,
-      3855
+      3855,
+      3763,
+      3524.8
     ],
     "pathTag": "توضيحي"
   },
@@ -127,7 +129,7 @@
       "l1": "الذهب تحت $4,000",
       "l2": "والأسبوع القادم قد يحرّكه",
       "eyebrow": "سعر الذهب · دولار للأونصة",
-      "source": "المصدر: StoneX · FX Leaders · المسار توضيحي"
+      "source": "المصدر: StoneX (القمة) · إغلاق 20 نوفمبر · المسار توضيحي"
     },
     "s2": {
       "l1": "كل ما يهمّ الذهب",

@@ -173,7 +173,7 @@ export const V3Price: React.FC<{e: Edition}> = ({e}) => {
           <div>
             <CardLabel text="الذهب · 2026" />
             <div style={{fontFamily: EN, fontWeight: 800, fontSize: 104, lineHeight: 1.05, color: C.text, ...NUM}}>
-              <CountUp from={p.record} to={p.latest} start={56} end={118} prefix="$" />
+              <CountUp from={p.record} to={p.latest} start={56} end={118} prefix="$" decimals={Number.isInteger(p.latest) ? 0 : 1} />
             </div>
           </div>
           <div style={{display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 10}}>
@@ -185,7 +185,7 @@ export const V3Price: React.FC<{e: Edition}> = ({e}) => {
           </div>
         </div>
         <div style={{position: 'absolute', left: 40, top: 250, direction: 'ltr'}}>
-          <LineChartDraw id="v3hook" values={p.path} min={3500} max={5800} width={800} height={230} color={C.red} progress={draw} area={lin(f, 96, 140)} refLine={{value: 4000, label: '$4,000', anchor: 'start'}} strokeWidth={5} />
+          <LineChartDraw id="v3hook" values={p.path} min={3300} max={5800} width={800} height={230} color={C.red} progress={draw} area={lin(f, 96, 140)} refLine={{value: 4000, label: '$4,000', anchor: 'start'}} strokeWidth={5} />
         </div>
       </Card>
     </AbsoluteFill>
