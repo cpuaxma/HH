@@ -34,7 +34,7 @@ const Rig: React.FC<{bloom: BloomEffect; grade: GradeEffect}> = ({bloom, grade})
     grade.set('uVignette', g.vignette);
     grade.set('uVigColor', g.vigColor);
     grade.set('uGrain', g.grain);
-    grade.set('uSeed', frame % 97);
+    grade.set('uSeed', Math.floor(frame / 2) % 97); // grain refreshes every 2 frames, like film
     grade.set('uFlash', g.flash);
     grade.set('uFlashColor', g.flashColor);
     grade.set('uLift', 0.0025 + w.fogBanks * 0.004);

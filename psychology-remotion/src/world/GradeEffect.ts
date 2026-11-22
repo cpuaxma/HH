@@ -72,8 +72,9 @@ void mainImage(const in vec4 inputColor, const in vec2 uv, out vec4 outputColor)
 
   col += uFlashColor * uFlash;
 
-  float g = hash(floor(uv * vec2(1080.0, 1920.0) * 0.75)) - 0.5;
-  col += g * uGrain * (0.35 + luma);
+  // film grain: ~2 px grains, mostly in the mids (sRGB would blow up noise in the blacks)
+  float g = hash(floor(uv * vec2(1080.0, 1920.0) * 0.4)) - 0.5;
+  col += g * uGrain * (0.04 + 0.9 * smoothstep(0.0, 0.35, luma));
 
   outputColor = vec4(max(col, 0.0), inputColor.a);
 }
