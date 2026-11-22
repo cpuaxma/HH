@@ -14,7 +14,8 @@
     "contact": "node scripts/contact-sheets.mjs",
     "events": "tsx scripts/event-density.ts",
     "cues": "tsx scripts/cue-sheet.ts",
-    "vo": "tsx scripts/voiceover.ts"
+    "vo": "tsx scripts/voiceover.ts",
+    "share": "ffmpeg -y -i out/psychology.mp4 -c:v libx264 -preset slow -crf 18 -pix_fmt yuv420p -movflags +faststart out/psychology-share.mp4"
   },
   "dependencies": {
     "@react-three/fiber": "9.4.0",

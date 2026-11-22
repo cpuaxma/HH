@@ -2,7 +2,7 @@
 
 A 1080×1920, 30 fps, 1350-frame (exactly 45 s) Remotion + React Three Fiber video about investment psychology. The viewer rides the cycle of market emotions like a rollercoaster: a glowing 3D track in a dark void, with a chase camera behind a glowing orb (the investor). Every emotion regrades the world: color, light, particles, camera, sound and typography. At the end the camera pulls back and the track turns out to be a price chart.
 
-Rendered output: `out/psychology.mp4` (H.264, CRF 16).
+Rendered output: `out/psychology.mp4`, the master (H.264, CRF 16, 1350 frames, 45.000 s, about 122 MB). That is over GitHub's 100 MB file limit, so the repo holds **`out/psychology-share.mp4`**, a CRF 18 copy encoded from the master (about 89 MB, faststart). Rebuild the master with `npm run render`, then `npm run share`.
 
 | Time | Scene | What happens | File |
 |---|---|---|---|
@@ -68,7 +68,8 @@ Missing files are skipped (checked with `getStaticFiles()`), so a render never f
 ```bash
 npm install
 npm run studio                 # preview in Remotion Studio (toggle "showSafeZone" in the props panel)
-npm run render                 # out/psychology.mp4: H.264, CRF 16, 1350 frames
+npm run render                 # out/psychology.mp4: H.264, CRF 16, 1350 frames (the master)
+npm run share                  # out/psychology-share.mp4: CRF 18 copy for sharing / the repo (needs ffmpeg)
 npm run render:preview         # quick half-size preview
 npm run check:safe             # renders the text-only composition, fails if any text leaves the safe zone
 npm run contact                # contact sheets of every scene in out/contact/
@@ -91,9 +92,10 @@ Use `REMOTION_BROWSER=/path/to/chrome-headless-shell` to render with a Chrome yo
 
 ## Quality checks that were run
 
-- **Contact sheets** of every scene (`npm run contact`), reviewed and iterated. Fixes included: lifted blacks, ties and glow flooding the lens, a blown-out summit, camera framing (orb off-frame at the bottom and on curves), emotion words stacking, an empty pull-back frame, thin late scenes, and text wrapping.
+- **Contact sheets** of every scene (`npm run contact`), reviewed and iterated. The final sheets, taken from the rendered MP4, are in `docs/contact/`. Fixes included: lifted blacks, ties and glow flooding the lens, a blown-out summit, camera framing (orb off-frame at the bottom and on curves), emotion words stacking, an empty pull-back frame, thin late scenes, and text wrapping.
 - **Safe zone:** `npm run check:safe` passes on all 1350 frames. Text stays inside the center 900 px, clear of the top 250 px and the bottom 350 px.
 - **Arabic:** DOM text only, words animated whole, so there is no broken letter joining. No text overflows its column.
 - **Motion:** dense frame strips around every transition (`out/strips/`), with no jumps, pops or dead frames.
 - **Event density:** `docs/event-density.png`. There is a new visual event at least every 1.5 s; the longest gap is 40 frames (1.33 s), during the continuous reveal move.
-- **Render time:** about 1.3 s per frame on a 4-core machine with no GPU (software WebGL), so about 30 minutes for the full video. Concurrency 1, 2 and 4 all run at the same speed there, because SwiftShader already uses every core. With a GPU (`REMOTION_GL=angle`) it is much faster.
+- **Render time:** 18 min 6 s for the full 1350 frames (about 0.8 s per frame) on a 4-core machine with no GPU (software WebGL), at `--concurrency=2`. Concurrency 1, 2 and 4 benchmarked the same there, because SwiftShader already uses every core. With a GPU (`REMOTION_GL=angle`) it is much faster.
+- **File size:** the film grain is about 2.5 px, refreshes every 2 frames and stays out of the blacks. Per-pixel grain that changed every frame had pushed the CRF 16 master to 620 MB (about 110 Mbit/s); it is now about 22 Mbit/s.

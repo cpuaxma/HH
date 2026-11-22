@@ -1,3 +1,5 @@
 node_modules/
 out/*
-!out/psychology.mp4
+# out/psychology.mp4 (the CRF 16 master, ~120 MB) is over GitHub's 100 MB file limit, so only the
+# CRF 18 share copy made from it is committed. Rebuild the master with `npm run render`.
+!out/psychology-share.mp4
