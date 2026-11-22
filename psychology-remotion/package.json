@@ -1,0 +1,41 @@
+{
+  "name": "psychology-remotion",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Investment psychology: the cycle of market emotions. 45 s vertical Arabic video (Remotion + React Three Fiber).",
+  "scripts": {
+    "studio": "remotion studio",
+    "render": "remotion render Psychology out/psychology.mp4 --codec=h264 --crf=16 --x264-preset=slow --concurrency=2",
+    "render:preview": "remotion render Psychology out/preview.mp4 --scale=0.5 --crf=24 --x264-preset=veryfast --concurrency=2",
+    "still": "remotion still Psychology",
+    "typecheck": "tsc --noEmit",
+    "check:safe": "node scripts/check-safe.mjs",
+    "stills": "node scripts/stills.mjs",
+    "contact": "node scripts/contact-sheets.mjs",
+    "events": "tsx scripts/event-density.ts",
+    "cues": "tsx scripts/cue-sheet.ts",
+    "vo": "tsx scripts/voiceover.ts"
+  },
+  "dependencies": {
+    "@react-three/fiber": "9.4.0",
+    "@react-three/postprocessing": "3.0.4",
+    "@remotion/bundler": "4.0.539",
+    "@remotion/cli": "4.0.539",
+    "@remotion/google-fonts": "4.0.539",
+    "@remotion/layout-utils": "4.0.539",
+    "@remotion/media": "4.0.539",
+    "@remotion/renderer": "4.0.539",
+    "@remotion/three": "4.0.539",
+    "postprocessing": "6.37.8",
+    "react": "19.2.0",
+    "react-dom": "19.2.0",
+    "remotion": "4.0.539",
+    "three": "0.180.0"
+  },
+  "devDependencies": {
+    "@types/react": "19.2.2",
+    "@types/three": "0.180.0",
+    "tsx": "4.20.6",
+    "typescript": "5.9.3"
+  }
+}

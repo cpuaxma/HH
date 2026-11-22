@@ -1,0 +1,410 @@
+[
+ {
+  "frame": 0,
+  "label": "scene: coldOpen"
+ },
+ {
+  "frame": 0,
+  "label": "ember burst"
+ },
+ {
+  "frame": 0,
+  "label": "impact"
+ },
+ {
+  "frame": 3,
+  "label": "«ذعر» slams in"
+ },
+ {
+  "frame": 3,
+  "label": "impact"
+ },
+ {
+  "frame": 30,
+  "label": "caption"
+ },
+ {
+  "frame": 56,
+  "label": "glitch burst + alarm hit"
+ },
+ {
+  "frame": 56,
+  "label": "impact"
+ },
+ {
+  "frame": 82,
+  "label": "«ذعر» glitches out"
+ },
+ {
+  "frame": 86,
+  "label": "tape stop"
+ },
+ {
+  "frame": 86,
+  "label": "impact"
+ },
+ {
+  "frame": 90,
+  "label": "scene: rewind"
+ },
+ {
+  "frame": 95,
+  "label": "reverse label flash"
+ },
+ {
+  "frame": 99,
+  "label": "reverse label flash"
+ },
+ {
+  "frame": 103,
+  "label": "reverse label flash"
+ },
+ {
+  "frame": 107,
+  "label": "reverse label flash"
+ },
+ {
+  "frame": 111,
+  "label": "reverse label flash"
+ },
+ {
+  "frame": 115,
+  "label": "reverse label flash"
+ },
+ {
+  "frame": 119,
+  "label": "reverse label flash"
+ },
+ {
+  "frame": 122,
+  "label": "caption"
+ },
+ {
+  "frame": 123,
+  "label": "reverse label flash"
+ },
+ {
+  "frame": 138,
+  "label": "rewind lands"
+ },
+ {
+  "frame": 138,
+  "label": "impact"
+ },
+ {
+  "frame": 160,
+  "label": "scene: question"
+ },
+ {
+  "frame": 166,
+  "label": "caption 1"
+ },
+ {
+  "frame": 198,
+  "label": "caption 2"
+ },
+ {
+  "frame": 214,
+  "label": "shine sweep"
+ },
+ {
+  "frame": 240,
+  "label": "scene: ride"
+ },
+ {
+  "frame": 262,
+  "label": "emotion: optimism"
+ },
+ {
+  "frame": 294,
+  "label": "emotion: excitement"
+ },
+ {
+  "frame": 318,
+  "label": "spark burst"
+ },
+ {
+  "frame": 324,
+  "label": "emotion: thrill"
+ },
+ {
+  "frame": 346,
+  "label": "confetti burst"
+ },
+ {
+  "frame": 354,
+  "label": "emotion: euphoria"
+ },
+ {
+  "frame": 380,
+  "label": "summit"
+ },
+ {
+  "frame": 392,
+  "label": "tilt down"
+ },
+ {
+  "frame": 398,
+  "label": "callout"
+ },
+ {
+  "frame": 410,
+  "label": "red tag"
+ },
+ {
+  "frame": 446,
+  "label": "tip over"
+ },
+ {
+  "frame": 452,
+  "label": "drop impact"
+ },
+ {
+  "frame": 452,
+  "label": "impact"
+ },
+ {
+  "frame": 462,
+  "label": "emotion: anxiety"
+ },
+ {
+  "frame": 482,
+  "label": "emotion: denial"
+ },
+ {
+  "frame": 512,
+  "label": "emotion: fear"
+ },
+ {
+  "frame": 520,
+  "label": "ember burst"
+ },
+ {
+  "frame": 536,
+  "label": "emotion: panic"
+ },
+ {
+  "frame": 536,
+  "label": "impact"
+ },
+ {
+  "frame": 560,
+  "label": "emotion: capitulation"
+ },
+ {
+  "frame": 588,
+  "label": "bottom"
+ },
+ {
+  "frame": 588,
+  "label": "impact"
+ },
+ {
+  "frame": 594,
+  "label": "emotion: despondency"
+ },
+ {
+  "frame": 604,
+  "label": "callout"
+ },
+ {
+  "frame": 604,
+  "label": "heartbeat pulse"
+ },
+ {
+  "frame": 618,
+  "label": "gold tag"
+ },
+ {
+  "frame": 635,
+  "label": "heartbeat pulse"
+ },
+ {
+  "frame": 664,
+  "label": "light ray"
+ },
+ {
+  "frame": 672,
+  "label": "emotion: hope"
+ },
+ {
+  "frame": 698,
+  "label": "emotion: relief"
+ },
+ {
+  "frame": 726,
+  "label": "emotion: optimism2"
+ },
+ {
+  "frame": 748,
+  "label": "pull back"
+ },
+ {
+  "frame": 750,
+  "label": "scene: reveal"
+ },
+ {
+  "frame": 780,
+  "label": "caption"
+ },
+ {
+  "frame": 796,
+  "label": "price line draws"
+ },
+ {
+  "frame": 836,
+  "label": "caption"
+ },
+ {
+  "frame": 836,
+  "label": "cycle repeats"
+ },
+ {
+  "frame": 848,
+  "label": "cycle repeats"
+ },
+ {
+  "frame": 860,
+  "label": "cycle repeats"
+ },
+ {
+  "frame": 870,
+  "label": "scene: crowd"
+ },
+ {
+  "frame": 880,
+  "label": "replay orbs"
+ },
+ {
+  "frame": 912,
+  "label": "pins at the peak"
+ },
+ {
+  "frame": 914,
+  "label": "caption"
+ },
+ {
+  "frame": 938,
+  "label": "pins at the bottom"
+ },
+ {
+  "frame": 940,
+  "label": "caption"
+ },
+ {
+  "frame": 954,
+  "label": "shine sweep"
+ },
+ {
+  "frame": 962,
+  "label": "replay orbs finish"
+ },
+ {
+  "frame": 990,
+  "label": "scene: quote"
+ },
+ {
+  "frame": 992,
+  "label": "line calms into a wave"
+ },
+ {
+  "frame": 1004,
+  "label": "quote line 1"
+ },
+ {
+  "frame": 1010,
+  "label": "light pulse"
+ },
+ {
+  "frame": 1046,
+  "label": "light pulse"
+ },
+ {
+  "frame": 1052,
+  "label": "quote line 2"
+ },
+ {
+  "frame": 1078,
+  "label": "attribution"
+ },
+ {
+  "frame": 1082,
+  "label": "light pulse"
+ },
+ {
+  "frame": 1112,
+  "label": "light pulse"
+ },
+ {
+  "frame": 1125,
+  "label": "scene: lesson"
+ },
+ {
+  "frame": 1126,
+  "label": "heartbeat line"
+ },
+ {
+  "frame": 1138,
+  "label": "caption"
+ },
+ {
+  "frame": 1158,
+  "label": "caption"
+ },
+ {
+  "frame": 1176,
+  "label": "shine sweep"
+ },
+ {
+  "frame": 1200,
+  "label": "scene: cta"
+ },
+ {
+  "frame": 1202,
+  "label": "line coils"
+ },
+ {
+  "frame": 1226,
+  "label": "logo"
+ },
+ {
+  "frame": 1236,
+  "label": "light pulse"
+ },
+ {
+  "frame": 1244,
+  "label": "logo shine"
+ },
+ {
+  "frame": 1252,
+  "label": "CTA"
+ },
+ {
+  "frame": 1270,
+  "label": "CTA shine"
+ },
+ {
+  "frame": 1270,
+  "label": "footnote"
+ },
+ {
+  "frame": 1276,
+  "label": "light pulse"
+ },
+ {
+  "frame": 1286,
+  "label": "logo shine"
+ },
+ {
+  "frame": 1306,
+  "label": "CTA shine"
+ },
+ {
+  "frame": 1316,
+  "label": "light pulse"
+ },
+ {
+  "frame": 1322,
+  "label": "logo shine"
+ }
+]
