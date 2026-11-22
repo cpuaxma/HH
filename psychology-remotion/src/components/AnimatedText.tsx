@@ -25,6 +25,9 @@ type Props = TextSpec & {
   lineHeight?: number;
   /** base color for non-accent words */
   base?: Accent;
+  /** 'ltr' for English (the outro) */
+  dir?: 'rtl' | 'ltr';
+  font?: string;
 };
 
 const shineLayer = 'linear-gradient(100deg, rgba(255,255,255,0) 40%, rgba(255,252,236,0.95) 50%, rgba(255,255,255,0) 60%)';
@@ -55,6 +58,8 @@ export const AnimatedText: React.FC<Props> = ({
   stagger = 4,
   lineHeight = 1.32,
   base = 'white',
+  dir = 'rtl',
+  font = fontFamily,
 }) => {
   const frame = useCurrentFrame();
   const lines = text.split('\n').map((l) => l.trim().split(/\s+/));
@@ -69,9 +74,9 @@ export const AnimatedText: React.FC<Props> = ({
         width: SAFE.textWidth,
         top: y,
         transform: `translateY(${translateY})`,
-        direction: 'rtl',
+        direction: dir,
         textAlign: 'center',
-        fontFamily,
+        fontFamily: font,
         fontWeight: weight,
         fontSize: size,
         lineHeight,
@@ -85,7 +90,7 @@ export const AnimatedText: React.FC<Props> = ({
             const start = enter + i * stagger;
             const p = springIn(frame, start, {damping: 17, stiffness: 120, mass: 0.7});
             const fadeIn = ease(frame, [start, start + 7], [0, 1]);
-            // exit in reading order (right to left) with a short stagger
+            // exit in reading order with a short stagger
             const e = exit === undefined ? 0 : ease(frame, [exit + i * 2, exit + i * 2 + 13], [0, 1], EASE.in);
 
             const key = accent[word] ?? accent[word.replace(/[.!؟?،…]+$/u, '')] ?? accent[word.replace(/^[.…]+/u, '')];
@@ -104,7 +109,8 @@ export const AnimatedText: React.FC<Props> = ({
               display: 'inline-block',
               backgroundImage: `${shineLayer}, ${GRADIENTS[color]}`,
               backgroundSize: '250% 100%, 100% 100%',
-              backgroundPosition: `${shine * 100}% 0, 0 0`,  // 0 -> 1 sweeps right to left (RTL)
+              // the sweep follows the reading direction: right to left for Arabic, left to right for English
+              backgroundPosition: `${(dir === "ltr" ? 1 - shine : shine) * 100}% 0, 0 0`,
               backgroundRepeat: 'no-repeat',
               WebkitBackgroundClip: 'text',
               backgroundClip: 'text',

@@ -40,6 +40,17 @@ export const GRADIENTS = {
 };
 export type Accent = keyof typeof GRADIENTS;
 
+/** The Miran Gold outro keeps its own look (from miran-gold-history): golds, ink and IBM Plex Sans Arabic. */
+export const OUTRO = {
+  goldA: '#D4A24C',
+  goldB: '#F3D27A',
+  ink: '#0A0E18',
+  text: '#F5F1E8',
+  gradient: 'linear-gradient(100deg, #D4A24C 0%, #F3D27A 55%, #D4A24C 100%)',
+  weightBody: 300,
+  weightKey: 600,
+};
+
 // ---------------------------------------------------------------------------------------------
 // Fonts (loaded through @remotion/google-fonts in fonts.ts)
 // ---------------------------------------------------------------------------------------------
@@ -257,7 +268,8 @@ export const CUES = {
   crowd: {settle: 872, orbsIn: 880, label: 882, run: [886, 912, 938, 962] as [number, number, number, number], text1: 914, text2: 940, exit: 986},
   quote: {morph: [992, 1030] as [number, number], text1: 1004, text1Exit: 1048, text2: 1052, attribution: 1078, exit: 1120, pulses: [1010, 1046, 1082, 1112]},
   lesson: {morph: [1126, 1146] as [number, number], sweep: [1130, 1196] as [number, number], text1: 1138, text2: 1158, shine: 1176, exit: 1198},
-  cta: {coil: [1202, 1246] as [number, number], logo: 1226, logoShine: [1244, 1286, 1322], text: 1252, textShine: [1270, 1306], footnote: 1270, pulses: [1236, 1276, 1316]},
+  // the Miran Gold outro (English), timings from miran-gold-history's Cta scene at 30 fps
+  cta: {coil: [1202, 1246] as [number, number], logo: 1232, brand: 1246, text: 1250, button: 1266, disclaimer: 1274, buttonShine: [1290, 1322], pulses: [1236, 1280, 1316]},
 };
 
 /** Camera shake + flash impacts (global frames). */
@@ -324,12 +336,13 @@ export const TEXT = {
     line1: {text: 'تحكّم بمشاعرك...', accent: {'بمشاعرك...': 'gold'} as Record<string, Accent>},
     line2: {text: '...قبل أن تتحكم\nبأموالك', accent: {بأموالك: 'gold'} as Record<string, Accent>},
   },
+  // The Miran Gold outro, in English (same copy as miran-gold-history's outro).
   cta: {
-    // Replace with the client's call to action
-    line: {text: 'تابعنا لتتعلّم الاستثمار\nبعقل هادئ', accent: {بعقل: 'gold', هادئ: 'gold'} as Record<string, Accent>},
-    footnote: 'محتوى تعليمي وليس نصيحة استثمارية',
-    // Shown when /public/logo.png is missing. Replace with the client's name.
-    brand: '[CLIENT NAME]',
+    brand: 'MIRAN GOLD',
+    line1: {text: 'Join the Miran Gold community.', accent: {Miran: 'gold', Gold: 'gold'} as Record<string, Accent>},
+    line2: {text: 'Link in bio.', accent: {} as Record<string, Accent>},
+    button: 'Join on Telegram',
+    disclaimer: 'Educational content only. Not financial advice.',
   },
 };
 
@@ -377,8 +390,8 @@ export const AUDIO = {
     {frame: 990, file: 'sfx/whoosh.mp3', volume: 0.3, note: 'Calm: the quote'},
     {frame: 1124, file: 'sfx/whoosh.mp3', volume: 0.3, note: 'The lesson'},
     {frame: 1200, file: 'sfx/whoosh.mp3', volume: 0.35, note: 'Track coils into the loop'},
-    {frame: 1244, file: 'sfx/shine.mp3', volume: 0.55, note: 'Logo shine'},
-    {frame: 1286, file: 'sfx/shine.mp3', volume: 0.3, note: 'Logo shine (repeat)'},
-    {frame: 1322, file: 'sfx/shine.mp3', volume: 0.25, note: 'Logo shine (repeat)'},
+    {frame: 1232, file: 'sfx/shine.mp3', volume: 0.55, note: 'Miran Gold logo lands'},
+    {frame: 1290, file: 'sfx/shine.mp3', volume: 0.35, note: '«Join on Telegram» button shine'},
+    {frame: 1322, file: 'sfx/shine.mp3', volume: 0.25, note: 'Button shine (repeat)'},
   ] as SfxCue[],
 };

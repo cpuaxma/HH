@@ -55,6 +55,6 @@ export const VO: VoLine[] = [
   {at: c.quote.attribution + 12, end: c.quote.exit + 8, text: TEXT.quote.attribution, voiced: 'وارِن بافيت.'},
   {at: c.lesson.text1, end: c.lesson.text2 - 1, text: flat(TEXT.lesson.line1.text), voiced: 'تَحَكَّمْ بِمَشاعِرِك...'},
   {at: c.lesson.text2, end: c.lesson.exit + 6, text: flat(TEXT.lesson.line2.text), voiced: '...قَبْلَ أنْ تَتَحَكَّمَ بِأَمْوالِك.'},
-  {at: c.cta.text, end: c.cta.footnote + 26, text: flat(TEXT.cta.line.text), voiced: 'تابِعْنا لِتَتَعَلَّمَ الاسْتِثْمارَ بِعَقْلٍ هادِئ.'},
-  {at: c.cta.footnote + 30, end: 1346, text: TEXT.cta.footnote, voiced: 'مُحْتَوى تَعْليميّ، وليسَ نَصيحةً اسْتِثْماريّة.', note: 'quick and low, optional'},
+  // the Miran Gold outro is in English, so its line is read in English, as on screen
+  {at: c.cta.text, end: c.cta.text + 70, text: `${TEXT.cta.line1.text} ${TEXT.cta.line2.text}`, voiced: `${TEXT.cta.line1.text} ${TEXT.cta.line2.text}`, note: 'English, as on screen'},
 ];

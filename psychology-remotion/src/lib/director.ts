@@ -243,7 +243,7 @@ const latePose = (f: number): Pose => {
   // crowd -> quote -> lesson -> cta: slow, calm drift on the flat line
   const push = ease(f, [870, 1350], [0, 1], EASE.sine);
   const ctaK = ease(f, [1196, 1250], [0, 1], EASE.inOut);
-  const target = mix(add(CHART_TARGET, [0, 0, 0]), add(RING_CENTER, [0, -13, 0]), ctaK);
+  const target = mix(add(CHART_TARGET, [0, 0, 0]), add(RING_CENTER, [0, -20, 0]), ctaK);
   const dist = lerp(FRONT_DIST, 420, push);
   const yaw = Math.sin(f * 0.012) * 0.035;
   return frontPose(target, dist, 30, yaw);

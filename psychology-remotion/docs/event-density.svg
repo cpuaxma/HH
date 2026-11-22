@@ -1,7 +1,7 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1600" height="620" viewBox="0 0 1600 620" font-family="Helvetica, Arial, sans-serif">
 <rect width="1600" height="620" fill="#FBFAF6"/>
 <text x="70" y="34" font-size="22" font-weight="700" fill="#2B2A27">Visual event density: gap before each new event (frames, 30 fps)</text>
-<text x="70" y="58" font-size="15" fill="#6E6A60">102 events, 90 distinct frames. Longest gap: 40 frames (1.33 s), frames 796-836. Rule: no gap over 45 frames (1.5 s).</text>
+<text x="70" y="58" font-size="15" fill="#6E6A60">101 events, 90 distinct frames. Longest gap: 40 frames (1.33 s), frames 796-836. Rule: no gap over 45 frames (1.5 s).</text>
 <rect x="70" y="70" width="111.11111111111109" height="430" fill="#F7F5EF"/>
 <text x="125.55555555555554" y="544" font-size="13" fill="#6E6A60" text-anchor="middle">coldOpen</text>
 <rect x="170" y="70" width="88.88888888888886" height="430" fill="#F1EEE6"/>
@@ -109,15 +109,15 @@
 <rect x="1357.6666666666665" y="371" width="18" height="129" rx="2" fill="#B8902A"><title>1158-1176: 18 frames</title></rect>
 <rect x="1377.6666666666665" y="328" width="24.666666666666742" height="172" rx="2" fill="#B8902A"><title>1176-1200: 24 frames</title></rect>
 <rect x="1404.3333333333333" y="485.6666666666667" width="2" height="14.333333333333314" rx="2" fill="#B8902A"><title>1200-1202: 2 frames</title></rect>
-<rect x="1406.5555555555557" y="328" width="24.666666666666515" height="172" rx="2" fill="#B8902A"><title>1202-1226: 24 frames</title></rect>
-<rect x="1433.2222222222222" y="428.33333333333337" width="9.111111111111086" height="71.66666666666663" rx="2" fill="#B8902A"><title>1226-1236: 10 frames</title></rect>
-<rect x="1444.3333333333333" y="442.6666666666667" width="6.888888888888914" height="57.333333333333314" rx="2" fill="#B8902A"><title>1236-1244: 8 frames</title></rect>
-<rect x="1453.2222222222222" y="442.6666666666667" width="6.888888888888914" height="57.333333333333314" rx="2" fill="#B8902A"><title>1244-1252: 8 frames</title></rect>
-<rect x="1462.111111111111" y="371" width="18" height="129" rx="2" fill="#B8902A"><title>1252-1270: 18 frames</title></rect>
-<rect x="1482.111111111111" y="457" width="4.6666666666667425" height="43" rx="2" fill="#B8902A"><title>1270-1276: 6 frames</title></rect>
-<rect x="1488.7777777777778" y="428.33333333333337" width="9.111111111111086" height="71.66666666666663" rx="2" fill="#B8902A"><title>1276-1286: 10 frames</title></rect>
-<rect x="1499.888888888889" y="356.6666666666667" width="20.22222222222217" height="143.33333333333331" rx="2" fill="#B8902A"><title>1286-1306: 20 frames</title></rect>
-<rect x="1522.111111111111" y="428.33333333333337" width="9.111111111111086" height="71.66666666666663" rx="2" fill="#B8902A"><title>1306-1316: 10 frames</title></rect>
+<rect x="1406.5555555555557" y="285" width="31.333333333333258" height="215" rx="2" fill="#B8902A"><title>1202-1232: 30 frames</title></rect>
+<rect x="1439.888888888889" y="471.3333333333333" width="2.4444444444443434" height="28.666666666666686" rx="2" fill="#B8902A"><title>1232-1236: 4 frames</title></rect>
+<rect x="1444.3333333333333" y="428.33333333333337" width="9.111111111111313" height="71.66666666666663" rx="2" fill="#B8902A"><title>1236-1246: 10 frames</title></rect>
+<rect x="1455.4444444444446" y="471.3333333333333" width="2.4444444444443434" height="28.666666666666686" rx="2" fill="#B8902A"><title>1246-1250: 4 frames</title></rect>
+<rect x="1459.888888888889" y="385.3333333333333" width="15.777777777777828" height="114.66666666666669" rx="2" fill="#B8902A"><title>1250-1266: 16 frames</title></rect>
+<rect x="1477.6666666666667" y="442.6666666666667" width="6.888888888888914" height="57.333333333333314" rx="2" fill="#B8902A"><title>1266-1274: 8 frames</title></rect>
+<rect x="1486.5555555555557" y="457" width="4.666666666666515" height="43" rx="2" fill="#B8902A"><title>1274-1280: 6 frames</title></rect>
+<rect x="1493.2222222222222" y="428.33333333333337" width="9.111111111111313" height="71.66666666666663" rx="2" fill="#B8902A"><title>1280-1290: 10 frames</title></rect>
+<rect x="1504.3333333333335" y="313.66666666666663" width="26.888888888888687" height="186.33333333333337" rx="2" fill="#B8902A"><title>1290-1316: 26 frames</title></rect>
 <rect x="1533.2222222222222" y="457" width="4.6666666666667425" height="43" rx="2" fill="#B8902A"><title>1316-1322: 6 frames</title></rect>
 <rect x="1539.888888888889" y="299.33333333333337" width="29.111111111111086" height="200.66666666666663" rx="2" fill="#B8902A"><title>1322-1350: 28 frames</title></rect>
 <line x1="70" x2="70" y1="506" y2="518" stroke="#2B2A27" stroke-width="1.5"/>
@@ -200,14 +200,14 @@
 <line x1="1376.6666666666665" x2="1376.6666666666665" y1="506" y2="518" stroke="#2B2A27" stroke-width="1.5"/>
 <line x1="1403.3333333333333" x2="1403.3333333333333" y1="506" y2="518" stroke="#2B2A27" stroke-width="1.5"/>
 <line x1="1405.5555555555557" x2="1405.5555555555557" y1="506" y2="518" stroke="#2B2A27" stroke-width="1.5"/>
-<line x1="1432.2222222222222" x2="1432.2222222222222" y1="506" y2="518" stroke="#2B2A27" stroke-width="1.5"/>
+<line x1="1438.888888888889" x2="1438.888888888889" y1="506" y2="518" stroke="#2B2A27" stroke-width="1.5"/>
 <line x1="1443.3333333333333" x2="1443.3333333333333" y1="506" y2="518" stroke="#2B2A27" stroke-width="1.5"/>
-<line x1="1452.2222222222222" x2="1452.2222222222222" y1="506" y2="518" stroke="#2B2A27" stroke-width="1.5"/>
-<line x1="1461.111111111111" x2="1461.111111111111" y1="506" y2="518" stroke="#2B2A27" stroke-width="1.5"/>
-<line x1="1481.111111111111" x2="1481.111111111111" y1="506" y2="518" stroke="#2B2A27" stroke-width="1.5"/>
-<line x1="1487.7777777777778" x2="1487.7777777777778" y1="506" y2="518" stroke="#2B2A27" stroke-width="1.5"/>
-<line x1="1498.888888888889" x2="1498.888888888889" y1="506" y2="518" stroke="#2B2A27" stroke-width="1.5"/>
-<line x1="1521.111111111111" x2="1521.111111111111" y1="506" y2="518" stroke="#2B2A27" stroke-width="1.5"/>
+<line x1="1454.4444444444446" x2="1454.4444444444446" y1="506" y2="518" stroke="#2B2A27" stroke-width="1.5"/>
+<line x1="1458.888888888889" x2="1458.888888888889" y1="506" y2="518" stroke="#2B2A27" stroke-width="1.5"/>
+<line x1="1476.6666666666667" x2="1476.6666666666667" y1="506" y2="518" stroke="#2B2A27" stroke-width="1.5"/>
+<line x1="1485.5555555555557" x2="1485.5555555555557" y1="506" y2="518" stroke="#2B2A27" stroke-width="1.5"/>
+<line x1="1492.2222222222222" x2="1492.2222222222222" y1="506" y2="518" stroke="#2B2A27" stroke-width="1.5"/>
+<line x1="1503.3333333333335" x2="1503.3333333333335" y1="506" y2="518" stroke="#2B2A27" stroke-width="1.5"/>
 <line x1="1532.2222222222222" x2="1532.2222222222222" y1="506" y2="518" stroke="#2B2A27" stroke-width="1.5"/>
 <line x1="1538.888888888889" x2="1538.888888888889" y1="506" y2="518" stroke="#2B2A27" stroke-width="1.5"/>
 <line x1="70" x2="1570" y1="177.5" y2="177.5" stroke="#2B2A27" stroke-width="2" stroke-dasharray="6 5"/>

@@ -364,40 +364,36 @@
   "label": "line coils"
  },
  {
-  "frame": 1226,
-  "label": "logo"
+  "frame": 1232,
+  "label": "Miran Gold logo"
  },
  {
   "frame": 1236,
   "label": "light pulse"
  },
  {
-  "frame": 1244,
-  "label": "logo shine"
+  "frame": 1246,
+  "label": "wordmark"
  },
  {
-  "frame": 1252,
+  "frame": 1250,
   "label": "CTA"
  },
  {
-  "frame": 1270,
-  "label": "CTA shine"
+  "frame": 1266,
+  "label": "Telegram button"
  },
  {
-  "frame": 1270,
-  "label": "footnote"
+  "frame": 1274,
+  "label": "disclaimer"
  },
  {
-  "frame": 1276,
+  "frame": 1280,
   "label": "light pulse"
  },
  {
-  "frame": 1286,
-  "label": "logo shine"
- },
- {
-  "frame": 1306,
-  "label": "CTA shine"
+  "frame": 1290,
+  "label": "button shine"
  },
  {
   "frame": 1316,
@@ -405,6 +401,6 @@
  },
  {
   "frame": 1322,
-  "label": "logo shine"
+  "label": "button shine"
  }
 ]

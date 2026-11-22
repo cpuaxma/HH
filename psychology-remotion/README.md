@@ -14,7 +14,7 @@ Rendered output: `out/psychology.mp4`, the master (H.264, CRF 16, 1350 frames, 4
 | 0:29–0:33 | Crowd vs wise | Replay on the flat chart: red «الجمهور» buys the top and sells the bottom; a gold orb does the opposite. | `src/scenes/S6Crowd.tsx` |
 | 0:33–0:37.5 | The quote | The line calms into one slow gold wave. Buffett quote. | `src/scenes/S7Quote.tsx` |
 | 0:37.5–0:40 | The lesson | The line becomes a heartbeat that settles from chaos to a calm, steady rhythm. | `src/scenes/S8Lesson.tsx` |
-| 0:40–0:45 | CTA | The line coils into a loop behind the logo, with repeated shine sweeps. CTA and disclaimer. | `src/scenes/S9CTA.tsx` |
+| 0:40–0:45 | Miran Gold outro (English) | The line coils into a gold loop behind the Miran Gold logo. Then the «MIRAN GOLD» wordmark, "Join the Miran Gold community. / Link in bio.", the «Join on Telegram» button with its shine, and "Educational content only. Not financial advice." It is rebuilt from the outro of `miran-gold-history` (same copy, IBM Plex Sans Arabic, golds and entrances). | `src/scenes/S9CTA.tsx` |
 
 ## How it is built
 
@@ -29,20 +29,19 @@ Rendered output: `out/psychology.mp4`, the master (H.264, CRF 16, 1350 frames, 4
 
 ### Reused from `sp500-remotion`
 
-Config-file structure, `AnimatedText` (extended with per-word accent colors), `AudioLayer` (extended with ducking, looped cues and a per-beat heartbeat), the `Logo` fallback, the safe-zone overlay and `scripts/check-safe.mjs`. Everything else is new.
+Config-file structure, `AnimatedText` (extended with per-word accent colors and an LTR mode for the English outro), `AudioLayer` (extended with ducking, looped cues and a per-beat heartbeat), the safe-zone overlay and `scripts/check-safe.mjs`. The outro is rebuilt from `miran-gold-history`'s English outro (`src/scenes/Cta.tsx` there). Everything else is new.
 
 ## Editing
 
 Everything lives in **`src/config.ts`**:
 
-- `COLORS` and `GRADIENTS`: brand colors (default: the sp500 dark gold, `#0A0A0A #D4AF37 #F5D77A #8C6D1F`). Swap them for the client's colors.
+- `COLORS` and `GRADIENTS`: the video's palette (the sp500 dark gold, `#0A0A0A #D4AF37 #F5D77A #8C6D1F`). `OUTRO` holds the Miran Gold outro's own golds and weights, kept identical to the rest of the Miran Gold series.
 - `TRACK_POINTS`: the curve. Move a point and the ride, the chart, the labels and the camera all follow.
 - `STAGES`: the emotion color script and per-emotion effects.
 - `ORB_PATH`: when the orb reaches each stage (this sets the pace of the ride).
 - `RIDE_LABELS`: when each emotion word lands and leaves, and its typography treatment (`soft`, `pop`, `spark`, `swell`, `wobble`, `strike`, `fear`, `panic`, `drop`, `heavy`, `ray`, `color`, `climb`).
 - `SCENES`, `CUES`, `IMPACTS`, `BURSTS`: scene timing, cues inside scenes, camera shakes and flashes, and particle bursts.
-- `TEXT`: every on-screen string. Eastern Arabic digits. `"\n"` forces a line break.
-  - **Client placeholders:** `TEXT.cta.brand` is `"[CLIENT NAME]"` and is shown when `public/logo.png` is missing. `TEXT.cta.line` uses the example CTA "تابعنا لتتعلّم الاستثمار بعقل هادئ"; replace both.
+- `TEXT`: every on-screen string. Eastern Arabic digits. `"\n"` forces a line break. `TEXT.cta` is the English Miran Gold outro (wordmark, CTA lines, button, disclaimer).
 - `AUDIO`: file names, volumes, ducking and every sfx cue.
 - `src/voiceover.ts`: the voiceover lines (exact on-screen words plus a vocalised reading).
 
@@ -56,7 +55,7 @@ npm run events   # docs/event-density.svg/.png, fails if any gap is over 1.5 s
 
 ## Assets (all optional, all in `public/`)
 
-- `logo.png`: the client logo, shown inside the loop at the end with a shine sweep. Without it, `TEXT.cta.brand` is shown in gold.
+- `logo.png`: the Miran Gold logo (the same file as the other Miran Gold projects), shown inside the gold loop in the outro. Without it, the «MIRAN GOLD» wordmark is shown large on its own.
 - `music.mp3`: loops; ducks under the voiceover, nearly to silence at the summit and low at the bottom; fades out over the last 2 s.
 - `voiceover.mp3`: plays from frame 0. Script: `voiceover-script-ar.md`, guide track: `voiceover-guide.srt`.
 - `sfx/*.mp3`: riser, impact, heartbeat, alarm, rewind, sub-drop, piano, whoosh, shine. Every frame is listed in **`sfx-cues.md`**. The heartbeat is triggered on every beat of the HUD heart rate, so it follows the number exactly.

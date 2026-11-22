@@ -127,7 +127,7 @@ export const RING_CENTER: V3 = [CHART_CENTER[0], CHART_CENTER[1] + 6, 0];
 export const ringAt = (u: number, frame: number): V3 => {
   const turns = 1.12;
   const a = Math.PI / 2 + u * Math.PI * 2 * turns + frame * 0.006;
-  const r = 34 * (1 - 0.09 * u);
+  const r = 39 * (1 - 0.08 * u);
   return [RING_CENTER[0] + Math.cos(a) * r, RING_CENTER[1] + Math.sin(a) * r, 3 * Math.sin(a * 2 + frame * 0.02)];
 };
 

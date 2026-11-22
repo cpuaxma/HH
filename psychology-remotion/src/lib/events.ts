@@ -60,11 +60,12 @@ export const visualEvents = (): VisualEvent[] => {
   add(c.lesson.text2, 'caption');
   add(c.lesson.shine, 'shine sweep');
   add(c.cta.coil[0], 'line coils');
-  add(c.cta.logo, 'logo');
-  for (const s of c.cta.logoShine) add(s, 'logo shine');
+  add(c.cta.logo, 'Miran Gold logo');
+  add(c.cta.brand, 'wordmark');
   add(c.cta.text, 'CTA');
-  for (const s of c.cta.textShine) add(s, 'CTA shine');
-  add(c.cta.footnote, 'footnote');
+  add(c.cta.button, 'Telegram button');
+  add(c.cta.disclaimer, 'disclaimer');
+  for (const s of c.cta.buttonShine) add(s, 'button shine');
   for (const p of c.cta.pulses) add(p, 'light pulse');
   return e.sort((a, b) => a.frame - b.frame);
 };

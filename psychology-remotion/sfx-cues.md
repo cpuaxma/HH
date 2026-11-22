@@ -29,9 +29,9 @@ Timeline: 30 fps, 1350 frames (45 s). Every file is optional: drop it into `publ
 | 990 | 0:33.00 | `sfx/whoosh.mp3` | 0.3 | one shot | Calm: the quote |
 | 1124 | 0:37.47 | `sfx/whoosh.mp3` | 0.3 | one shot | The lesson |
 | 1200 | 0:40.00 | `sfx/whoosh.mp3` | 0.35 | one shot | Track coils into the loop |
-| 1244 | 0:41.47 | `sfx/shine.mp3` | 0.55 | one shot | Logo shine |
-| 1286 | 0:42.87 | `sfx/shine.mp3` | 0.3 | one shot | Logo shine (repeat) |
-| 1322 | 0:44.07 | `sfx/shine.mp3` | 0.25 | one shot | Logo shine (repeat) |
+| 1232 | 0:41.07 | `sfx/shine.mp3` | 0.55 | one shot | Miran Gold logo lands |
+| 1290 | 0:43.00 | `sfx/shine.mp3` | 0.35 | one shot | «Join on Telegram» button shine |
+| 1322 | 0:44.07 | `sfx/shine.mp3` | 0.25 | one shot | Button shine (repeat) |
 
 ## Heartbeat (`sfx/heartbeat.mp3`)
 
