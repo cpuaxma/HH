@@ -96,5 +96,5 @@ Use `REMOTION_BROWSER=/path/to/chrome-headless-shell` to render with a Chrome yo
 - **Arabic:** DOM text only, words animated whole, so there is no broken letter joining. No text overflows its column.
 - **Motion:** dense frame strips around every transition (`out/strips/`), with no jumps, pops or dead frames.
 - **Event density:** `docs/event-density.png`. There is a new visual event at least every 1.5 s; the longest gap is 40 frames (1.33 s), during the continuous reveal move.
-- **Render time:** 18 min 6 s for the full 1350 frames (about 0.8 s per frame) on a 4-core machine with no GPU (software WebGL), at `--concurrency=2`. Concurrency 1, 2 and 4 benchmarked the same there, because SwiftShader already uses every core. With a GPU (`REMOTION_GL=angle`) it is much faster.
+- **Render time:** about 19 min for the full 1350 frames (about 0.85 s per frame) on a 4-core machine with no GPU (software WebGL), at `--concurrency=2`. Concurrency 1, 2 and 4 benchmarked the same there, because SwiftShader already uses every core. With a GPU (`REMOTION_GL=angle`) it is much faster.
 - **File size:** the film grain is about 2.5 px, refreshes every 2 frames and stays out of the blacks. Per-pixel grain that changed every frame had pushed the CRF 16 master to 620 MB (about 110 Mbit/s); it is now about 22 Mbit/s.
