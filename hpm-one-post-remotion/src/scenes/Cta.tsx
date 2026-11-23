@@ -7,7 +7,7 @@ import {fitSize} from '../lib/text';
 import {Caption} from '../components/Caption';
 import {FlameFlicker} from '../components/Flame';
 import {Icon} from '../components/Icons';
-import {useSceneFrame} from '../components/SceneShell';
+import {GridPaper, useSceneFrame} from '../components/SceneShell';
 import {Sfx} from '../components/Sound';
 
 const C = SCENES.cta;
@@ -38,6 +38,7 @@ export const Cta: React.FC = () => {
 
   return (
     <AbsoluteFill style={{background: RED ? COLORS.red : undefined}}>
+      <GridPaper color={RED ? COLORS.gridOnRed : COLORS.grid} />
       {RED ? (
         // soft darker corners keep the red rich, not flat
         <AbsoluteFill style={{background: 'radial-gradient(ellipse 80% 60% at 50% 42%, rgba(255,122,26,0.22) 0%, rgba(150,20,30,0) 55%, rgba(120,10,20,0.35) 100%)'}} />

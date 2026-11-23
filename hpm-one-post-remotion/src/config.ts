@@ -36,14 +36,15 @@ export const COLORS = {
   orange: '#FF7A1A', // accent only
   offWhite: '#FAFAFA',
   // light theme, matched to the cream Instagram feed
-  bg: '#FDFBF6', // page background: clean warm white, like the feed
+  bg: '#FAF5EA', // page background: warm off-white, like the feed
   ink: '#121212', // main text + line art (charcoal)
   inkSoft: '#6B655B', // secondary text
   inkFaint: '#A39C8F', // tertiary text, ticks
   card: '#FFFFFF', // cards, panels, notes, phone screen
   cardAlt: '#F5EFE2', // image wells, pressed states
   line: '#E7DFCF', // borders, dividers
-  grid: 'rgba(230,57,70,0.09)', // background grid lines (like the feed posts)
+  grid: 'rgba(230,57,70,0.24)', // background grid lines (like the feed posts)
+  gridOnRed: 'rgba(255,255,255,0.18)', // grid lines on the red CTA card
   shadow: 'rgba(90,60,30,0.16)', // soft warm drop shadows
 } as const;
 
@@ -107,6 +108,9 @@ export const MOTION = {
 } as const;
 
 export const CAMERA = {pushFrom: 1.0, pushTo: 1.05} as const;
+
+// Graph-paper background grid
+export const GRID = {cell: 90, lineWidth: 2.5} as const;
 
 export const TRANSITION = {
   whipFrames: 12, // overlap of a whip-pan, centred on the cut (on the beat)

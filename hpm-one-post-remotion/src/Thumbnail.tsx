@@ -2,6 +2,7 @@ import React from 'react';
 import {AbsoluteFill, Img, staticFile} from 'remotion';
 import {BRAND, COLORS, FONT, THUMBNAIL} from './config';
 import {Phone, PostCard} from './components/Art';
+import {GridPaper} from './components/SceneShell';
 import {FontGate, FontSource} from './components/FontGate';
 import {GrainVignette} from './components/Ambient';
 import {CX, INNER_W} from './lib/layout';
@@ -13,6 +14,7 @@ const Cover: React.FC = () => {
   const size3 = fitSize([THUMBNAIL.line3], 150, INNER_W);
   return (
     <AbsoluteFill style={{background: COLORS.bg}}>
+      <GridPaper />
       {/* blurred phone mockup */}
       <div style={{position: 'absolute', left: CX - 330, top: 250, transform: 'rotate(-9deg) scale(1.06)', filter: 'blur(12px)', opacity: 0.4}}>
         <Phone width={660} time="08:00">

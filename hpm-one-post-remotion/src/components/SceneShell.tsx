@@ -1,6 +1,6 @@
 import React, {createContext, useContext} from 'react';
 import {AbsoluteFill, useCurrentFrame} from 'remotion';
-import {CAMERA, COLORS, TRANSITION} from '../config';
+import {CAMERA, COLORS, GRID, TRANSITION} from '../config';
 import {ease, mix} from '../lib/anim';
 import {H, ORIGIN, W} from '../lib/layout';
 import {SceneTiming} from '../lib/timeline';
@@ -17,17 +17,20 @@ const whip = (f: number, start: number, len: number) => ease(f, start, start + l
   t < 0.5 ? 16 * t ** 5 : 1 - (-2 * t + 2) ** 5 / 2,
 );
 
-const DotGrid: React.FC = () => (
-  <svg width={W} height={H} style={{position: 'absolute', inset: 0}}>
-    <defs>
-      {/* thin red grid, like the feed's "graph paper" posts */}
-      <pattern id="dots" width={90} height={90} patternUnits="userSpaceOnUse">
-        <path d="M 90 0 H 0 V 90" fill="none" stroke={COLORS.grid} strokeWidth={2} />
-      </pattern>
-    </defs>
-    <rect width={W} height={H} fill="url(#dots)" />
-  </svg>
-);
+/** Graph-paper grid, like the feed's grid posts. Lives inside the scene so it pans with whips. */
+export const GridPaper: React.FC<{color?: string}> = ({color = COLORS.grid}) => {
+  const id = `grid-${color.replace(/[^0-9a-z]/gi, '')}`;
+  return (
+    <svg width={W} height={H} style={{position: 'absolute', inset: 0}}>
+      <defs>
+        <pattern id={id} width={GRID.cell} height={GRID.cell} patternUnits="userSpaceOnUse" x={(W / 2) % GRID.cell} y={(H / 2) % GRID.cell}>
+          <path d={`M ${GRID.cell} 0 H 0 V ${GRID.cell}`} fill="none" stroke={color} strokeWidth={GRID.lineWidth} />
+        </pattern>
+      </defs>
+      <rect width={W} height={H} fill={`url(#${id})`} />
+    </svg>
+  );
+};
 
 export const SceneShell: React.FC<{timing: SceneTiming; background?: boolean; children: React.ReactNode}> = ({
   timing,
@@ -87,7 +90,7 @@ export const SceneShell: React.FC<{timing: SceneTiming; background?: boolean; ch
             filter: blur > 0.5 ? `url(#${filterId})` : undefined,
           }}
         >
-          {background ? <DotGrid /> : null}
+          {background ? <GridPaper /> : null}
           <AbsoluteFill style={{transform: `scale(${pushEased.toFixed(5)})`, transformOrigin: `${ORIGIN.x}px ${ORIGIN.y}px`}}>
             {children}
           </AbsoluteFill>

@@ -44,7 +44,7 @@ export const Reel: React.FC<ReelProps> = ({fontSource, debugSafeZone}) => (
               durationInFrames={s.head + s.duration + s.tail}
               offset={prev ? -(prev.tail + s.head) : 0}
             >
-              <SceneShell timing={s} background={s.name !== 'hook' && s.name !== 'cta'}>
+              <SceneShell timing={s} background={s.name !== 'cta' /* the CTA draws its own grid over its red fill */}>
                 <Scene />
               </SceneShell>
             </Series.Sequence>

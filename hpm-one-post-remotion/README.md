@@ -12,7 +12,7 @@ A 25-second Instagram Reel (1080×1920, 30 fps, 750 frames) built in Remotion. I
 | 19–22 s | **Results**: one giant number (people reached) counts up over a graph that shoots up, plus followers and leads chips | 20:00 |
 | 22–25 s | **CTA**: full chili-red card: white logo, "Want this for your brand?", "DM us 'KICK'", tagline, handle, then a 1.5 s hold | none |
 
-Design rule: one huge hero object per scene, big type (captions 110 px), one big "hit" moment per scene.
+Design rule: one huge hero object per scene, big type (captions 110 px), one big "hit" moment per scene, all on a red graph-paper grid (`COLORS.grid`, `COLORS.gridOnRed`, `GRID.cell`, `GRID.lineWidth`).
 
 ## Commands
 
