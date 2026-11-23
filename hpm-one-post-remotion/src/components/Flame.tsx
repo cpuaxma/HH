@@ -35,7 +35,7 @@ export const FlameWipe: React.FC<{p: number; frame: number}> = ({p, frame}) => {
   const layers = [
     {h: 300, color: COLORS.red, op: 0.92, seed: 0.3, back: 26},
     {h: 190, color: COLORS.orange, op: 0.95, seed: 1.9, back: 18},
-    {h: 70, color: COLORS.offWhite, op: 0.55, seed: 3.2, back: 6},
+    {h: 70, color: '#FFE2B8', op: 0.9, seed: 3.2, back: 6},
   ];
   return (
     <svg width={W} height={H} style={{position: 'absolute', inset: 0}}>
@@ -62,8 +62,8 @@ export const FlameFlicker: React.FC<{
 }> = ({cx, baseY, width, height, frame, intensity}) => {
   const tongues = 7;
   const paths = [
-    {color: COLORS.red, scale: 1, op: 0.55},
-    {color: COLORS.orange, scale: 0.68, op: 0.6},
+    {color: COLORS.red, scale: 1, op: 0.32},
+    {color: COLORS.orange, scale: 0.68, op: 0.4},
   ].map((layer, li) => {
     let d = '';
     for (let i = 0; i < tongues; i++) {

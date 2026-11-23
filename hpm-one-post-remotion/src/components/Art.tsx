@@ -17,7 +17,7 @@ export const DishArt: React.FC<{size: number; t: number; steam?: boolean}> = ({s
                 key={i}
                 d={`M ${110 + i * 40} ${120 - lift * 30} c ${-14 + Math.sin(ph) * 6} -18, ${14 + Math.cos(ph) * 6} -30, 0 -50 c -10 -12, 4 -24, 0 -34`}
                 fill="none"
-                stroke={COLORS.offWhite}
+                stroke={COLORS.ink}
                 strokeWidth={6 / Math.max(0.5, s * 0.9)}
                 strokeLinecap="round"
                 opacity={Math.sin(Math.PI * lift) * 0.55}
@@ -25,17 +25,17 @@ export const DishArt: React.FC<{size: number; t: number; steam?: boolean}> = ({s
             );
           })
         : null}
-      <ellipse cx={150} cy={262} rx={110} ry={12} fill="#000" opacity={0.35} />
-      <path d="M 40 150 H 260 C 260 215, 215 255, 150 255 C 85 255, 40 215, 40 150 Z" fill={COLORS.surfaceHi} stroke={COLORS.offWhite} strokeWidth={7} strokeLinejoin="round" />
-      <path d="M 62 176 C 110 186, 190 186, 238 176" stroke={COLORS.border} strokeWidth={6} fill="none" strokeLinecap="round" />
-      <ellipse cx={150} cy={150} rx={110} ry={20} fill="#2A2A2A" stroke={COLORS.offWhite} strokeWidth={7} />
+      <ellipse cx={150} cy={262} rx={110} ry={12} fill="#5A3C1E" opacity={0.14} />
+      <path d="M 40 150 H 260 C 260 215, 215 255, 150 255 C 85 255, 40 215, 40 150 Z" fill={COLORS.card} stroke={COLORS.ink} strokeWidth={7} strokeLinejoin="round" />
+      <path d="M 62 176 C 110 186, 190 186, 238 176" stroke={COLORS.line} strokeWidth={6} fill="none" strokeLinecap="round" />
+      <ellipse cx={150} cy={150} rx={110} ry={20} fill="#FCE3CC" stroke={COLORS.ink} strokeWidth={7} />
       <g transform="translate(96 108) rotate(-12) scale(0.17)">
         <ChiliMark width={740} color={COLORS.red} fill={COLORS.red} stroke={40} />
       </g>
       <circle cx={208} cy={146} r={9} fill={COLORS.orange} />
       <circle cx={88} cy={150} r={7} fill={COLORS.orange} opacity={0.8} />
-      <path d="M 196 92 L 252 30" stroke={COLORS.offWhite} strokeWidth={7} strokeLinecap="round" />
-      <path d="M 212 98 L 268 40" stroke={COLORS.offWhite} strokeWidth={7} strokeLinecap="round" />
+      <path d="M 196 92 L 252 30" stroke={COLORS.ink} strokeWidth={7} strokeLinecap="round" />
+      <path d="M 212 98 L 268 40" stroke={COLORS.ink} strokeWidth={7} strokeLinecap="round" />
     </svg>
   );
 };
@@ -53,26 +53,26 @@ export const PostCard: React.FC<{width: number; t: number; liked?: number; style
           transform: `scale(${k})`,
           transformOrigin: 'top left',
           borderRadius: 34,
-          background: COLORS.surface,
-          border: `2px solid ${COLORS.border}`,
+          background: COLORS.card,
+          border: `2px solid ${COLORS.line}`,
           overflow: 'hidden',
           fontFamily: FONT.family,
-          color: COLORS.offWhite,
-          boxShadow: '0 40px 90px rgba(0,0,0,0.55)',
+          color: COLORS.ink,
+          boxShadow: `0 20px 45px ${COLORS.shadow}`,
         }}
       >
         <div style={{height: 96, display: 'flex', alignItems: 'center', padding: '0 26px', gap: 16}}>
-          <div style={{width: 56, height: 56, borderRadius: 28, border: `3px solid ${COLORS.orange}`, display: 'flex', alignItems: 'center', justifyContent: 'center', background: COLORS.charcoal}}>
+          <div style={{width: 56, height: 56, borderRadius: 28, border: `3px solid ${COLORS.orange}`, display: 'flex', alignItems: 'center', justifyContent: 'center', background: COLORS.card}}>
             <ChiliMark width={36} stroke={40} />
           </div>
           <div style={{fontWeight: FONT.bold, fontSize: SIZES.postHandle}}>{BRAND.handle.replace('@', '')}</div>
           <div style={{marginLeft: 'auto', display: 'flex', gap: 6}}>
             {[0, 1, 2].map((i) => (
-              <div key={i} style={{width: 7, height: 7, borderRadius: 4, background: COLORS.muted}} />
+              <div key={i} style={{width: 7, height: 7, borderRadius: 4, background: COLORS.inkSoft}} />
             ))}
           </div>
         </div>
-        <div style={{height: 580, position: 'relative', background: 'linear-gradient(160deg, #262626 0%, #161616 100%)', overflow: 'hidden'}}>
+        <div style={{height: 580, position: 'relative', background: 'linear-gradient(160deg, #FFF7E6 0%, #F4EAD6 100%)', overflow: 'hidden'}}>
           <div style={{position: 'absolute', left: 40, top: 46, fontWeight: FONT.bold, fontSize: SIZES.postHeadline, lineHeight: 0.95, letterSpacing: '-0.02em'}}>
             {c.postHeadline.map((l, i) => (
               <div key={i}>{l}</div>
@@ -97,8 +97,8 @@ export const PostCard: React.FC<{width: number; t: number; liked?: number; style
               <Icon name="bookmark" size={40} />
             </div>
           </div>
-          <div style={{fontWeight: FONT.medium, fontSize: 22, color: COLORS.muted, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis'}}>
-            <span style={{color: COLORS.offWhite, fontWeight: FONT.bold}}>{BRAND.handle.replace('@', '')}</span> {c.typedCaption}
+          <div style={{fontWeight: FONT.medium, fontSize: 22, color: COLORS.inkSoft, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis'}}>
+            <span style={{color: COLORS.ink, fontWeight: FONT.bold}}>{BRAND.handle.replace('@', '')}</span> {c.typedCaption}
           </div>
         </div>
       </div>
@@ -124,22 +124,22 @@ export const Phone: React.FC<{width: number; time?: string; children?: React.Rea
           transformOrigin: 'top left',
           borderRadius: 70,
           background: '#0B0B0B',
-          border: '3px solid #3A3A3A',
-          boxShadow: '0 50px 120px rgba(0,0,0,0.6), inset 0 0 0 10px #191919',
+          border: '3px solid #2A2A2A',
+          boxShadow: '0 40px 90px rgba(90,60,30,0.28), inset 0 0 0 10px #1C1C1C',
           position: 'relative',
           fontFamily: FONT.family,
-          color: COLORS.offWhite,
+          color: COLORS.ink,
         }}
       >
-        <div style={{position: 'absolute', left: 14, top: 14, width: 412, height: 872, borderRadius: 58, overflow: 'hidden', background: COLORS.charcoal}}>
+        <div style={{position: 'absolute', left: 14, top: 14, width: 412, height: 872, borderRadius: 58, overflow: 'hidden', background: COLORS.card}}>
           <div style={{height: 64, display: 'flex', alignItems: 'center', padding: '6px 34px 0', fontWeight: FONT.bold, fontSize: 22}}>
             {time}
             <div style={{marginLeft: 'auto', display: 'flex', gap: 6, alignItems: 'flex-end'}}>
               {[8, 12, 16, 20].map((h) => (
-                <div key={h} style={{width: 5, height: h * 0.8, borderRadius: 2, background: COLORS.offWhite}} />
+                <div key={h} style={{width: 5, height: h * 0.8, borderRadius: 2, background: COLORS.ink}} />
               ))}
-              <div style={{width: 34, height: 16, borderRadius: 5, border: `2px solid ${COLORS.offWhite}`, marginLeft: 8, padding: 2}}>
-                <div style={{width: '70%', height: '100%', background: COLORS.offWhite, borderRadius: 2}} />
+              <div style={{width: 34, height: 16, borderRadius: 5, border: `2px solid ${COLORS.ink}`, marginLeft: 8, padding: 2}}>
+                <div style={{width: '70%', height: '100%', background: COLORS.ink, borderRadius: 2}} />
               </div>
             </div>
           </div>

@@ -12,9 +12,9 @@ const Cover: React.FC = () => {
   const size1 = fitSize([THUMBNAIL.line1], 104, INNER_W);
   const size2 = fitSize([l2.map((w) => w.text).join(' ')], 176, INNER_W);
   return (
-    <AbsoluteFill style={{background: COLORS.charcoal}}>
+    <AbsoluteFill style={{background: COLORS.bg}}>
       {/* blurred phone mockup */}
-      <div style={{position: 'absolute', left: CX - 330, top: 250, transform: 'rotate(-9deg) scale(1.06)', filter: 'blur(10px) brightness(1.5)', opacity: 0.85}}>
+      <div style={{position: 'absolute', left: CX - 330, top: 250, transform: 'rotate(-9deg) scale(1.06)', filter: 'blur(10px)', opacity: 0.5}}>
         <Phone width={660} time="08:00">
           <div style={{position: 'absolute', left: 20, top: 124}}>
             <PostCard width={372} t={20} liked={1} />
@@ -24,31 +24,31 @@ const Cover: React.FC = () => {
       <AbsoluteFill
         style={{
           background:
-            'radial-gradient(70% 34% at 50% 50%, rgba(18,18,18,0.78) 0%, rgba(18,18,18,0.35) 70%, rgba(18,18,18,0) 100%), radial-gradient(120% 30% at 50% 108%, rgba(230,57,70,0.35) 0%, rgba(255,122,26,0.12) 40%, rgba(18,18,18,0) 70%)',
+            'radial-gradient(72% 30% at 50% 47%, rgba(255,251,239,0.92) 0%, rgba(255,251,239,0.6) 70%, rgba(255,251,239,0) 100%), radial-gradient(120% 30% at 50% 108%, rgba(230,57,70,0.16) 0%, rgba(255,122,26,0.06) 40%, rgba(255,251,239,0) 70%)',
         }}
       />
-      <div style={{position: 'absolute', left: CX - INNER_W / 2, width: INNER_W, top: 610, textAlign: 'center', fontFamily: FONT.family, color: COLORS.offWhite}}>
+      <div style={{position: 'absolute', left: CX - INNER_W / 2, width: INNER_W, top: 610, textAlign: 'center', fontFamily: FONT.family, color: COLORS.ink}}>
         <div style={{fontWeight: FONT.medium, fontSize: 38, letterSpacing: '0.16em', textTransform: 'uppercase', color: COLORS.orange, marginBottom: 26}}>
           {THUMBNAIL.kicker}
         </div>
-        <div style={{fontWeight: FONT.bold, fontSize: size1, lineHeight: 1.02, letterSpacing: '-0.025em', textShadow: '0 10px 40px rgba(0,0,0,0.7)'}}>{THUMBNAIL.line1}</div>
-        <div style={{fontWeight: FONT.bold, fontSize: size2, lineHeight: 1.0, letterSpacing: '-0.03em', display: 'inline-flex', gap: '0.22em', textShadow: '0 10px 40px rgba(0,0,0,0.7)'}}>
+        <div style={{fontWeight: FONT.bold, fontSize: size1, lineHeight: 1.02, letterSpacing: '-0.025em'}}>{THUMBNAIL.line1}</div>
+        <div style={{fontWeight: FONT.bold, fontSize: size2, lineHeight: 1.0, letterSpacing: '-0.03em', display: 'inline-flex', gap: '0.22em'}}>
           {l2.map((w, i) => (
-            <span key={i} style={{color: w.accent ? COLORS.red : COLORS.offWhite, textShadow: w.accent ? '0 0 60px rgba(230,57,70,0.5)' : undefined}}>
+            <span key={i} style={{color: w.accent ? COLORS.red : COLORS.ink, textShadow: w.accent ? '0 0 40px rgba(230,57,70,0.2)' : undefined}}>
               {w.text}
             </span>
           ))}
         </div>
         <div style={{width: 150, height: 10, borderRadius: 5, background: COLORS.orange, margin: '34px auto 0'}} />
       </div>
-      <Img src={staticFile(BRAND.logoOnDark)} style={{position: 'absolute', left: CX - 170, top: 1180, width: 340, height: 340 / BRAND.logoAspect}} />
+      <Img src={staticFile(BRAND.logo)} style={{position: 'absolute', left: CX - 170, top: 1180, width: 340, height: 340 / BRAND.logoAspect}} />
       <GrainVignette />
     </AbsoluteFill>
   );
 };
 
 export const Thumbnail: React.FC<{fontSource: FontSource}> = ({fontSource}) => (
-  <AbsoluteFill style={{background: COLORS.charcoal}}>
+  <AbsoluteFill style={{background: COLORS.bg}}>
     <FontGate source={fontSource}>
       <Cover />
     </FontGate>

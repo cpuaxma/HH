@@ -71,26 +71,27 @@ export const Clock: React.FC = () => {
         alignItems: 'center',
         gap: 14,
         borderRadius: 38,
-        background: 'rgba(26,26,26,0.82)',
-        border: `2px solid ${COLORS.border}`,
+        background: 'rgba(255,255,255,0.92)',
+        boxShadow: `0 6px 18px ${COLORS.shadow}`,
+        border: `2px solid ${COLORS.line}`,
         opacity: vis,
         transform: `scale(${(0.9 + 0.1 * vis).toFixed(3)})`,
         transformOrigin: 'left center',
         fontFamily: FONT.family,
         fontWeight: FONT.bold,
         fontSize: SIZES.clock,
-        color: COLORS.offWhite,
+        color: COLORS.ink,
         fontVariantNumeric: 'tabular-nums',
         letterSpacing: '0.02em',
       }}
     >
       <svg width={s} height={s} viewBox="-24 -24 48 48">
-        <circle r={21} fill="none" stroke={COLORS.offWhite} strokeWidth={3} />
+        <circle r={21} fill="none" stroke={COLORS.ink} strokeWidth={3} />
         {Array.from({length: 12}).map((_, i) => (
-          <line key={i} x1={0} y1={-17} x2={0} y2={i % 3 === 0 ? -14 : -15.5} stroke={COLORS.muted} strokeWidth={2} transform={`rotate(${i * 30})`} />
+          <line key={i} x1={0} y1={-17} x2={0} y2={i % 3 === 0 ? -14 : -15.5} stroke={COLORS.inkSoft} strokeWidth={2} transform={`rotate(${i * 30})`} />
         ))}
-        <line x1={0} y1={2} x2={0} y2={-10} stroke={COLORS.offWhite} strokeWidth={3.4} strokeLinecap="round" transform={`rotate(${hourAngle})`} />
-        <line x1={0} y1={2} x2={0} y2={-15} stroke={COLORS.offWhite} strokeWidth={2.6} strokeLinecap="round" transform={`rotate(${minAngle})`} />
+        <line x1={0} y1={2} x2={0} y2={-10} stroke={COLORS.ink} strokeWidth={3.4} strokeLinecap="round" transform={`rotate(${hourAngle})`} />
+        <line x1={0} y1={2} x2={0} y2={-15} stroke={COLORS.ink} strokeWidth={2.6} strokeLinecap="round" transform={`rotate(${minAngle})`} />
         <line x1={0} y1={4} x2={0} y2={-17} stroke={COLORS.orange} strokeWidth={1.8} strokeLinecap="round" transform={`rotate(${secAngle})`} />
         <circle r={2.6} fill={COLORS.orange} />
       </svg>
@@ -122,9 +123,9 @@ export const LogoMark: React.FC = () => {
         width: size,
         height: size,
         borderRadius: size / 2,
-        background: 'rgba(26,26,26,0.82)',
-        border: `2px solid ${COLORS.border}`,
-        boxShadow: `0 0 ${24 + glow * 20}px rgba(230,57,70,${(glow * 0.35).toFixed(3)})`,
+        background: 'rgba(255,255,255,0.92)',
+        border: `2px solid ${COLORS.line}`,
+        boxShadow: `0 6px 18px ${COLORS.shadow}, 0 0 ${18 + glow * 16}px rgba(230,57,70,${(glow * 0.22).toFixed(3)})`,
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
@@ -132,7 +133,7 @@ export const LogoMark: React.FC = () => {
         transform: `scale(${(0.6 + 0.4 * vis).toFixed(3)})`,
       }}
     >
-      <ChiliMark width={54} color={COLORS.offWhite} stroke={34} style={{transform: `rotate(${sway.toFixed(2)}deg)`}} />
+      <ChiliMark width={54} color={COLORS.red} stroke={38} style={{transform: `rotate(${sway.toFixed(2)}deg)`}} />
     </div>
   );
 };

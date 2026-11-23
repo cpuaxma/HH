@@ -29,7 +29,7 @@ const SCENE_COMPONENTS: Record<SceneName, React.FC> = {
 export type ReelProps = {fontSource: FontSource; debugSafeZone: boolean};
 
 export const Reel: React.FC<ReelProps> = ({fontSource, debugSafeZone}) => (
-  <AbsoluteFill style={{background: COLORS.charcoal}}>
+  <AbsoluteFill style={{background: COLORS.bg}}>
     <FontGate source={fontSource}>
       <Backdrop />
       <Ambient />

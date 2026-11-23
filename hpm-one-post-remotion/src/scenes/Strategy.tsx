@@ -63,9 +63,9 @@ export const Strategy: React.FC = () => {
               width: WIDTH,
               height: CARD_H,
               borderRadius: 30,
-              background: COLORS.surface,
-              border: `2px solid ${check > 0.5 ? '#3A2A22' : COLORS.border}`,
-              boxShadow: '0 26px 60px rgba(0,0,0,0.45)',
+              background: COLORS.card,
+              border: `2px solid ${check > 0.5 ? '#F6CDB0' : COLORS.line}`,
+              boxShadow: `0 13px 30px ${COLORS.shadow}`,
               transform: `translateX(${x.toFixed(1)}px) rotate(${rot.toFixed(2)}deg) scale(${pulse.toFixed(4)})`,
               display: 'flex',
               alignItems: 'center',
@@ -82,8 +82,8 @@ export const Strategy: React.FC = () => {
                 height: 112,
                 flex: '0 0 112px',
                 borderRadius: 56,
-                border: `3px solid ${COLORS.border}`,
-                background: COLORS.charcoal,
+                border: `3px solid ${COLORS.line}`,
+                background: COLORS.bg,
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -94,8 +94,8 @@ export const Strategy: React.FC = () => {
               <Icon name={card.icon as IconName} size={60} t={t} accent={i === 1 ? COLORS.red : COLORS.orange} />
             </div>
             <div data-qa="text" style={{display: 'flex', flexDirection: 'column', gap: 8, minWidth: 0}}>
-              <div style={{fontWeight: FONT.bold, fontSize: titleSize, color: COLORS.offWhite, letterSpacing: '-0.01em'}}>{card.title}</div>
-              <div style={{fontWeight: FONT.medium, fontSize: lineSize, color: COLORS.muted, whiteSpace: 'nowrap'}}>{card.line}</div>
+              <div style={{fontWeight: FONT.bold, fontSize: titleSize, color: COLORS.ink, letterSpacing: '-0.01em'}}>{card.title}</div>
+              <div style={{fontWeight: FONT.medium, fontSize: lineSize, color: COLORS.inkSoft, whiteSpace: 'nowrap'}}>{card.line}</div>
             </div>
             <div
               style={{
@@ -104,7 +104,7 @@ export const Strategy: React.FC = () => {
                 height: 64,
                 flex: '0 0 64px',
                 borderRadius: 32,
-                border: `3px solid ${check > 0.05 ? COLORS.orange : COLORS.border}`,
+                border: `3px solid ${check > 0.05 ? COLORS.orange : COLORS.line}`,
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',

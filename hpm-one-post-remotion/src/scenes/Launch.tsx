@@ -14,7 +14,7 @@ const PHONE_W = 420;
 const K = PHONE_W / 440;
 const PHONE_LEFT = CX - PHONE_W / 2;
 const PHONE_TOP = 300;
-// Boost button (screen coords inside the 412 × 872 phone screen)
+// Ad-campaign button (screen coords inside the 412 × 872 phone screen)
 const BTN = {x: 20, y: 752, w: 372, h: 80};
 const toScene = (x: number, y: number) => ({x: PHONE_LEFT + (14 + x) * K, y: PHONE_TOP + (14 + y) * K});
 
@@ -24,13 +24,13 @@ const Finger: React.FC<{x: number; y: number; press: number; opacity: number}> =
     width={170}
     height={300}
     viewBox="0 0 170 300"
-    style={{position: 'absolute', left: x - 62, top: y - 8, opacity, transform: `rotate(-68deg) scale(${(1 - 0.08 * press).toFixed(3)})`, transformOrigin: '62px 8px', overflow: 'visible'}}
+    style={{position: 'absolute', left: x - 62, top: y - 8, opacity, transform: `rotate(-80deg) scale(${(0.85 - 0.07 * press).toFixed(3)})`, transformOrigin: '62px 8px', overflow: 'visible'}}
   >
-    <g stroke={COLORS.charcoal} strokeWidth={5} strokeLinejoin="round" fill={COLORS.offWhite}>
+    <g stroke={COLORS.ink} strokeWidth={5} strokeLinejoin="round" fill={COLORS.card}>
       <path d="M 40 150 C 30 175, 30 215, 50 250 L 60 300 H 150 L 160 240 C 172 205, 170 170, 160 145 C 150 125, 130 125, 125 140 C 122 122, 100 118, 96 136 C 92 118, 72 118, 70 135 Z" />
       <path d="M 44 160 V 24 C 44 6, 80 6, 80 24 V 140 Z" />
     </g>
-    <path d="M 52 26 C 54 16, 70 16, 72 26" stroke={COLORS.dim} strokeWidth={3} fill="none" strokeLinecap="round" />
+    <path d="M 52 26 C 54 16, 70 16, 72 26" stroke={COLORS.inkFaint} strokeWidth={3} fill="none" strokeLinecap="round" />
   </svg>
 );
 
@@ -52,21 +52,21 @@ const Bubble: React.FC<{icon: IconName; text: string; at: number; i: number; t: 
         gap: 16,
         padding: '14px 28px 14px 14px',
         borderRadius: 48,
-        background: 'rgba(28,28,28,0.96)',
-        border: `2px solid ${COLORS.border}`,
-        boxShadow: '0 20px 50px rgba(0,0,0,0.55)',
+        background: 'rgba(255,255,255,0.97)',
+        border: `2px solid ${COLORS.line}`,
+        boxShadow: `0 10px 25px ${COLORS.shadow}`,
         transform: `scale(${s.toFixed(4)}) rotate(${((1 - s) * (right ? 10 : -10)).toFixed(2)}deg)`,
         transformOrigin: right ? 'right center' : 'left center',
         opacity: clamp(s * 3),
         fontFamily: FONT.family,
         fontWeight: FONT.bold,
         fontSize: SIZES.bubble,
-        color: COLORS.offWhite,
+        color: COLORS.ink,
         whiteSpace: 'nowrap',
       }}
     >
-      <div style={{width: 60, height: 60, borderRadius: 30, background: COLORS.charcoal, border: `3px solid ${color}`, display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
-        <Icon name={icon} size={34} fill={icon === 'heart'} accent={color} color={COLORS.offWhite} />
+      <div style={{width: 60, height: 60, borderRadius: 30, background: COLORS.card, border: `3px solid ${color}`, display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
+        <Icon name={icon} size={34} fill={icon === 'heart'} accent={color} color={COLORS.ink} />
       </div>
       {text}
     </div>
@@ -78,13 +78,13 @@ export const Launch: React.FC = () => {
   const rise = spr(t, -4, MOTION.snap);
   const progress = clamp(spr(t, C.publishAt, MOTION.smooth, C.postedAt - C.publishAt));
   const posted = spr(t, C.postedAt, MOTION.bouncy);
-  const btnIn = spr(t, C.boostButtonAt, MOTION.bouncy);
+  const btnIn = spr(t, C.adButtonAt, MOTION.bouncy);
   const tapped = t >= C.tapAt;
   const tapRing = clamp((t - C.tapAt) / 14);
-  const boosted = spr(t, C.tapAt + 2, MOTION.bouncy);
+  const live = spr(t, C.tapAt + 2, MOTION.bouncy);
 
   // Finger: in from bottom-right, press on the button, then leave.
-  const tip = toScene(BTN.x + BTN.w * 0.62, BTN.y + BTN.h * 0.55);
+  const tip = toScene(BTN.x + BTN.w * 0.93, BTN.y + BTN.h * 0.6);
   const fin = spr(t, C.tapAt - 18, MOTION.snap);
   const fout = spr(t, C.tapAt + 10, MOTION.smooth, 18);
   const press = clamp(1 - Math.abs(t - C.tapAt) / 4);
@@ -116,8 +116,8 @@ export const Launch: React.FC = () => {
           <div style={{position: 'absolute', left: 20, right: 20, top: 670, height: 56, display: 'flex', alignItems: 'center', gap: 14}}>
             {posted < 0.5 ? (
               <>
-                <div style={{fontWeight: FONT.medium, fontSize: SIZES.phoneUi, color: COLORS.muted, whiteSpace: 'nowrap'}}>{C.publishingLabel}</div>
-                <div style={{flex: 1, height: 8, borderRadius: 4, background: COLORS.border}}>
+                <div style={{fontWeight: FONT.medium, fontSize: SIZES.phoneUi, color: COLORS.inkSoft, whiteSpace: 'nowrap'}}>{C.publishingLabel}</div>
+                <div style={{flex: 1, height: 8, borderRadius: 4, background: COLORS.line}}>
                   <div style={{width: `${progress * 100}%`, height: '100%', borderRadius: 4, background: `linear-gradient(90deg, ${COLORS.orange}, ${COLORS.red})`}} />
                 </div>
               </>
@@ -130,7 +130,7 @@ export const Launch: React.FC = () => {
               </div>
             )}
           </div>
-          {/* Boost button */}
+          {/* Ad-campaign button */}
           <div
             style={{
               position: 'absolute',
@@ -139,21 +139,23 @@ export const Launch: React.FC = () => {
               width: BTN.w,
               height: BTN.h,
               borderRadius: 40,
-              background: tapped ? COLORS.surfaceHi : COLORS.red,
+              background: tapped ? COLORS.cardAlt : COLORS.red,
               border: `3px solid ${tapped ? COLORS.orange : COLORS.red}`,
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               gap: 12,
               fontWeight: FONT.bold,
-              fontSize: 28,
-              transform: `translateY(${((1 - btnIn) * 140).toFixed(1)}px) scale(${(1 - press * 0.05 + (tapped ? 0.04 * Math.sin(Math.PI * clamp(boosted)) : 0)).toFixed(4)})`,
+              fontSize: 25,
+              color: tapped ? COLORS.ink : COLORS.offWhite,
+              whiteSpace: 'nowrap',
+              transform: `translateY(${((1 - btnIn) * 140).toFixed(1)}px) scale(${(1 - press * 0.05 + (tapped ? 0.04 * Math.sin(Math.PI * clamp(live)) : 0)).toFixed(4)})`,
               opacity: clamp(btnIn * 2),
               overflow: 'hidden',
             }}
           >
-            <Icon name={tapped ? 'check' : 'flame'} size={34} color={tapped ? COLORS.orange : COLORS.offWhite} fill={!tapped} accent={COLORS.offWhite} stroke={tapped ? 6 : 3.6} />
-            {tapped ? C.boostedLabel : C.boostLabel}
+            <Icon name={tapped ? 'check' : 'megaphone'} size={34} color={tapped ? COLORS.orange : COLORS.offWhite} accent={COLORS.offWhite} stroke={tapped ? 6 : 3.8} />
+            {tapped ? C.adLiveLabel : C.adButtonLabel}
             {tapped ? (
               <div style={{position: 'absolute', left: 0, bottom: 0, height: 5, width: `${clamp((t - C.tapAt) / 50) * 100}%`, background: COLORS.orange}} />
             ) : null}

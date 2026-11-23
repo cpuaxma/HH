@@ -1,8 +1,10 @@
 """Builds the static files in assets/ (the Remotion public dir).
 
-- assets/logo-on-dark.png: ../../assets/logo-primary.png with the cream
-  background keyed out, the red wordmark kept as-is and the black pepper
-  outline turned off-white so it reads on charcoal. Cropped to the artwork.
+- assets/logo-on-light.png: ../../assets/logo-primary.png with the cream
+  background keyed out, original colours kept (red wordmark, black pepper
+  outline). Cropped to the artwork. Used on the cream theme.
+- assets/logo-on-dark.png: the same, with the black outline turned off-white
+  (for dark backgrounds; not used by the current light theme).
 - assets/grain.png: a 512px tileable monochrome noise tile for <Grain>.
 - assets/fonts/: Montserrat Medium + ExtraBold (latin) from @fontsource, used
   only when Google Fonts can't be reached at render time.
@@ -25,7 +27,8 @@ BLACK = (0, 0, 0)
 src = Image.open(ROOT.parent / 'assets' / 'logo-primary.png').convert('RGB')
 w, h = src.size
 out = Image.new('RGBA', (w, h), (0, 0, 0, 0))
-px, po = src.load(), out.load()
+light = Image.new('RGBA', (w, h), (0, 0, 0, 0))
+px, po, pl = src.load(), out.load(), light.load()
 for y in range(h):
     for x in range(w):
         r, g, b = px[x, y]
@@ -38,10 +41,12 @@ for y in range(h):
             continue
         col = RED if reddish else OFF_WHITE
         po[x, y] = col + (round(a * 255),)
+        pl[x, y] = (RED if reddish else (18, 18, 18)) + (round(a * 255),)
 x0, y0, x1, y1 = out.getchannel('A').getbbox()
 pad = 16
 out = out.crop((x0 - pad, y0 - pad, x1 + pad, y1 + pad))
 out.save(ASSETS / 'logo-on-dark.png', optimize=True)
+light.crop((x0 - pad, y0 - pad, x1 + pad, y1 + pad)).save(ASSETS / 'logo-on-light.png', optimize=True)
 print('logo-on-dark.png', out.size, 'crop', (x0 - pad, y0 - pad, x1 + pad, y1 + pad))
 
 rng = random.Random(11)

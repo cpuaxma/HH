@@ -6,7 +6,7 @@
 // audio / SFX file names. Components only read from here.
 //
 // Caption syntax: each array entry is one line (max 5 words, max 2 lines).
-// Wrap a word in *asterisks* to set it in the accent colour.
+// Wrap a word (or several) in *asterisks* to set it in the accent colour.
 // ─────────────────────────────────────────────────────────────────────────────
 
 export const VIDEO = {
@@ -24,22 +24,26 @@ export const BRAND = {
   handle: '@hotpeppermedia',
   dmKeyword: 'KICK',
   // Files inside assets/ (the Remotion public dir). Rebuild with `npm run assets`.
-  logoOnDark: 'logo-on-dark.png',
-  logoAspect: 744 / 515, // width / height of logoOnDark
+  logo: 'logo-on-light.png', // transparent-background logo, original colours
+  logoAspect: 744 / 515, // width / height of the logo file
 } as const;
 
 export const COLORS = {
+  // brand palette
   charcoal: '#121212',
   red: '#E63946', // accent only
   orange: '#FF7A1A', // accent only
   offWhite: '#FAFAFA',
-  // neutrals derived from charcoal / off-white (surfaces, borders, muted text)
-  surface: '#1A1A1A',
-  surfaceHi: '#222222',
-  border: '#2E2E2E',
-  muted: '#A3A3A3',
-  dim: '#6B6B6B',
-  ink: '#121212', // text on off-white paper
+  // light theme, matched to the cream Instagram feed
+  bg: '#FDFBF6', // page background: clean warm white, like the feed
+  ink: '#121212', // main text + line art (charcoal)
+  inkSoft: '#6B655B', // secondary text
+  inkFaint: '#A39C8F', // tertiary text, ticks
+  card: '#FFFFFF', // cards, panels, notes, phone screen
+  cardAlt: '#F5EFE2', // image wells, pressed states
+  line: '#E7DFCF', // borders, dividers
+  grid: 'rgba(230,57,70,0.09)', // background grid lines (like the feed posts)
+  shadow: 'rgba(90,60,30,0.16)', // soft warm drop shadows
 } as const;
 
 // Instagram-safe area. All text and key visuals stay inside it.
@@ -187,15 +191,15 @@ export const SCENES = {
   launch: {
     duration: 120,
     clock: '17:00',
-    caption: ['Publish + *boost*'],
+    caption: ['Publish +', '*ad campaigns*'],
     captionAt: 20,
     publishingLabel: 'Publishing...',
     postedLabel: 'Posted',
-    boostLabel: 'Boost post',
-    boostedLabel: 'Boosted',
+    adButtonLabel: 'Launch ad campaign',
+    adLiveLabel: 'Campaign live',
     publishAt: 2,
     postedAt: 30,
-    boostButtonAt: 34,
+    adButtonAt: 34,
     tapAt: 54,
     notifications: [
       {icon: 'heart', text: '+1.2K likes', at: 62},

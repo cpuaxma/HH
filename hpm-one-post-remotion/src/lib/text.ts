@@ -7,7 +7,21 @@ export type Word = {text: string; accent: boolean};
 export const parseWord = (w: string): Word =>
   w.startsWith('*') && w.endsWith('*') ? {text: w.slice(1, -1), accent: true} : {text: w, accent: false};
 
-export const parseLine = (line: string): Word[] => line.split(/\s+/).filter(Boolean).map(parseWord);
+/** Splits a line into words; *several words* in one pair of asterisks are all accented. */
+export const parseLine = (line: string): Word[] => {
+  let inAccent = false;
+  return line
+    .split(/\s+/)
+    .filter(Boolean)
+    .map((raw) => {
+      const opens = raw.startsWith('*');
+      const closes = raw.endsWith('*') && raw.length > 1;
+      const accent = inAccent || opens;
+      if (opens && !closes) inAccent = true;
+      if (closes) inAccent = false;
+      return {text: raw.replace(/^\*|\*$/g, ''), accent};
+    });
+};
 
 export const textWidth = (text: string, fontSize: number, weight: number = FONT.bold, letterSpacing = 0) =>
   measureText({text, fontFamily: FONT.family, fontWeight: weight, fontSize, letterSpacing: `${letterSpacing}em`}).width;

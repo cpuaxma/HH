@@ -20,8 +20,9 @@ const whip = (f: number, start: number, len: number) => ease(f, start, start + l
 const DotGrid: React.FC = () => (
   <svg width={W} height={H} style={{position: 'absolute', inset: 0}}>
     <defs>
-      <pattern id="dots" width={54} height={54} patternUnits="userSpaceOnUse">
-        <circle cx={2} cy={2} r={2} fill={COLORS.offWhite} opacity={0.05} />
+      {/* thin red grid, like the feed's "graph paper" posts */}
+      <pattern id="dots" width={90} height={90} patternUnits="userSpaceOnUse">
+        <path d="M 90 0 H 0 V 90" fill="none" stroke={COLORS.grid} strokeWidth={2} />
       </pattern>
     </defs>
     <rect width={W} height={H} fill="url(#dots)" />

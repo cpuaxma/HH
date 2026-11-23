@@ -21,7 +21,7 @@ export const Cta: React.FC = () => {
   const wipe = clamp(spr(t, C.logoAt, MOTION.smooth, 16));
   // Ignition flicker: brightness stutters for the first ~16 frames, then holds.
   const ignite = t < C.logoAt + 16 ? 0.55 + 0.45 * Math.abs(Math.sin(t * 1.9)) * clamp((t - C.logoAt) / 6) : 1;
-  const burst = 1 - clamp((t - C.logoAt - 6) / 26) * 0.55;
+  const burst = 1 - clamp((t - C.logoAt - 6) / 26) * 0.7;
   const flameI = clamp((t - C.logoAt + 2) / 8) * burst;
 
   const dm = spr(t, C.dmAt, MOTION.slam);
@@ -46,10 +46,10 @@ export const Cta: React.FC = () => {
           clipPath: `inset(${((1 - wipe) * 100).toFixed(2)}% -10% -10% -10%)`,
           transform: `scale(${mix(0.82, 1, reveal).toFixed(4)}) translateY(${(Math.sin(t * 0.08) * 4).toFixed(2)}px)`,
           opacity: ignite,
-          filter: `drop-shadow(0 0 ${(18 + glow * 16).toFixed(1)}px rgba(255,122,26,${(0.28 * flameI + 0.1).toFixed(3)}))`,
+          filter: `drop-shadow(0 0 ${(18 + glow * 16).toFixed(1)}px rgba(255,122,26,${(0.18 * flameI).toFixed(3)}))`,
         }}
       >
-        <Img data-qa="text" src={staticFile(BRAND.logoOnDark)} style={{width: LOGO_W, height: LOGO_H}} />
+        <Img data-qa="text" src={staticFile(BRAND.logo)} style={{width: LOGO_W, height: LOGO_H}} />
       </div>
 
       <Caption lines={C.question} at={C.questionAt} top={790} size={SIZES.ctaQuestion} />
@@ -73,7 +73,7 @@ export const Cta: React.FC = () => {
             fontFamily: FONT.family,
             fontWeight: FONT.bold,
             fontSize: dmSize,
-            color: COLORS.offWhite,
+            color: COLORS.ink,
             letterSpacing: '-0.02em',
             lineHeight: 1,
           }}
@@ -88,12 +88,12 @@ export const Cta: React.FC = () => {
               borderRadius: dmSize,
               border: `5px solid ${COLORS.orange}`,
               color: COLORS.red,
-              boxShadow: `0 0 ${(20 + glow * 24).toFixed(1)}px rgba(255,122,26,${(0.25 + glow * 0.15).toFixed(3)})`,
+              boxShadow: `0 0 ${(20 + glow * 24).toFixed(1)}px rgba(255,122,26,${(0.12 + glow * 0.1).toFixed(3)})`,
               transform: `scale(${pill.toFixed(4)}) rotate(${((1 - pill) * -8).toFixed(2)}deg)`,
               opacity: clamp(pill * 3),
             }}
           >
-            <Icon name="dm" size={dmSize * 0.52} color={COLORS.offWhite} accent={COLORS.orange} stroke={4.5} />
+            <Icon name="dm" size={dmSize * 0.52} color={COLORS.ink} accent={COLORS.orange} stroke={4.5} />
             {kw}
           </span>
         </div>
@@ -111,7 +111,7 @@ export const Cta: React.FC = () => {
           fontWeight: FONT.medium,
           fontSize: SIZES.ctaTagline,
           letterSpacing: '0.04em',
-          color: COLORS.offWhite,
+          color: COLORS.ink,
           opacity: clamp(tag * 2) * 0.92,
           transform: `translateY(${((1 - tag) * 30).toFixed(1)}px)`,
         }}

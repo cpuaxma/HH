@@ -25,7 +25,7 @@ export const Caption: React.FC<Props> = ({
   maxWidth = CAPTION.maxWidth,
   accent = CAPTION.accent,
   stagger = CAPTION.wordStagger,
-  color = COLORS.offWhite,
+  color = COLORS.ink,
 }) => {
   const t = useSceneFrame();
   const fontSize = fitSize([...lines], size, maxWidth);
@@ -62,7 +62,6 @@ export const Caption: React.FC<Props> = ({
                     opacity: clamp(s * 1.6),
                     transform: `translateY(${((1 - s) * 0.7 * fontSize).toFixed(1)}px) scale(${(0.8 + 0.2 * s).toFixed(4)})`,
                     filter: s < 0.98 ? `blur(${((1 - clamp(s)) * 10).toFixed(1)}px)` : undefined,
-                    textShadow: '0 6px 30px rgba(0,0,0,0.55)',
                   }}
                 >
                   {w.text}

@@ -4,11 +4,11 @@ import {COLORS} from '../config';
 // Hand-built 48×48 line icons (no emoji glyphs: they render as boxes headless).
 export type IconName =
   | 'heart' | 'comment' | 'dm' | 'user' | 'eye' | 'users' | 'target' | 'audience'
-  | 'message' | 'check' | 'info' | 'arrowUp' | 'flame' | 'bookmark';
+  | 'message' | 'check' | 'info' | 'arrowUp' | 'flame' | 'bookmark' | 'megaphone';
 
 type Props = {name: IconName; size?: number; color?: string; accent?: string; stroke?: number; t?: number; fill?: boolean};
 
-export const Icon: React.FC<Props> = ({name, size = 48, color = COLORS.offWhite, accent = COLORS.orange, stroke = 3.6, t = 0, fill = false}) => {
+export const Icon: React.FC<Props> = ({name, size = 48, color = COLORS.ink, accent = COLORS.orange, stroke = 3.6, t = 0, fill = false}) => {
   const common = {fill: 'none', stroke: color, strokeWidth: stroke, strokeLinecap: 'round' as const, strokeLinejoin: 'round' as const};
   let body: React.ReactNode = null;
   switch (name) {
@@ -119,6 +119,15 @@ export const Icon: React.FC<Props> = ({name, size = 48, color = COLORS.offWhite,
       break;
     case 'arrowUp':
       body = <path {...common} d="M24 40 V9 M12 20 L24 8 L36 20" />;
+      break;
+    case 'megaphone':
+      body = (
+        <>
+          <path {...common} d="M6 19 H14 L34 8 V40 L14 29 H6 Z" />
+          <path {...common} d="M12 29 L15 41 H21 L19 29" />
+          <path {...common} stroke={accent} d="M40 18 C43 21 43 27 40 30" />
+        </>
+      );
       break;
     case 'bookmark':
       body = <path {...common} d="M12 6 H36 V42 L24 33 L12 42 Z" />;

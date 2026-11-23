@@ -29,7 +29,7 @@ export const ChiliMark: React.FC<{
   fill?: string;
   stroke?: number;
   style?: React.CSSProperties;
-}> = ({width, color = COLORS.offWhite, fill = 'none', stroke = 26, style}) => (
+}> = ({width, color = COLORS.ink, fill = 'none', stroke = 26, style}) => (
   <svg width={width} height={(width * 520) / 740} viewBox={CHILI.viewBox} style={{display: 'block', overflow: 'visible', ...style}}>
     <g fill="none" stroke={color} strokeWidth={stroke} strokeLinecap="round" strokeLinejoin="round">
       <path d={CHILI.body} fill={fill} />

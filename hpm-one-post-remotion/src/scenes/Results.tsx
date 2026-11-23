@@ -33,7 +33,7 @@ export const Results: React.FC = () => {
       <svg width={1080} height={1920} style={{position: 'absolute', inset: 0}}>
         <defs>
           <linearGradient id="areaFill" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor={COLORS.orange} stopOpacity={0.22} />
+            <stop offset="0%" stopColor={COLORS.orange} stopOpacity={0.18} />
             <stop offset="100%" stopColor={COLORS.orange} stopOpacity={0} />
           </linearGradient>
           <linearGradient id="lineStroke" x1="0" y1="0" x2="1" y2="0">
@@ -47,7 +47,7 @@ export const Results: React.FC = () => {
         {[0, 1, 2, 3, 4].map((i) => {
           const y = mix(G.top, G.bottom, i / 4);
           const grid = clamp(spr(t, i * 2, MOTION.smooth, 20));
-          return <line key={i} x1={G.left} x2={mix(G.left, G.right, grid)} y1={y} y2={y} stroke={COLORS.offWhite} strokeOpacity={0.07} strokeWidth={2} strokeDasharray="6 10" />;
+          return <line key={i} x1={G.left} x2={mix(G.left, G.right, grid)} y1={y} y2={y} stroke={COLORS.ink} strokeOpacity={0.07} strokeWidth={2} strokeDasharray="6 10" />;
         })}
         <g clipPath="url(#graphReveal)">
           <path d={area} fill="url(#areaFill)" />
@@ -56,7 +56,7 @@ export const Results: React.FC = () => {
         {draw > 0.01 ? (
           <>
             <circle cx={headX} cy={headY} r={12 + pulse * 30} fill="none" stroke={COLORS.red} strokeWidth={3} opacity={1 - pulse} />
-            <circle cx={headX} cy={headY} r={12} fill={COLORS.offWhite} stroke={COLORS.red} strokeWidth={5} />
+            <circle cx={headX} cy={headY} r={12} fill={COLORS.card} stroke={COLORS.red} strokeWidth={5} />
           </>
         ) : null}
       </svg>
@@ -78,9 +78,9 @@ export const Results: React.FC = () => {
               width: TILE_W,
               height: TILE_H,
               borderRadius: 28,
-              background: 'rgba(24,24,24,0.92)',
-              border: `2px solid ${COLORS.border}`,
-              boxShadow: '0 26px 60px rgba(0,0,0,0.55)',
+              background: 'rgba(255,255,255,0.95)',
+              border: `2px solid ${COLORS.line}`,
+              boxShadow: `0 13px 30px ${COLORS.shadow}`,
               transform: `translateY(${((1 - pop) * 120).toFixed(1)}px) scale(${mix(0.7, 1, pop).toFixed(4)})`,
               opacity: clamp(pop * 2.5),
               padding: '24px 24px',
@@ -91,7 +91,7 @@ export const Results: React.FC = () => {
             }}
           >
             <div style={{display: 'flex', alignItems: 'center', gap: 12}}>
-              <div style={{width: 54, height: 54, borderRadius: 27, background: COLORS.charcoal, border: `2px solid ${COLORS.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
+              <div style={{width: 54, height: 54, borderRadius: 27, background: COLORS.bg, border: `2px solid ${COLORS.line}`, display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
                 <Icon name={s.icon as IconName} size={32} t={t} accent={i === 2 ? COLORS.red : COLORS.orange} stroke={4} />
               </div>
               <div style={{marginLeft: 'auto', opacity: clamp(count * 3), transform: `translateY(${((1 - count) * 10).toFixed(1)}px)`}}>
@@ -99,8 +99,8 @@ export const Results: React.FC = () => {
               </div>
             </div>
             <div data-qa="text">
-              <div style={{fontWeight: FONT.bold, fontSize: vSize, color: COLORS.offWhite, lineHeight: 1, letterSpacing: '-0.02em', fontVariantNumeric: 'tabular-nums', whiteSpace: 'nowrap'}}>{value}</div>
-              <div style={{fontWeight: FONT.medium, fontSize: SIZES.statLabel, color: COLORS.muted, marginTop: 10}}>{s.label}</div>
+              <div style={{fontWeight: FONT.bold, fontSize: vSize, color: COLORS.ink, lineHeight: 1, letterSpacing: '-0.02em', fontVariantNumeric: 'tabular-nums', whiteSpace: 'nowrap'}}>{value}</div>
+              <div style={{fontWeight: FONT.medium, fontSize: SIZES.statLabel, color: COLORS.inkSoft, marginTop: 10}}>{s.label}</div>
             </div>
           </div>
         );
@@ -121,11 +121,11 @@ export const Results: React.FC = () => {
             fontFamily: FONT.family,
             fontWeight: FONT.medium,
             fontSize: SIZES.tiny,
-            color: COLORS.muted,
+            color: COLORS.inkSoft,
             opacity: clamp((t - C.statAt[2] - 10) / 10) * 0.9,
           }}
         >
-          <Icon name="info" size={26} color={COLORS.muted} stroke={3.4} />
+          <Icon name="info" size={26} color={COLORS.inkSoft} stroke={3.4} />
           {C.exampleLabel}
         </div>
       ) : null}

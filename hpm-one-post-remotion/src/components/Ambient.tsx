@@ -8,7 +8,7 @@ import {TIMELINE, TOTAL_FRAMES} from '../lib/timeline';
 // How "hot" the ambient layer is per frame: full on the hook and CTA, faint in
 // between. Value at the last frame equals the first → the loop is seamless.
 export const heat = (f: number) => {
-  let v = 0.18;
+  let v = 0;
   for (const s of TIMELINE.scenes) {
     if (!NO_HUD.includes(s.name)) continue;
     const a = s.cut - s.head - 6;
@@ -32,7 +32,7 @@ export const Ambient: React.FC = () => {
     const u = (phase + (cycles * f) / P) % 1; // 0 → 1 rising
     const y = H + 40 - u * (H + 80);
     const x = rand(i + 7) * W + Math.sin(((f / P) * 2 * Math.PI * (1 + (i % 3))) + i) * 40;
-    const r = 1.5 + rand(i + 3) * 3.5;
+    const r = 1.2 + rand(i + 3) * 2.4;
     const life = Math.sin(Math.PI * u);
     const flick = 0.6 + 0.4 * Math.sin(f * 0.35 + i * 1.3);
     return {x, y, r, a: life * flick, c: i % 3 === 0 ? COLORS.red : COLORS.orange};
@@ -42,12 +42,12 @@ export const Ambient: React.FC = () => {
     <AbsoluteFill>
       <AbsoluteFill
         style={{
-          background: `radial-gradient(120% 38% at 50% 112%, rgba(230,57,70,${(0.32 * k * pulse).toFixed(3)}) 0%, rgba(255,122,26,${(0.12 * k * pulse).toFixed(3)}) 38%, rgba(18,18,18,0) 70%)`,
+          background: `radial-gradient(120% 34% at 50% 112%, rgba(230,57,70,${(0.16 * k * pulse).toFixed(3)}) 0%, rgba(255,122,26,${(0.07 * k * pulse).toFixed(3)}) 40%, rgba(255,251,239,0) 72%)`,
         }}
       />
       <svg width={W} height={H} style={{position: 'absolute', inset: 0}}>
         {embers.map((e, i) => (
-          <circle key={i} cx={e.x} cy={e.y} r={e.r} fill={e.c} opacity={(e.a * (0.25 + 0.75 * k)).toFixed(3)} />
+          <circle key={i} cx={e.x} cy={e.y} r={e.r} fill={e.c} opacity={(e.a * 0.45 * k).toFixed(3)} />
         ))}
       </svg>
     </AbsoluteFill>
@@ -61,7 +61,7 @@ export const Backdrop: React.FC = () => {
   return (
     <AbsoluteFill
       style={{
-        background: `radial-gradient(62% 48% at 50% 42%, rgba(38,38,38,${(0.75 * k).toFixed(3)}) 0%, rgba(18,18,18,0) 100%)`,
+        background: `radial-gradient(62% 48% at 50% 42%, rgba(255,255,255,${(0.9 * k).toFixed(3)}) 0%, rgba(255,255,255,0) 100%)`,
       }}
     />
   );
@@ -76,15 +76,15 @@ export const GrainVignette: React.FC = () => {
     <AbsoluteFill style={{pointerEvents: 'none'}}>
       <AbsoluteFill
         style={{
-          background: 'radial-gradient(ellipse 85% 70% at 50% 46%, rgba(0,0,0,0) 55%, rgba(0,0,0,0.55) 100%)',
+          background: 'radial-gradient(ellipse 85% 70% at 50% 46%, rgba(120,90,50,0) 65%, rgba(120,90,50,0.06) 100%)',
         }}
       />
       {/* hidden <Img> makes Remotion wait for the tile before the first frame */}
       <Img src={staticFile('grain.png')} style={{position: 'absolute', width: 1, height: 1, opacity: 0}} />
       <AbsoluteFill
         style={{
-          opacity: 0.085,
-          mixBlendMode: 'overlay',
+          opacity: 0.035,
+          mixBlendMode: 'multiply',
           backgroundImage: `url(${staticFile('grain.png')})`,
           backgroundRepeat: 'repeat',
           backgroundPosition: `${-ox}px ${-oy}px`,

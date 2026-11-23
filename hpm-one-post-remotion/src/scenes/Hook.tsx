@@ -43,11 +43,11 @@ export const Hook: React.FC = () => {
         style={{
           display: 'inline-block',
           fontSize: fs,
-          color: w.accent ? COLORS.red : COLORS.offWhite,
+          color: w.accent ? COLORS.red : COLORS.ink,
           opacity: visible ? clamp(s * 3) : 0,
           transform: `scale(${mix(2.4, 1, s).toFixed(4)})`,
           filter: s < 0.9 ? `blur(${((1 - s) * 14).toFixed(1)}px)` : undefined,
-          textShadow: w.accent ? '0 0 50px rgba(230,57,70,0.45)' : '0 8px 40px rgba(0,0,0,0.6)',
+          textShadow: w.accent ? '0 0 40px rgba(230,57,70,0.22)' : 'none',
         }}
       >
         {w.text}

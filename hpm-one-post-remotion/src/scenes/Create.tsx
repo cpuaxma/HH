@@ -21,10 +21,10 @@ const PanelFrame: React.FC<{label: string; children: React.ReactNode}> = ({label
       position: 'absolute',
       inset: 0,
       borderRadius: 26,
-      background: COLORS.surface,
-      border: `2px solid ${COLORS.border}`,
+      background: COLORS.card,
+      border: `2px solid ${COLORS.line}`,
       overflow: 'hidden',
-      boxShadow: '0 30px 70px rgba(0,0,0,0.5)',
+      boxShadow: `0 15px 35px ${COLORS.shadow}`,
     }}
   >
     {children}
@@ -40,7 +40,7 @@ const PanelFrame: React.FC<{label: string; children: React.ReactNode}> = ({label
         fontWeight: FONT.bold,
         fontSize: SIZES.panelLabel,
         letterSpacing: '0.22em',
-        color: COLORS.muted,
+        color: COLORS.inkSoft,
       }}
     >
       {label}
@@ -57,7 +57,7 @@ const Viewfinder: React.FC<{t: number}> = ({t}) => {
   const hx = Math.sin(t * 0.11) * 6;
   const hy = Math.cos(t * 0.09) * 5;
   const bracket = (x: number, y: number, r: number) => (
-    <path d="M 0 30 V 0 H 30" transform={`translate(${x} ${y}) rotate(${r})`} stroke={COLORS.offWhite} strokeWidth={4} fill="none" strokeLinecap="round" />
+    <path d="M 0 30 V 0 H 30" transform={`translate(${x} ${y}) rotate(${r})`} stroke={COLORS.ink} strokeWidth={4} fill="none" strokeLinecap="round" />
   );
   return (
     <>
@@ -66,8 +66,8 @@ const Viewfinder: React.FC<{t: number}> = ({t}) => {
         {bracket(PW - 22, 22, 90)}
         {bracket(PW - 22, PH - 70, 180)}
         {bracket(22, PH - 70, 270)}
-        <line x1={PW / 2 - 12} x2={PW / 2 + 12} y1={PH / 2 - 30} y2={PH / 2 - 30} stroke={COLORS.offWhite} strokeWidth={2} opacity={0.5} />
-        <line x1={PW / 2} x2={PW / 2} y1={PH / 2 - 42} y2={PH / 2 - 18} stroke={COLORS.offWhite} strokeWidth={2} opacity={0.5} />
+        <line x1={PW / 2 - 12} x2={PW / 2 + 12} y1={PH / 2 - 30} y2={PH / 2 - 30} stroke={COLORS.ink} strokeWidth={2} opacity={0.5} />
+        <line x1={PW / 2} x2={PW / 2} y1={PH / 2 - 42} y2={PH / 2 - 18} stroke={COLORS.ink} strokeWidth={2} opacity={0.5} />
       </svg>
       <div style={{position: 'absolute', left: PW / 2 - 95 + hx, top: PH / 2 - 120 + hy}}>
         <DishArt size={190} t={t} />
@@ -79,16 +79,16 @@ const Viewfinder: React.FC<{t: number}> = ({t}) => {
           top: PH / 2 - 25 - box / 2 + hy,
           width: box,
           height: box,
-          border: `3px solid ${af > 0.6 ? COLORS.orange : COLORS.offWhite}`,
+          border: `3px solid ${af > 0.6 ? COLORS.orange : COLORS.ink}`,
           borderRadius: 6,
           opacity: 0.85,
         }}
       />
-      <div data-qa="text" style={{position: 'absolute', left: 40, top: 46, display: 'flex', alignItems: 'center', gap: 10, fontFamily: FONT.family, fontWeight: FONT.bold, fontSize: 24, color: COLORS.offWhite}}>
-        <div style={{width: 18, height: 18, borderRadius: 9, background: COLORS.red, opacity: recOn ? 1 : 0.25, boxShadow: recOn ? '0 0 16px rgba(230,57,70,0.8)' : 'none'}} />
+      <div data-qa="text" style={{position: 'absolute', left: 40, top: 46, display: 'flex', alignItems: 'center', gap: 10, fontFamily: FONT.family, fontWeight: FONT.bold, fontSize: 24, color: COLORS.ink}}>
+        <div style={{width: 18, height: 18, borderRadius: 9, background: COLORS.red, opacity: recOn ? 1 : 0.25, boxShadow: recOn ? '0 0 12px rgba(230,57,70,0.55)' : 'none'}} />
         REC
       </div>
-      <div data-qa="text" style={{position: 'absolute', left: 0, right: 0, top: PH - 120, textAlign: 'center', fontFamily: FONT.family, fontWeight: FONT.medium, fontSize: 20, color: COLORS.offWhite, fontVariantNumeric: 'tabular-nums'}}>
+      <div data-qa="text" style={{position: 'absolute', left: 0, right: 0, top: PH - 120, textAlign: 'center', fontFamily: FONT.family, fontWeight: FONT.medium, fontSize: 20, color: COLORS.ink, fontVariantNumeric: 'tabular-nums'}}>
         {tc}
       </div>
     </>
@@ -129,7 +129,7 @@ const DesignCanvas: React.FC<{t: number}> = ({t}) => {
       <svg width={PW} height={PH} style={{position: 'absolute', inset: 0}}>
         <defs>
           <pattern id="canvasDots" width={18} height={18} patternUnits="userSpaceOnUse">
-            <circle cx={1.5} cy={1.5} r={1.5} fill={COLORS.offWhite} opacity={0.12} />
+            <circle cx={1.5} cy={1.5} r={1.5} fill={COLORS.ink} opacity={0.12} />
           </pattern>
         </defs>
         <rect width={PW} height={PH} fill="url(#canvasDots)" />
@@ -142,7 +142,7 @@ const DesignCanvas: React.FC<{t: number}> = ({t}) => {
           width: 210,
           height: 210,
           borderRadius: 14,
-          background: 'linear-gradient(160deg, #2A2A2A, #181818)',
+          background: 'linear-gradient(160deg, #FFF7E6, #F4EAD6)',
           transform: `scale(${img.toFixed(4)})`,
           opacity: clamp(img * 2),
           display: 'flex',
@@ -162,7 +162,7 @@ const DesignCanvas: React.FC<{t: number}> = ({t}) => {
           fontWeight: FONT.bold,
           fontSize: 42,
           lineHeight: 0.98,
-          color: COLORS.offWhite,
+          color: COLORS.ink,
           transform: `translateX(${((1 - head) * -60).toFixed(1)}px)`,
           opacity: clamp(head * 2),
         }}
@@ -184,7 +184,7 @@ const DesignCanvas: React.FC<{t: number}> = ({t}) => {
           fontFamily: FONT.family,
           fontWeight: FONT.bold,
           fontSize: 18,
-          color: COLORS.offWhite,
+          color: COLORS.ink,
           transform: `scale(${btn.toFixed(4)})`,
           transformOrigin: 'left center',
           opacity: clamp(btn * 2),
@@ -200,7 +200,7 @@ const DesignCanvas: React.FC<{t: number}> = ({t}) => {
             [0, 1],
             [1, 1],
           ].map(([a, b], i) => (
-            <div key={i} style={{position: 'absolute', left: `calc(${a * 100}% - 6px)`, top: `calc(${b * 100}% - 6px)`, width: 10, height: 10, background: COLORS.offWhite, borderRadius: 2}} />
+            <div key={i} style={{position: 'absolute', left: `calc(${a * 100}% - 6px)`, top: `calc(${b * 100}% - 6px)`, width: 10, height: 10, background: COLORS.ink, borderRadius: 2}} />
           ))}
         </div>
       ) : null}
@@ -209,8 +209,8 @@ const DesignCanvas: React.FC<{t: number}> = ({t}) => {
         <path
           d="M 0 0 L 0 34 L 9 26 L 16 41 L 23 38 L 16 23 L 28 23 Z"
           transform={`translate(${cx} ${cy})`}
-          fill={COLORS.offWhite}
-          stroke={COLORS.charcoal}
+          fill={COLORS.ink}
+          stroke={COLORS.card}
           strokeWidth={2.5}
           strokeLinejoin="round"
         />
@@ -227,7 +227,7 @@ const Typing: React.FC<{t: number}> = ({t}) => {
   const words = typed.split(/(\s+)/);
   return (
     <>
-      <div style={{position: 'absolute', left: 22, right: 22, top: 40, height: 4, borderRadius: 2, background: COLORS.border}}>
+      <div style={{position: 'absolute', left: 22, right: 22, top: 40, height: 4, borderRadius: 2, background: COLORS.line}}>
         <div style={{width: `${(n / C.typedCaption.length) * 100}%`, height: '100%', borderRadius: 2, background: COLORS.orange}} />
       </div>
       <div
@@ -241,7 +241,7 @@ const Typing: React.FC<{t: number}> = ({t}) => {
           fontWeight: FONT.medium,
           fontSize: SIZES.typing,
           lineHeight: 1.38,
-          color: COLORS.offWhite,
+          color: COLORS.ink,
           wordBreak: 'break-word',
         }}
       >
@@ -252,7 +252,7 @@ const Typing: React.FC<{t: number}> = ({t}) => {
         ))}
         <span style={{display: 'inline-block', width: 4, height: SIZES.typing * 1.1, marginLeft: 3, verticalAlign: 'text-bottom', background: COLORS.orange, opacity: blink ? 1 : 0}} />
       </div>
-      <div data-qa="text" style={{position: 'absolute', right: 24, top: PH - 120, fontFamily: FONT.family, fontWeight: FONT.medium, fontSize: 20, color: COLORS.dim, fontVariantNumeric: 'tabular-nums'}}>
+      <div data-qa="text" style={{position: 'absolute', right: 24, top: PH - 120, fontFamily: FONT.family, fontWeight: FONT.medium, fontSize: 20, color: COLORS.inkFaint, fontVariantNumeric: 'tabular-nums'}}>
         {n}/2200
       </div>
     </>
@@ -334,7 +334,7 @@ export const Create: React.FC = () => {
                 width: 160,
                 left: mix(-300, postW + 200, sheen),
                 transform: 'rotate(18deg)',
-                background: 'linear-gradient(90deg, rgba(250,250,250,0) 0%, rgba(250,250,250,0.16) 50%, rgba(250,250,250,0) 100%)',
+                background: 'linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.65) 50%, rgba(255,255,255,0) 100%)',
                 opacity: sheen > 0 && sheen < 1 ? 1 : 0,
               }}
             />

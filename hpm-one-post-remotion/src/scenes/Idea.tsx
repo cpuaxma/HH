@@ -81,13 +81,13 @@ export const Idea: React.FC = () => {
               style={{
                 position: 'absolute',
                 inset: 0,
-                background: i % 2 ? '#F3F1EC' : COLORS.offWhite,
+                background: i % 2 ? '#FFF4D6' : COLORS.card,
                 borderRadius: 6,
-                boxShadow: '0 18px 40px rgba(0,0,0,0.5)',
+                boxShadow: `0 9px 20px ${COLORS.shadow}`,
                 clipPath: 'polygon(0 0, 100% 0, 100% 84%, 84% 100%, 0 100%)',
               }}
             />
-            <div style={{position: 'absolute', right: 0, bottom: 0, width: NOTE * 0.16, height: NOTE * 0.16, background: '#D9D6CF', clipPath: 'polygon(0 0, 100% 0, 0 100%)'}} />
+            <div style={{position: 'absolute', right: 0, bottom: 0, width: NOTE * 0.16, height: NOTE * 0.16, background: '#E9DFC8', clipPath: 'polygon(0 0, 100% 0, 0 100%)'}} />
             <div
               style={{
                 position: 'absolute',
