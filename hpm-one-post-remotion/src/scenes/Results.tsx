@@ -2,7 +2,7 @@ import React from 'react';
 import {AbsoluteFill} from 'remotion';
 import {COLORS, FONT, MOTION, SCENES, SIZES} from '../config';
 import {clamp, mix, spr} from '../lib/anim';
-import {CX, INNER} from '../lib/layout';
+import {CX, INNER, INNER_W} from '../lib/layout';
 import {fitSize, formatStat} from '../lib/text';
 import {Caption} from '../components/Caption';
 import {Icon, IconName} from '../components/Icons';
@@ -10,101 +10,107 @@ import {useSceneFrame} from '../components/SceneShell';
 import {Sfx} from '../components/Sound';
 
 const C = SCENES.results;
-const G = {left: INNER.left + 4, right: INNER.right - 4, top: 370, bottom: 1000};
-const TILE_W = 250;
-const TILE_H = 236;
-const TILE_GAP = (G.right - G.left - TILE_W * 3) / 2;
-const TILE_TOP = 742;
+const G = {left: INNER.left, right: INNER.right, top: 360, bottom: 1060};
+const fmt = (s: {value: number; format: string; prefix: string; suffix: string}, k = 1) => `${s.prefix}${formatStat(s.value * k, s.format)}${s.suffix}`;
 
 export const Results: React.FC = () => {
   const t = useSceneFrame();
-  const draw = clamp(spr(t, C.graphAt, MOTION.smooth, 56));
-  const pts = C.graph.map((v, i) => [mix(G.left, G.right, i / (C.graph.length - 1)), mix(G.bottom - 20, G.top + 20, v)] as const);
+  const draw = clamp(spr(t, C.heroAt - 4, MOTION.smooth, 46));
+  const pts = C.graph.map((v, i) => [mix(G.left, G.right, i / (C.graph.length - 1)), mix(G.bottom, G.top, v)] as const);
   const line = pts.map(([x, y], i) => `${i ? 'L' : 'M'} ${x.toFixed(1)} ${y.toFixed(1)}`).join(' ');
   const area = `${line} L ${G.right} ${G.bottom} L ${G.left} ${G.bottom} Z`;
   const headX = mix(G.left, G.right, draw);
   const fi = draw * (pts.length - 1);
   const i0 = Math.min(pts.length - 2, Math.floor(fi));
   const headY = mix(pts[i0][1], pts[i0 + 1][1], fi - i0);
-  const pulse = (t % 24) / 24;
+  const pulse = (t % 20) / 20;
+
+  const hero = spr(t, C.heroAt, MOTION.slam);
+  const count = clamp(spr(t, C.heroAt + 2, MOTION.smooth, C.countFrames));
+  const heroSize = fitSize([fmt(C.hero)], SIZES.heroStat, INNER_W);
+  const landed = t >= C.heroAt + C.countFrames;
+  const landKick = landed ? Math.exp(-(t - C.heroAt - C.countFrames) * 0.3) : 0;
 
   return (
     <AbsoluteFill>
       <svg width={1080} height={1920} style={{position: 'absolute', inset: 0}}>
         <defs>
           <linearGradient id="areaFill" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor={COLORS.orange} stopOpacity={0.18} />
-            <stop offset="100%" stopColor={COLORS.orange} stopOpacity={0} />
-          </linearGradient>
-          <linearGradient id="lineStroke" x1="0" y1="0" x2="1" y2="0">
-            <stop offset="0%" stopColor={COLORS.orange} />
-            <stop offset="100%" stopColor={COLORS.red} />
+            <stop offset="0%" stopColor={COLORS.red} stopOpacity={0.14} />
+            <stop offset="100%" stopColor={COLORS.red} stopOpacity={0} />
           </linearGradient>
           <clipPath id="graphReveal">
             <rect x={G.left - 20} y={0} width={headX - G.left + 20} height={1920} />
           </clipPath>
         </defs>
-        {[0, 1, 2, 3, 4].map((i) => {
-          const y = mix(G.top, G.bottom, i / 4);
-          const grid = clamp(spr(t, i * 2, MOTION.smooth, 20));
-          return <line key={i} x1={G.left} x2={mix(G.left, G.right, grid)} y1={y} y2={y} stroke={COLORS.ink} strokeOpacity={0.07} strokeWidth={2} strokeDasharray="6 10" />;
-        })}
         <g clipPath="url(#graphReveal)">
           <path d={area} fill="url(#areaFill)" />
-          <path d={line} fill="none" stroke="url(#lineStroke)" strokeWidth={8} strokeLinecap="round" strokeLinejoin="round" />
+          <path d={line} fill="none" stroke={COLORS.red} strokeWidth={12} strokeLinecap="round" strokeLinejoin="round" />
         </g>
         {draw > 0.01 ? (
           <>
-            <circle cx={headX} cy={headY} r={12 + pulse * 30} fill="none" stroke={COLORS.red} strokeWidth={3} opacity={1 - pulse} />
-            <circle cx={headX} cy={headY} r={12} fill={COLORS.card} stroke={COLORS.red} strokeWidth={5} />
+            <circle cx={headX} cy={headY} r={16 + pulse * 36} fill="none" stroke={COLORS.red} strokeWidth={4} opacity={1 - pulse} />
+            <circle cx={headX} cy={headY} r={16} fill={COLORS.card} stroke={COLORS.red} strokeWidth={7} />
           </>
         ) : null}
       </svg>
 
-      {C.stats.map((s, i) => {
-        const pop = spr(t, C.statAt[i], MOTION.bouncy);
-        const count = clamp(spr(t, C.statAt[i] + 2, MOTION.smooth, C.countFrames));
-        const value = `${s.prefix}${formatStat(s.value * count, s.format)}${s.suffix}`;
-        const finalValue = `${s.prefix}${formatStat(s.value, s.format)}${s.suffix}`;
-        const vSize = fitSize([finalValue], SIZES.statValue, TILE_W - 48);
-        const float = Math.sin(t * 0.09 + i * 1.6) * 4;
-        return (
-          <div
-            key={i}
-            style={{
-              position: 'absolute',
-              left: G.left + i * (TILE_W + TILE_GAP),
-              top: TILE_TOP + float,
-              width: TILE_W,
-              height: TILE_H,
-              borderRadius: 28,
-              background: 'rgba(255,255,255,0.95)',
-              border: `2px solid ${COLORS.line}`,
-              boxShadow: `0 13px 30px ${COLORS.shadow}`,
-              transform: `translateY(${((1 - pop) * 120).toFixed(1)}px) scale(${mix(0.7, 1, pop).toFixed(4)})`,
-              opacity: clamp(pop * 2.5),
-              padding: '24px 24px',
-              fontFamily: FONT.family,
-              display: 'flex',
-              flexDirection: 'column',
-              justifyContent: 'space-between',
-            }}
-          >
-            <div style={{display: 'flex', alignItems: 'center', gap: 12}}>
-              <div style={{width: 54, height: 54, borderRadius: 27, background: COLORS.bg, border: `2px solid ${COLORS.line}`, display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
-                <Icon name={s.icon as IconName} size={32} t={t} accent={i === 2 ? COLORS.red : COLORS.orange} stroke={4} />
+      {/* hero number */}
+      <div
+        data-qa="text"
+        style={{
+          position: 'absolute',
+          left: CX - INNER_W / 2,
+          width: INNER_W,
+          top: 500,
+          textAlign: 'center',
+          fontFamily: FONT.family,
+          fontWeight: FONT.bold,
+          color: COLORS.ink,
+          opacity: clamp(hero * 3),
+          transform: `scale(${(mix(1.8, 1, hero) * (1 + landKick * 0.06)).toFixed(4)})`,
+        }}
+      >
+        <div style={{fontSize: heroSize, lineHeight: 0.95, letterSpacing: '-0.045em', fontVariantNumeric: 'tabular-nums', whiteSpace: 'nowrap', textShadow: `0 0 24px ${COLORS.bg}, 0 0 24px ${COLORS.bg}, 0 0 8px ${COLORS.bg}`}}>{fmt(C.hero, count)}</div>
+        <div style={{fontWeight: FONT.medium, fontSize: SIZES.heroStatLabel, color: COLORS.inkSoft, marginTop: 8, display: 'inline-flex', alignItems: 'center', gap: 12, background: COLORS.bg, padding: '2px 14px', borderRadius: 12}}>
+          <Icon name="arrowUp" size={40} color={COLORS.red} stroke={6} />
+          {C.hero.label}
+        </div>
+      </div>
+
+      {/* secondary stats */}
+      <div style={{position: 'absolute', left: INNER.left, width: INNER_W, top: 880, display: 'flex', justifyContent: 'center', gap: 20}}>
+        {C.stats.map((s, i) => {
+          const pop = spr(t, C.statAt[i], MOTION.bouncy);
+          const c = clamp(spr(t, C.statAt[i] + 2, MOTION.smooth, 24));
+          return (
+            <div
+              key={i}
+              data-qa="text"
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 14,
+                padding: '14px 28px 14px 14px',
+                borderRadius: 50,
+                background: COLORS.card,
+                border: `3px solid ${COLORS.ink}`,
+                boxShadow: `0 12px 26px ${COLORS.shadow}`,
+                fontFamily: FONT.family,
+                whiteSpace: 'nowrap',
+                opacity: clamp(pop * 3),
+                transform: `translateY(${((1 - pop) * 60).toFixed(1)}px) scale(${mix(0.6, 1, pop).toFixed(4)})`,
+              }}
+            >
+              <div style={{width: 60, height: 60, borderRadius: 30, background: COLORS.red, display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
+                <Icon name={s.icon as IconName} size={36} t={t} color={COLORS.offWhite} accent={COLORS.offWhite} stroke={4} />
               </div>
-              <div style={{marginLeft: 'auto', opacity: clamp(count * 3), transform: `translateY(${((1 - count) * 10).toFixed(1)}px)`}}>
-                <Icon name="arrowUp" size={30} color={COLORS.orange} stroke={5} />
-              </div>
+              <span style={{fontWeight: FONT.bold, fontSize: SIZES.statValue, color: COLORS.ink, fontVariantNumeric: 'tabular-nums'}}>{fmt(s, c)}</span>
+              <span style={{fontWeight: FONT.medium, fontSize: SIZES.statLabel, color: COLORS.inkSoft}}>{s.label}</span>
             </div>
-            <div data-qa="text">
-              <div style={{fontWeight: FONT.bold, fontSize: vSize, color: COLORS.ink, lineHeight: 1, letterSpacing: '-0.02em', fontVariantNumeric: 'tabular-nums', whiteSpace: 'nowrap'}}>{value}</div>
-              <div style={{fontWeight: FONT.medium, fontSize: SIZES.statLabel, color: COLORS.inkSoft, marginTop: 10}}>{s.label}</div>
-            </div>
-          </div>
-        );
-      })}
+          );
+        })}
+      </div>
 
       {C.showExampleLabel ? (
         <div
@@ -113,7 +119,7 @@ export const Results: React.FC = () => {
             position: 'absolute',
             left: CX - 200,
             width: 400,
-            top: TILE_TOP + TILE_H + 26,
+            top: 1010,
             display: 'flex',
             justifyContent: 'center',
             alignItems: 'center',
@@ -122,7 +128,7 @@ export const Results: React.FC = () => {
             fontWeight: FONT.medium,
             fontSize: SIZES.tiny,
             color: COLORS.inkSoft,
-            opacity: clamp((t - C.statAt[2] - 10) / 10) * 0.9,
+            opacity: clamp((t - C.statAt[C.statAt.length - 1] - 8) / 10) * 0.9,
           }}
         >
           <Icon name="info" size={26} color={COLORS.inkSoft} stroke={3.4} />
@@ -130,6 +136,7 @@ export const Results: React.FC = () => {
         </div>
       ) : null}
       <Caption lines={C.caption} at={C.captionAt} />
+      <Sfx name="bass-hit" at={C.heroAt + C.countFrames} />
       {C.statAt.map((at, i) => (
         <Sfx key={i} name="pop" at={at} />
       ))}

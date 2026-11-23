@@ -2,128 +2,130 @@ import React from 'react';
 import {AbsoluteFill} from 'remotion';
 import {COLORS, FONT, MOTION, SCENES, SIZES} from '../config';
 import {clamp, mix, spr} from '../lib/anim';
-import {INNER} from '../lib/layout';
-import {fitSize} from '../lib/text';
+import {CX, INNER_W} from '../lib/layout';
+import {textWidth} from '../lib/text';
 import {Caption} from '../components/Caption';
 import {Icon, IconName} from '../components/Icons';
 import {useSceneFrame} from '../components/SceneShell';
 import {Sfx} from '../components/Sound';
 
 const C = SCENES.strategy;
-const CARD_H = 200;
-const GAP = 34;
-const TOP = 360;
-const LEFT = INNER.left + 4;
-const WIDTH = INNER.right - INNER.left - 8;
+const TARGET = {x: CX, y: 690};
+const RINGS = [
+  {r: 280, fill: COLORS.red},
+  {r: 218, fill: COLORS.card},
+  {r: 156, fill: COLORS.red},
+  {r: 94, fill: COLORS.card},
+  {r: 40, fill: COLORS.red},
+];
+// Dart flies in along this direction (from upper right), tail pointing back along it.
+const ANGLE = (-38 * Math.PI) / 180;
+const DART_LEN = 300;
 
 export const Strategy: React.FC = () => {
   const t = useSceneFrame();
-  const spine = spr(t, C.checkAt[0] - 8, MOTION.smooth, 24);
-  const iconCx = LEFT + 34 + 56;
+
+  // Dart flight: far away → centre, arriving exactly at dartAt.
+  const fly = clamp(spr(t, C.dartAt - 9, MOTION.smooth, 9));
+  const hit = t >= C.dartAt;
+  const dist = mix(1500, 0, fly);
+  const tipX = TARGET.x + Math.cos(ANGLE) * dist;
+  const tipY = TARGET.y + Math.sin(ANGLE) * dist;
+  // Shaft vibrates after the hit.
+  const since = t - C.dartAt;
+  const quiver = hit ? Math.exp(-since * 0.16) * Math.sin(since * 1.9) * 7 : 0;
+  const tailAng = ANGLE + (quiver * Math.PI) / 180;
+  const tailX = tipX + Math.cos(tailAng) * DART_LEN;
+  const tailY = tipY + Math.sin(tailAng) * DART_LEN;
+  // Board kicks back on impact.
+  const kick = hit ? Math.exp(-since * 0.25) * Math.sin(since * 1.6) : 0;
+  const impact = clamp(since / 18);
+
+  // Chips row
+  const chipW = C.chips.map((c) => textWidth(c.title, SIZES.chip) + 60 + 44 + 16);
+  const gap = 18;
+  const totalW = chipW.reduce((a, b) => a + b, 0) + gap * (chipW.length - 1);
+  const chipScale = Math.min(1, INNER_W / totalW);
 
   return (
     <AbsoluteFill>
-      {/* spine connecting the three icons */}
-      <svg width={1080} height={1920} style={{position: 'absolute', inset: 0}}>
-        <defs>
-          <linearGradient id="spine" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor={COLORS.orange} />
-            <stop offset="100%" stopColor={COLORS.red} />
-          </linearGradient>
-        </defs>
-        <line
-          x1={iconCx}
-          x2={iconCx}
-          y1={TOP + CARD_H / 2}
-          y2={mix(TOP + CARD_H / 2, TOP + 2 * (CARD_H + GAP) + CARD_H / 2, clamp(spine))}
-          stroke="url(#spine)"
-          strokeWidth={6}
-          strokeLinecap="round"
-          opacity={spine > 0 ? 0.9 : 0}
-        />
+      <svg width={1080} height={1920} style={{position: 'absolute', inset: 0, overflow: 'visible'}}>
+        <g transform={`translate(${TARGET.x} ${TARGET.y}) scale(${(1 - kick * 0.04).toFixed(4)}) rotate(${(kick * 2).toFixed(2)})`}>
+          <circle r={RINGS[0].r + 16} fill="none" stroke={COLORS.ink} strokeWidth={4} opacity={clamp(spr(t, C.targetAt, MOTION.snap))} />
+          {RINGS.map((ring, i) => {
+            const s = spr(t, C.targetAt + i * 3, MOTION.bouncy);
+            return <circle key={i} r={Math.max(0, ring.r * s)} fill={ring.fill} stroke={COLORS.ink} strokeWidth={4} />;
+          })}
+          {hit && impact < 1 ? <circle r={50 + impact * 330} fill="none" stroke={COLORS.orange} strokeWidth={10 * (1 - impact) + 1} opacity={1 - impact} /> : null}
+        </g>
+        {fly > 0 ? (
+          <g>
+            {/* shaft */}
+            <line x1={tipX} y1={tipY} x2={tailX} y2={tailY} stroke={COLORS.ink} strokeWidth={16} strokeLinecap="round" />
+            {/* metal tip */}
+            <line x1={tipX} y1={tipY} x2={tipX + Math.cos(tailAng) * 50} y2={tipY + Math.sin(tailAng) * 50} stroke={COLORS.inkFaint} strokeWidth={10} strokeLinecap="round" />
+            {/* fletching */}
+            <g transform={`translate(${tailX} ${tailY}) rotate(${((tailAng * 180) / Math.PI).toFixed(2)})`}>
+              <path d="M -70 0 L 12 -46 L 0 0 Z" fill={COLORS.orange} stroke={COLORS.ink} strokeWidth={4} strokeLinejoin="round" />
+              <path d="M -70 0 L 12 46 L 0 0 Z" fill={COLORS.orange} stroke={COLORS.ink} strokeWidth={4} strokeLinejoin="round" />
+            </g>
+          </g>
+        ) : null}
       </svg>
-      {C.cards.map((card, i) => {
-        const s = spr(t, C.cardAt[i], MOTION.snap);
-        const dir = 1; // same direction as the whip-pan that brings the scene in
-        const x = (1 - s) * dir * 1000;
-        const rot = (1 - s) * dir * -8;
-        const land = spr(t, C.cardAt[i] + 7, MOTION.bouncy);
-        const pulse = 1 + 0.035 * Math.sin(Math.PI * clamp(land)) * (land < 1 ? 1 : 0);
-        const check = spr(t, C.checkAt[i], MOTION.bouncy);
-        const float = Math.sin(t * 0.08 + i * 1.9) * 4;
-        const titleSize = fitSize([card.title], SIZES.cardTitle, 430);
-        const lineSize = fitSize([card.line], SIZES.cardLine, 520, FONT.medium);
-        return (
-          <div
-            key={i}
-            style={{
-              position: 'absolute',
-              left: LEFT,
-              top: TOP + i * (CARD_H + GAP) + float,
-              width: WIDTH,
-              height: CARD_H,
-              borderRadius: 30,
-              background: COLORS.card,
-              border: `2px solid ${check > 0.5 ? '#F6CDB0' : COLORS.line}`,
-              boxShadow: `0 13px 30px ${COLORS.shadow}`,
-              transform: `translateX(${x.toFixed(1)}px) rotate(${rot.toFixed(2)}deg) scale(${pulse.toFixed(4)})`,
-              display: 'flex',
-              alignItems: 'center',
-              padding: '0 34px',
-              gap: 30,
-              fontFamily: FONT.family,
-              overflow: 'hidden',
-            }}
-          >
-            <div style={{position: 'absolute', left: 0, top: 26, bottom: 26, width: 7, borderRadius: 4, background: i === 1 ? COLORS.red : COLORS.orange}} />
+
+      <div
+        style={{
+          position: 'absolute',
+          left: CX - totalW / 2,
+          top: 1040,
+          width: totalW,
+          display: 'flex',
+          gap,
+          transform: `scale(${chipScale})`,
+          transformOrigin: 'center top',
+        }}
+      >
+        {C.chips.map((chip, i) => {
+          const s = spr(t, C.chipAt[i], MOTION.bouncy);
+          return (
             <div
+              key={i}
+              data-qa="text"
               style={{
-                width: 112,
-                height: 112,
-                flex: '0 0 112px',
-                borderRadius: 56,
-                border: `3px solid ${COLORS.line}`,
-                background: COLORS.bg,
+                width: chipW[i],
+                height: 84,
+                borderRadius: 42,
+                background: COLORS.card,
+                border: `3px solid ${COLORS.ink}`,
+                boxShadow: `0 10px 24px ${COLORS.shadow}`,
                 display: 'flex',
                 alignItems: 'center',
-                justifyContent: 'center',
-                position: 'relative',
-                zIndex: 2,
+                gap: 12,
+                padding: '0 26px 0 14px',
+                boxSizing: 'border-box',
+                fontFamily: FONT.family,
+                fontWeight: FONT.bold,
+                fontSize: SIZES.chip,
+                color: COLORS.ink,
+                whiteSpace: 'nowrap',
+                opacity: clamp(s * 3),
+                transform: `translateY(${((1 - s) * 60).toFixed(1)}px) scale(${mix(0.6, 1, s).toFixed(4)})`,
               }}
             >
-              <Icon name={card.icon as IconName} size={60} t={t} accent={i === 1 ? COLORS.red : COLORS.orange} />
-            </div>
-            <div data-qa="text" style={{display: 'flex', flexDirection: 'column', gap: 8, minWidth: 0}}>
-              <div style={{fontWeight: FONT.bold, fontSize: titleSize, color: COLORS.ink, letterSpacing: '-0.01em'}}>{card.title}</div>
-              <div style={{fontWeight: FONT.medium, fontSize: lineSize, color: COLORS.inkSoft, whiteSpace: 'nowrap'}}>{card.line}</div>
-            </div>
-            <div
-              style={{
-                marginLeft: 'auto',
-                width: 64,
-                height: 64,
-                flex: '0 0 64px',
-                borderRadius: 32,
-                border: `3px solid ${check > 0.05 ? COLORS.orange : COLORS.line}`,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                transform: `scale(${(0.7 + 0.3 * clamp(check, 0, 1.2)).toFixed(3)})`,
-              }}
-            >
-              <div style={{opacity: clamp(check * 2), transform: `scale(${check.toFixed(3)})`}}>
-                <Icon name="check" size={38} color={COLORS.orange} stroke={5} />
+              <div style={{width: 56, height: 56, borderRadius: 28, background: COLORS.bg, display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
+                <Icon name={chip.icon as IconName} size={38} t={t} accent={COLORS.red} stroke={4} />
               </div>
+              {chip.title}
             </div>
-          </div>
-        );
-      })}
+          );
+        })}
+      </div>
+
       <Caption lines={C.caption} at={C.captionAt} />
-      {C.cardAt.map((at, i) => (
-        <Sfx key={`c${i}`} name="pop" at={at + 6} />
-      ))}
-      {C.checkAt.map((at, i) => (
-        <Sfx key={`k${i}`} name="tap" at={at} />
+      <Sfx name="whoosh" at={C.dartAt - 8} />
+      <Sfx name="bass-hit" at={C.dartAt} />
+      {C.chipAt.map((at, i) => (
+        <Sfx key={i} name="pop" at={at} />
       ))}
     </AbsoluteFill>
   );

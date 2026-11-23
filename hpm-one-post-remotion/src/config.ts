@@ -25,6 +25,7 @@ export const BRAND = {
   dmKeyword: 'KICK',
   // Files inside assets/ (the Remotion public dir). Rebuild with `npm run assets`.
   logo: 'logo-on-light.png', // transparent-background logo, original colours
+  logoWhite: 'logo-white.png', // all-white version for the red CTA card
   logoAspect: 744 / 515, // width / height of the logo file
 } as const;
 
@@ -61,32 +62,34 @@ export const FONT = {
 } as const;
 
 export const SIZES = {
-  caption: 90,
-  hookLine1: 92,
-  hookLine2: 132,
-  hookOneGrowTo: 1.32, // "ONE" keeps scaling up to this while the hook holds
+  caption: 110,
+  hookLine1: 96,
+  hookHero: 400, // the giant "ONE" (shrinks automatically to fit the width)
+  hookLine3: 150,
+  heroGrowTo: 1.08, // the giant word keeps growing slowly to this
   clock: 40,
   small: 30,
   tiny: 24,
-  note: 33,
-  cardTitle: 46,
-  cardLine: 31,
-  panelLabel: 22,
-  typing: 27,
+  note: 48,
+  chip: 34,
+  stepTag: 30,
+  typing: 24,
   postHandle: 26,
   postHeadline: 64,
-  phoneUi: 24,
-  bubble: 28,
-  statValue: 62,
-  statLabel: 27,
-  ctaQuestion: 82,
-  ctaDm: 116,
+  adButton: 40,
+  bubble: 30,
+  heroStat: 250,
+  heroStatLabel: 44,
+  statValue: 44,
+  statLabel: 28,
+  ctaQuestion: 96,
+  ctaDm: 130,
   ctaTagline: 42,
-  ctaHandle: 42,
+  ctaHandle: 44,
 } as const;
 
 export const CAPTION = {
-  top: 1190, // y of the first caption line
+  top: 1196, // y of the first caption line
   lineHeight: 1.04,
   maxWidth: 800, // px; lines wider than this are shrunk to fit
   wordStagger: 4, // frames between words
@@ -140,72 +143,80 @@ export const SFX = {
 export const SCENES = {
   hook: {
     duration: 60,
-    line1: ['What', 'goes', 'into'],
-    line2: ['*ONE*', 'post?'],
-    wordAt: [2, 7, 11, 15, 22], // slam frame per word (ONE lands on the beat)
-    bassHitWord: 3, // index of the word that triggers sfx/bass-hit
+    line1: 'What goes into', // small line above
+    hero: 'ONE', // giant red word
+    line3: 'post?',
+    line1At: 2,
+    heroAt: 13, // giant word slams (bass hit)
+    line3At: 24,
   },
 
   idea: {
     duration: 120,
     clock: '08:00',
     caption: ['It starts', 'with an *idea*'],
-    captionAt: 16,
-    notes: ['Behind the scenes', 'Customer story', 'Trend remix', 'Before / after', 'Founder tip', 'Menu drop'],
-    chosenNote: 1, // index into notes that gets the red circle
-    flyInAt: -6, // notes start flying while the flame wipe is still revealing the scene
-    flyStagger: 3,
-    scatterAt: 26,
-    circleAt: 54,
-    circleFrames: 22,
+    captionAt: 14,
+    notes: ['Trend remix', 'Founder tip', 'Customer story'], // three big notes
+    chosenNote: 2, // the one that survives (gets circled)
+    noteAt: [-6, 2, 10], // each note slaps down
+    crossAt: 40, // the other two get scribbled out ...
+    dropAt: 52, // ... and fall away
+    circleAt: 60,
+    circleFrames: 20,
   },
 
   strategy: {
     duration: 120,
     clock: '10:00',
     caption: ['Then a', '*strategy*'],
-    captionAt: 30,
-    cards: [
-      {title: 'Audience', line: 'Local foodies, 25 to 40', icon: 'audience'},
-      {title: 'Goal', line: 'Fill 50 more tables a week', icon: 'target'},
-      {title: 'Message', line: 'New menu. Same kick.', icon: 'message'},
+    captionAt: 34,
+    targetAt: -4, // bullseye rings draw in
+    dartAt: 20, // dart thunks into the centre
+    chips: [
+      {title: 'Audience', icon: 'audience'},
+      {title: 'Goal', icon: 'target'},
+      {title: 'Message', icon: 'message'},
     ],
-    cardAt: [-4, 4, 12], // negative = already flying in during the whip-pan
-    checkAt: [46, 53, 60],
+    chipAt: [30, 36, 42],
   },
 
   create: {
     duration: 150,
     clock: '13:00',
     caption: ['We *create* it'],
-    captionAt: 22,
-    panelLabels: ['SHOOT', 'DESIGN', 'WRITE'],
+    captionAt: 16,
+    steps: [
+      {label: 'SHOOT', at: 6},
+      {label: 'DESIGN', at: 40},
+      {label: 'WRITE', at: 70},
+    ],
+    flashAt: 12, // camera flash, photo drops in
+    headlineAt: 44,
+    buttonAt: 56,
+    typeAt: 72,
+    typeFramesPerChar: 0.8,
+    doneAt: 104, // heart pops + sheen: post finished
     postHeadline: ['NEW', 'MENU'],
     postButton: 'Order now',
     typedCaption: 'New menu, same kick. Tag who you are bringing. #eatlocal',
-    typeAt: 12,
-    typeFramesPerChar: 1.1,
-    mergeAt: 92, // panels merge into the finished post
   },
 
   launch: {
     duration: 120,
     clock: '17:00',
     caption: ['Publish +', '*ad campaigns*'],
-    captionAt: 20,
-    publishingLabel: 'Publishing...',
+    captionAt: 16,
     postedLabel: 'Posted',
     adButtonLabel: 'Launch ad campaign',
     adLiveLabel: 'Campaign live',
-    publishAt: 2,
-    postedAt: 30,
-    adButtonAt: 34,
-    tapAt: 54,
+    postAt: -4,
+    postedAt: 14,
+    adButtonAt: 24,
+    tapAt: 50, // finger taps → burst of likes
     notifications: [
-      {icon: 'heart', text: '+1.2K likes', at: 62},
-      {icon: 'comment', text: '86 comments', at: 70},
-      {icon: 'user', text: '+340 followers', at: 78},
-      {icon: 'dm', text: 'New DM: "Book for 4?"', at: 86},
+      {icon: 'heart', text: '+1.2K likes', at: 58},
+      {icon: 'comment', text: '86 comments', at: 66},
+      {icon: 'dm', text: 'New DM: "Book for 4?"', at: 74},
     ],
   },
 
@@ -213,29 +224,30 @@ export const SCENES = {
     duration: 90,
     clock: '20:00', // set to null to hide the clock in this scene
     caption: ['Then we', '*measure*'],
-    captionAt: 14,
+    captionAt: 12,
+    hero: {label: 'people reached', value: 48200, format: 'compact', prefix: '', suffix: ''},
     stats: [
-      {label: 'Reach', value: 48200, format: 'compact', prefix: '', suffix: '', icon: 'eye'},
-      {label: 'Followers', value: 1240, format: 'comma', prefix: '+', suffix: '', icon: 'users'},
-      {label: 'Leads', value: 37, format: 'comma', prefix: '', suffix: '', icon: 'target'},
+      {label: 'followers', value: 1240, format: 'comma', prefix: '+', suffix: '', icon: 'users'},
+      {label: 'leads', value: 37, format: 'comma', prefix: '', suffix: '', icon: 'target'},
     ],
-    statAt: [2, 7, 12],
-    countFrames: 42,
-    graphAt: 0,
-    graph: [0.08, 0.12, 0.1, 0.22, 0.2, 0.34, 0.31, 0.47, 0.55, 0.52, 0.7, 0.82, 0.95], // 0..1, left → right
+    heroAt: 0,
+    countFrames: 40,
+    statAt: [24, 30],
+    graph: [0.05, 0.1, 0.08, 0.2, 0.18, 0.32, 0.3, 0.48, 0.58, 0.55, 0.75, 0.9, 1], // 0..1, left → right
     showExampleLabel: true, // turn OFF once the numbers are real
     exampleLabel: 'Example results',
   },
 
   cta: {
     duration: 90,
+    redBackground: true, // full chili-red end card (like the feed's red posts); false = light
     question: ['Want this for', 'your brand?'],
     dm: 'DM us', // followed by ‘BRAND.dmKeyword’
     logoAt: 0,
-    questionAt: 10,
-    dmAt: 20,
-    taglineAt: 28,
-    handleAt: 32,
+    questionAt: 8,
+    dmAt: 18,
+    taglineAt: 26,
+    handleAt: 30,
     // everything is settled by ~frame 45 of the CTA → the last 1.5 s is a full hold
   },
 } as const;
@@ -258,7 +270,8 @@ export const NO_HUD: readonly string[] = ['hook', 'cta'];
 
 // Thumbnail (out/thumbnail.png)
 export const THUMBNAIL = {
-  line1: 'What goes into',
-  line2: ['*ONE*', 'post?'],
   kicker: 'A day in the life of',
+  line1: 'What goes into',
+  hero: 'ONE',
+  line3: 'post?',
 } as const;

@@ -1,113 +1,89 @@
 import React from 'react';
 import {AbsoluteFill} from 'remotion';
-import {COLORS, FONT, MOTION, SCENES, SIZES} from '../config';
+import {BRAND, COLORS, FONT, MOTION, SCENES, SIZES} from '../config';
 import {clamp, mix, spr} from '../lib/anim';
-import {CX, INNER} from '../lib/layout';
+import {CX} from '../lib/layout';
 import {Caption} from '../components/Caption';
-import {DishArt, PostCard} from '../components/Art';
+import {ChiliMark} from '../components/ChiliMark';
+import {DishArt} from '../components/Art';
+import {Icon} from '../components/Icons';
 import {useSceneFrame} from '../components/SceneShell';
 import {Sfx} from '../components/Sound';
 
 const C = SCENES.create;
-const PW = 250;
-const GAP = (INNER.right - INNER.left - 8 - PW * 3) / 2;
-const PH = 660;
-const TOP = 350;
-const LEFT = INNER.left + 4;
+const CARD_W = 540;
+const K = CARD_W / 580;
+const CARD_TOP = 410;
+const IMG = {x: 0, y: 96, w: 580, h: 580}; // image well inside the 580 × 800 card
 
-const PanelFrame: React.FC<{label: string; children: React.ReactNode}> = ({label, children}) => (
-  <div
-    style={{
-      position: 'absolute',
-      inset: 0,
-      borderRadius: 26,
-      background: COLORS.card,
-      border: `2px solid ${COLORS.line}`,
-      overflow: 'hidden',
-      boxShadow: `0 15px 35px ${COLORS.shadow}`,
-    }}
-  >
-    {children}
+const StepTag: React.FC<{t: number}> = ({t}) => {
+  const steps = C.steps;
+  let idx = -1;
+  steps.forEach((s, i) => {
+    if (t >= s.at) idx = i;
+  });
+  if (idx < 0) return null;
+  const s = spr(t, steps[idx].at, MOTION.bouncy);
+  const out = spr(t, C.doneAt, MOTION.smooth, 10);
+  return (
     <div
       data-qa="text"
       style={{
         position: 'absolute',
-        left: 0,
-        right: 0,
-        bottom: 22,
-        textAlign: 'center',
-        fontFamily: FONT.family,
-        fontWeight: FONT.bold,
-        fontSize: SIZES.panelLabel,
-        letterSpacing: '0.22em',
-        color: COLORS.inkSoft,
+        left: CX - 200,
+        width: 400,
+        top: CARD_TOP - 42,
+        display: 'flex',
+        justifyContent: 'center',
+        zIndex: 20,
+        opacity: clamp(s * 3) * (1 - out),
+        transform: `translateY(${((1 - s) * 30).toFixed(1)}px) scale(${mix(0.7, 1, s).toFixed(4)})`,
       }}
     >
-      {label}
-    </div>
-  </div>
-);
-
-const Viewfinder: React.FC<{t: number}> = ({t}) => {
-  const recOn = Math.floor(t / 12) % 2 === 0 || t < 0;
-  const af = spr(t, 18, MOTION.bouncy);
-  const box = mix(190, 150, af);
-  const sec = Math.max(0, t) / 30;
-  const tc = `00:00:${String(Math.floor(sec)).padStart(2, '0')}:${String(Math.floor((sec % 1) * 30)).padStart(2, '0')}`;
-  const hx = Math.sin(t * 0.11) * 6;
-  const hy = Math.cos(t * 0.09) * 5;
-  const bracket = (x: number, y: number, r: number) => (
-    <path d="M 0 30 V 0 H 30" transform={`translate(${x} ${y}) rotate(${r})`} stroke={COLORS.ink} strokeWidth={4} fill="none" strokeLinecap="round" />
-  );
-  return (
-    <>
-      <svg width={PW} height={PH} style={{position: 'absolute', inset: 0}}>
-        {bracket(22, 22, 0)}
-        {bracket(PW - 22, 22, 90)}
-        {bracket(PW - 22, PH - 70, 180)}
-        {bracket(22, PH - 70, 270)}
-        <line x1={PW / 2 - 12} x2={PW / 2 + 12} y1={PH / 2 - 30} y2={PH / 2 - 30} stroke={COLORS.ink} strokeWidth={2} opacity={0.5} />
-        <line x1={PW / 2} x2={PW / 2} y1={PH / 2 - 42} y2={PH / 2 - 18} stroke={COLORS.ink} strokeWidth={2} opacity={0.5} />
-      </svg>
-      <div style={{position: 'absolute', left: PW / 2 - 95 + hx, top: PH / 2 - 120 + hy}}>
-        <DishArt size={190} t={t} />
-      </div>
       <div
         style={{
-          position: 'absolute',
-          left: PW / 2 - box / 2 + hx,
-          top: PH / 2 - 25 - box / 2 + hy,
-          width: box,
-          height: box,
-          border: `3px solid ${af > 0.6 ? COLORS.orange : COLORS.ink}`,
-          borderRadius: 6,
-          opacity: 0.85,
+          padding: '14px 30px',
+          borderRadius: 40,
+          background: COLORS.ink,
+          color: COLORS.offWhite,
+          fontFamily: FONT.family,
+          fontWeight: FONT.bold,
+          fontSize: SIZES.stepTag,
+          letterSpacing: '0.2em',
+          display: 'flex',
+          alignItems: 'center',
+          gap: 14,
         }}
-      />
-      <div data-qa="text" style={{position: 'absolute', left: 40, top: 46, display: 'flex', alignItems: 'center', gap: 10, fontFamily: FONT.family, fontWeight: FONT.bold, fontSize: 24, color: COLORS.ink}}>
-        <div style={{width: 18, height: 18, borderRadius: 9, background: COLORS.red, opacity: recOn ? 1 : 0.25, boxShadow: recOn ? '0 0 12px rgba(230,57,70,0.55)' : 'none'}} />
-        REC
+      >
+        <span style={{width: 14, height: 14, borderRadius: 7, background: COLORS.red, display: 'inline-block'}} />
+        {`${idx + 1}/${steps.length}  ${steps[idx].label}`}
       </div>
-      <div data-qa="text" style={{position: 'absolute', left: 0, right: 0, top: PH - 120, textAlign: 'center', fontFamily: FONT.family, fontWeight: FONT.medium, fontSize: 20, color: COLORS.ink, fontVariantNumeric: 'tabular-nums'}}>
-        {tc}
-      </div>
-    </>
+    </div>
   );
 };
 
-const DesignCanvas: React.FC<{t: number}> = ({t}) => {
-  const img = spr(t, 14, MOTION.bouncy);
-  const head = spr(t, 28, MOTION.snap);
-  const stripe = spr(t, 38, MOTION.smooth, 14);
-  const btn = spr(t, 48, MOTION.bouncy);
-  // Cursor waypoints (panel coords) – it travels to each element as it's placed.
+export const Create: React.FC = () => {
+  const t = useSceneFrame();
+  const card = spr(t, -4, MOTION.snap);
+  const shoot = spr(t, C.steps[0].at, MOTION.snap);
+  const flash = t >= C.flashAt ? Math.exp(-(t - C.flashAt) * 0.35) : 0;
+  const photo = spr(t, C.flashAt, MOTION.bouncy);
+  const head = spr(t, C.headlineAt, MOTION.slam);
+  const btn = spr(t, C.buttonAt, MOTION.bouncy);
+  const nChars = Math.max(0, Math.min(C.typedCaption.length, Math.floor((t - C.typeAt) / C.typeFramesPerChar)));
+  const typing = t >= C.typeAt && nChars < C.typedCaption.length;
+  const done = spr(t, C.doneAt, MOTION.bouncy);
+  const heart = clamp((t - C.doneAt) / 14);
+  const sheen = clamp((t - C.doneAt - 6) / 22);
+  const vfOut = spr(t, C.headlineAt - 6, MOTION.smooth, 10); // viewfinder leaves once design starts
+  const recOn = Math.floor(t / 10) % 2 === 0;
+
+  // Cursor travels to each design element as it lands.
   const way: [number, number, number][] = [
-    [-10, 210, 540],
-    [10, 150, 200],
-    [24, 80, 350],
-    [40, 120, 390],
-    [46, 140, 458],
-    [70, 190, 500],
+    [C.headlineAt - 10, 470, 640],
+    [C.headlineAt, 120, 160],
+    [C.buttonAt, 140, 600],
+    [C.typeAt, 360, 720],
   ];
   let cx = way[0][1];
   let cy = way[0][2];
@@ -116,237 +92,172 @@ const DesignCanvas: React.FC<{t: number}> = ({t}) => {
     cx = mix(cx, way[i][1], s);
     cy = mix(cy, way[i][2], s);
   }
-  const clicks = [14, 28, 48];
-  const ring = clicks.map((c) => clamp((t - c) / 10)).find((v) => v > 0 && v < 1) ?? 0;
-  const selected = t >= 48 ? 2 : t >= 28 ? 1 : t >= 14 ? 0 : -1;
-  const sel = [
-    {x: 20, y: 70, w: 210, h: 210},
-    {x: 20, y: 300, w: 210, h: 110},
-    {x: 20, y: 430, w: 150, h: 50},
-  ][selected];
-  return (
-    <>
-      <svg width={PW} height={PH} style={{position: 'absolute', inset: 0}}>
-        <defs>
-          <pattern id="canvasDots" width={18} height={18} patternUnits="userSpaceOnUse">
-            <circle cx={1.5} cy={1.5} r={1.5} fill={COLORS.ink} opacity={0.12} />
-          </pattern>
-        </defs>
-        <rect width={PW} height={PH} fill="url(#canvasDots)" />
-      </svg>
-      <div
-        style={{
-          position: 'absolute',
-          left: 20,
-          top: 70,
-          width: 210,
-          height: 210,
-          borderRadius: 14,
-          background: 'linear-gradient(160deg, #FFF7E6, #F4EAD6)',
-          transform: `scale(${img.toFixed(4)})`,
-          opacity: clamp(img * 2),
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-        }}
-      >
-        <DishArt size={170} t={t} />
-      </div>
-      <div
-        data-qa="text"
-        style={{
-          position: 'absolute',
-          left: 20,
-          top: 300,
-          fontFamily: FONT.family,
-          fontWeight: FONT.bold,
-          fontSize: 42,
-          lineHeight: 0.98,
-          color: COLORS.ink,
-          transform: `translateX(${((1 - head) * -60).toFixed(1)}px)`,
-          opacity: clamp(head * 2),
-        }}
-      >
-        {C.postHeadline.map((l, i) => (
-          <div key={i}>{l}</div>
-        ))}
-      </div>
-      <div style={{position: 'absolute', left: 20, top: 396, width: 90 * clamp(stripe), height: 8, borderRadius: 4, background: COLORS.orange}} />
-      <div
-        data-qa="text"
-        style={{
-          position: 'absolute',
-          left: 20,
-          top: 430,
-          padding: '10px 18px',
-          borderRadius: 30,
-          border: `3px solid ${COLORS.red}`,
-          fontFamily: FONT.family,
-          fontWeight: FONT.bold,
-          fontSize: 18,
-          color: COLORS.ink,
-          transform: `scale(${btn.toFixed(4)})`,
-          transformOrigin: 'left center',
-          opacity: clamp(btn * 2),
-        }}
-      >
-        {C.postButton}
-      </div>
-      {sel ? (
-        <div style={{position: 'absolute', left: sel.x - 6, top: sel.y - 6, width: sel.w + 12, height: sel.h + 12, border: `2px dashed ${COLORS.orange}`, borderRadius: 8, opacity: 0.9}}>
-          {[
-            [0, 0],
-            [1, 0],
-            [0, 1],
-            [1, 1],
-          ].map(([a, b], i) => (
-            <div key={i} style={{position: 'absolute', left: `calc(${a * 100}% - 6px)`, top: `calc(${b * 100}% - 6px)`, width: 10, height: 10, background: COLORS.ink, borderRadius: 2}} />
-          ))}
-        </div>
-      ) : null}
-      <svg width={PW} height={PH} style={{position: 'absolute', inset: 0, overflow: 'visible'}}>
-        <circle cx={cx} cy={cy} r={8 + ring * 26} fill="none" stroke={COLORS.orange} strokeWidth={3} opacity={ring > 0 ? 1 - ring : 0} />
-        <path
-          d="M 0 0 L 0 34 L 9 26 L 16 41 L 23 38 L 16 23 L 28 23 Z"
-          transform={`translate(${cx} ${cy})`}
-          fill={COLORS.ink}
-          stroke={COLORS.card}
-          strokeWidth={2.5}
-          strokeLinejoin="round"
-        />
-      </svg>
-    </>
-  );
-};
+  const cursorOn = t >= C.headlineAt - 12 && t < C.doneAt;
+  const click = [C.headlineAt, C.buttonAt].map((c) => clamp((t - c) / 10)).find((v) => v > 0 && v < 1) ?? 0;
 
-const Typing: React.FC<{t: number}> = ({t}) => {
-  const n = Math.max(0, Math.min(C.typedCaption.length, Math.floor((t - C.typeAt) / C.typeFramesPerChar)));
-  const typed = C.typedCaption.slice(0, n);
-  const done = n >= C.typedCaption.length;
-  const blink = !done || Math.floor(t / 9) % 2 === 0;
-  const words = typed.split(/(\s+)/);
-  return (
-    <>
-      <div style={{position: 'absolute', left: 22, right: 22, top: 40, height: 4, borderRadius: 2, background: COLORS.line}}>
-        <div style={{width: `${(n / C.typedCaption.length) * 100}%`, height: '100%', borderRadius: 2, background: COLORS.orange}} />
-      </div>
-      <div
-        data-qa="text"
-        style={{
-          position: 'absolute',
-          left: 26,
-          right: 22,
-          top: 74,
-          fontFamily: FONT.family,
-          fontWeight: FONT.medium,
-          fontSize: SIZES.typing,
-          lineHeight: 1.38,
-          color: COLORS.ink,
-          wordBreak: 'break-word',
-        }}
-      >
-        {words.map((w, i) => (
-          <span key={i} style={{color: w.startsWith('#') ? COLORS.orange : undefined, fontWeight: w.startsWith('#') ? FONT.bold : undefined}}>
-            {w}
-          </span>
-        ))}
-        <span style={{display: 'inline-block', width: 4, height: SIZES.typing * 1.1, marginLeft: 3, verticalAlign: 'text-bottom', background: COLORS.orange, opacity: blink ? 1 : 0}} />
-      </div>
-      <div data-qa="text" style={{position: 'absolute', right: 24, top: PH - 120, fontFamily: FONT.family, fontWeight: FONT.medium, fontSize: 20, color: COLORS.inkFaint, fontVariantNumeric: 'tabular-nums'}}>
-        {n}/2200
-      </div>
-    </>
-  );
-};
-
-export const Create: React.FC = () => {
-  const t = useSceneFrame();
-  const m = spr(t, C.mergeAt, MOTION.snap);
-  const post = spr(t, C.mergeAt + 5, MOTION.bouncy);
-  const flash = clamp((t - C.mergeAt - 4) / 16);
-  const sheen = clamp((t - C.mergeAt - 18) / 26);
-  const liked = clamp((t - C.mergeAt - 34) / 12);
-  const postW = 540;
-  const postH = (postW / 580) * 800;
-  const postTop = 336;
+  const bounce = 1 + 0.04 * Math.sin(Math.PI * clamp(done)) * (done < 1.2 ? 1 : 0);
+  const typed = C.typedCaption.slice(0, nChars);
 
   return (
     <AbsoluteFill>
-      {[0, 1, 2].map((i) => {
-        const enter = spr(t, i * 4, MOTION.snap);
-        const px = LEFT + i * (PW + GAP);
-        const toCenter = CX - (px + PW / 2);
-        const float = Math.sin(t * 0.08 + i * 2) * 5;
-        const op = (1 - clamp(m * 1.4)) * clamp(enter * 2);
-        if (op <= 0.001) return null;
-        return (
-          <div
-            key={i}
-            style={{
-              position: 'absolute',
-              left: px,
-              top: TOP + float,
-              width: PW,
-              height: PH,
-              transform: `translate(${(toCenter * m).toFixed(1)}px, ${((1 - enter) * 300).toFixed(1)}px) scale(${(1 - 0.35 * m).toFixed(4)}) rotate(${((1 - enter) * (i - 1) * 6).toFixed(2)}deg)`,
-              opacity: op,
-            }}
-          >
-            <PanelFrame label={C.panelLabels[i]}>
-              {i === 0 ? <Viewfinder t={t} /> : i === 1 ? <DesignCanvas t={t} /> : <Typing t={t} />}
-            </PanelFrame>
-          </div>
-        );
-      })}
-      {flash > 0 && flash < 1 ? (
+      <StepTag t={t} />
+      <div
+        style={{
+          position: 'absolute',
+          left: CX - CARD_W / 2,
+          top: CARD_TOP + Math.sin(t * 0.07) * 5,
+          width: CARD_W,
+          height: 800 * K,
+          transform: `scale(${(mix(0.6, 1, card) * bounce).toFixed(4)}) rotate(${(Math.sin(t * 0.05) * 1).toFixed(2)}deg)`,
+          opacity: clamp(card * 3),
+        }}
+      >
         <div
           style={{
-            position: 'absolute',
-            left: CX - 300 * flash - 40,
-            top: postTop + postH / 2 - 300 * flash - 40,
-            width: 600 * flash + 80,
-            height: 600 * flash + 80,
-            borderRadius: '50%',
-            border: `6px solid ${COLORS.orange}`,
-            opacity: 1 - flash,
-          }}
-        />
-      ) : null}
-      {post > 0.001 ? (
-        <div
-          style={{
-            position: 'absolute',
-            left: CX - postW / 2,
-            top: postTop + Math.sin(t * 0.07) * 6,
-            width: postW,
-            height: postH,
-            transform: `scale(${mix(0.55, 1, post).toFixed(4)}) rotate(${(Math.sin(t * 0.05) * 1.2).toFixed(2)}deg)`,
-            opacity: clamp(post * 2.5),
+            width: 580,
+            height: 800,
+            transform: `scale(${K})`,
+            transformOrigin: 'top left',
+            borderRadius: 34,
+            background: COLORS.card,
+            border: `3px solid ${COLORS.ink}`,
+            overflow: 'hidden',
+            fontFamily: FONT.family,
+            color: COLORS.ink,
+            boxShadow: `0 30px 70px ${COLORS.shadow}`,
+            position: 'relative',
           }}
         >
-          <PostCard width={postW} t={t} liked={liked} />
-          <div style={{position: 'absolute', inset: 0, borderRadius: 32, overflow: 'hidden', pointerEvents: 'none'}}>
+          {/* header */}
+          <div style={{height: 96, display: 'flex', alignItems: 'center', padding: '0 26px', gap: 16}}>
+            <div style={{width: 56, height: 56, borderRadius: 28, border: `3px solid ${COLORS.red}`, display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
+              <ChiliMark width={36} stroke={40} color={COLORS.red} />
+            </div>
+            <div style={{fontWeight: FONT.bold, fontSize: SIZES.postHandle}}>{BRAND.handle.replace('@', '')}</div>
+          </div>
+          {/* image well */}
+          <div style={{position: 'absolute', left: IMG.x, top: IMG.y, width: IMG.w, height: IMG.h, background: 'linear-gradient(160deg, #FFF7E6 0%, #F4EAD6 100%)', overflow: 'hidden'}}>
+            {photo <= 0 ? (
+              <div style={{position: 'absolute', inset: 40, border: `4px dashed ${COLORS.line}`, borderRadius: 20, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 120, fontWeight: FONT.bold, color: COLORS.line}}>
+                +
+              </div>
+            ) : null}
+            <div style={{position: 'absolute', right: 10, bottom: 30, transform: `scale(${mix(1.3, 1, photo).toFixed(4)})`, opacity: clamp(photo * 2), transformOrigin: 'center'}}>
+              <DishArt size={380} t={t} />
+            </div>
             <div
               style={{
                 position: 'absolute',
-                top: -200,
-                bottom: -200,
-                width: 160,
-                left: mix(-300, postW + 200, sheen),
-                transform: 'rotate(18deg)',
-                background: 'linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.65) 50%, rgba(255,255,255,0) 100%)',
-                opacity: sheen > 0 && sheen < 1 ? 1 : 0,
+                left: 40,
+                top: 44,
+                fontWeight: FONT.bold,
+                fontSize: SIZES.postHeadline * 1.15,
+                lineHeight: 0.92,
+                letterSpacing: '-0.03em',
+                opacity: clamp(head * 3),
+                transform: `scale(${mix(2.2, 1, head).toFixed(4)})`,
+                transformOrigin: 'left top',
               }}
-            />
+            >
+              {C.postHeadline.map((l, i) => (
+                <div key={i} style={{color: i === C.postHeadline.length - 1 ? COLORS.red : COLORS.ink}}>
+                  {l}
+                </div>
+              ))}
+              <div style={{width: 130 * clamp(head), height: 12, borderRadius: 6, background: COLORS.orange, marginTop: 16}} />
+            </div>
+            <div
+              style={{
+                position: 'absolute',
+                left: 40,
+                bottom: 44,
+                padding: '16px 32px',
+                borderRadius: 40,
+                background: COLORS.red,
+                color: COLORS.offWhite,
+                fontWeight: FONT.bold,
+                fontSize: 28,
+                opacity: clamp(btn * 3),
+                transform: `scale(${btn.toFixed(4)})`,
+                transformOrigin: 'left center',
+              }}
+            >
+              {C.postButton}
+            </div>
+            {/* viewfinder overlay while shooting */}
+            {shoot > 0 && vfOut < 1 ? (
+              <div style={{position: 'absolute', inset: 0, opacity: clamp(shoot * 2) * (1 - vfOut)}}>
+                <svg width={IMG.w} height={IMG.h} style={{position: 'absolute', inset: 0}}>
+                  {[
+                    [30, 30, 0],
+                    [IMG.w - 30, 30, 90],
+                    [IMG.w - 30, IMG.h - 30, 180],
+                    [30, IMG.h - 30, 270],
+                  ].map(([x, y, r], i) => (
+                    <path key={i} d="M 0 60 V 0 H 60" transform={`translate(${x} ${y}) rotate(${r})`} stroke={COLORS.ink} strokeWidth={8} fill="none" strokeLinecap="round" />
+                  ))}
+                </svg>
+                <div style={{position: 'absolute', left: 56, top: 54, display: 'flex', alignItems: 'center', gap: 12, fontWeight: FONT.bold, fontSize: 32}}>
+                  <div style={{width: 24, height: 24, borderRadius: 12, background: COLORS.red, opacity: recOn ? 1 : 0.2}} />
+                  REC
+                </div>
+              </div>
+            ) : null}
+            <div style={{position: 'absolute', inset: 0, background: '#FFFFFF', opacity: flash * 0.95}} />
           </div>
+          {/* footer */}
+          <div style={{position: 'absolute', left: 0, right: 0, top: IMG.y + IMG.h, height: 124, padding: '18px 26px 0', display: 'flex', flexDirection: 'column', gap: 12}}>
+            <div style={{display: 'flex', gap: 22, alignItems: 'center'}}>
+              <div style={{transform: `scale(${(1 + 0.6 * Math.sin(Math.PI * heart)).toFixed(3)})`}}>
+                <Icon name="heart" size={40} fill={heart > 0.2} accent={COLORS.red} color={heart > 0.2 ? COLORS.red : COLORS.ink} />
+              </div>
+              <Icon name="comment" size={40} />
+              <Icon name="dm" size={40} />
+            </div>
+            <div style={{fontWeight: FONT.medium, fontSize: 22, color: COLORS.inkSoft, whiteSpace: 'nowrap', overflow: 'hidden'}}>
+              <span style={{color: COLORS.ink, fontWeight: FONT.bold}}>{BRAND.handle.replace('@', '')}</span> {typed}
+              <span style={{display: 'inline-block', width: 3, height: 24, marginLeft: 2, verticalAlign: 'text-bottom', background: COLORS.red, opacity: typing || Math.floor(t / 8) % 2 === 0 ? (t >= C.typeAt && t < C.doneAt ? 1 : 0) : 0}} />
+            </div>
+          </div>
+          {/* sheen once finished */}
+          <div
+            style={{
+              position: 'absolute',
+              top: -200,
+              bottom: -200,
+              width: 170,
+              left: mix(-300, 800, sheen),
+              transform: 'rotate(18deg)',
+              background: 'linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.75) 50%, rgba(255,255,255,0) 100%)',
+              opacity: sheen > 0 && sheen < 1 ? 1 : 0,
+            }}
+          />
+          {cursorOn ? (
+            <svg width={580} height={800} style={{position: 'absolute', inset: 0, overflow: 'visible'}}>
+              <circle cx={cx} cy={cy} r={10 + click * 34} fill="none" stroke={COLORS.red} strokeWidth={4} opacity={click > 0 ? 1 - click : 0} />
+              <path d="M 0 0 L 0 46 L 12 35 L 22 56 L 31 52 L 21 31 L 38 31 Z" transform={`translate(${cx} ${cy})`} fill={COLORS.ink} stroke={COLORS.card} strokeWidth={3} strokeLinejoin="round" />
+            </svg>
+          ) : null}
         </div>
-      ) : null}
+      </div>
+      {/* floating hearts when the post is done */}
+      {done > 0
+        ? [0, 1, 2, 3, 4].map((i) => {
+            const d = t - C.doneAt - i * 3;
+            if (d < 0 || d > 30) return null;
+            const p = d / 30;
+            return (
+              <div key={i} style={{position: 'absolute', left: CX - 220 + i * 26 - 24, top: CARD_TOP + 640 - p * 260, opacity: 1 - p, transform: `scale(${(0.8 + 0.5 * Math.sin(Math.PI * Math.min(1, p * 2))).toFixed(3)}) rotate(${(i - 2) * 8}deg)`}}>
+                <Icon name="heart" size={48} fill accent={COLORS.red} color={COLORS.red} />
+              </div>
+            );
+          })
+        : null}
       <Caption lines={C.caption} at={C.captionAt} />
-      <Sfx name="tap" at={14} />
-      <Sfx name="tap" at={28} />
-      <Sfx name="tap" at={48} />
-      <Sfx name="whoosh" at={C.mergeAt - 2} />
-      <Sfx name="pop" at={C.mergeAt + 8} />
+      <Sfx name="tap" at={C.flashAt} />
+      <Sfx name="pop" at={C.headlineAt} />
+      <Sfx name="pop" at={C.buttonAt} />
+      <Sfx name="pop" at={C.doneAt} />
     </AbsoluteFill>
   );
 };
