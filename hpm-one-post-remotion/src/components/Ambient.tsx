@@ -54,7 +54,7 @@ export const Ambient: React.FC = () => {
   );
 };
 
-/** Base backdrop: soft pool of light behind the middle scenes, flat charcoal on hook + CTA. */
+/** Base backdrop: soft pool of light behind the middle scenes, plain background on hook + CTA. */
 export const Backdrop: React.FC = () => {
   const f = useCurrentFrame();
   const k = 1 - heat(f);
