@@ -6,7 +6,7 @@ import {FontGate, FontSource} from './components/FontGate';
 import {Clock, LogoMark} from './components/Hud';
 import {SafeZoneAudit} from './components/SafeZoneAudit';
 import {SceneShell} from './components/SceneShell';
-import {Music, TransitionSfx} from './components/Sound';
+import {Music, TransitionSfx, Voiceover} from './components/Sound';
 import {SceneName, TIMELINE} from './lib/timeline';
 import {Create} from './scenes/Create';
 import {Cta} from './scenes/Cta';
@@ -57,6 +57,7 @@ export const Reel: React.FC<ReelProps> = ({fontSource, debugSafeZone}) => (
       {debugSafeZone ? <SafeZoneAudit /> : null}
     </FontGate>
     <Music />
+    <Voiceover />
     <TransitionSfx />
   </AbsoluteFill>
 );

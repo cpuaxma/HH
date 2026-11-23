@@ -1,10 +1,44 @@
 import React from 'react';
 import {Audio, getStaticFiles, interpolate, Sequence, staticFile, useVideoConfig} from 'remotion';
-import {MUSIC, SFX, VIDEO} from '../config';
-import {sceneByName, TOTAL_FRAMES} from '../lib/timeline';
+import {MUSIC, SFX, VIDEO, VOICEOVER} from '../config';
+import {sceneByName, SceneName, TOTAL_FRAMES} from '../lib/timeline';
+import {VO_FRAMES} from '../voLengths';
 import {useScene} from './SceneShell';
 
 const has = (name: string) => getStaticFiles().some((f) => f.name === name);
+
+// ── Voiceover ──────────────────────────────────────────────────────────────
+type VoLine = {id: string; file: string; from: number; to: number};
+const voLines = (): VoLine[] =>
+  VOICEOVER.enabled
+    ? VOICEOVER.lines
+        .map((l) => {
+          const from = sceneByName(l.scene as SceneName).cut + l.at;
+          return {id: l.id, file: `${VOICEOVER.folder}/${l.id}.wav`, from, to: from + (VO_FRAMES[l.id] ?? 60)};
+        })
+        .filter((l) => has(l.file))
+    : [];
+
+/** 0..1: how much a voiceover line is speaking at global frame f (6-frame ramps). */
+const voPresence = (f: number) => {
+  let v = 0;
+  for (const l of voLines()) {
+    const r = Math.min(1, Math.max(0, (f - l.from + 6) / 6), Math.max(0, (l.to + 6 - f) / 6));
+    v = Math.max(v, r);
+  }
+  return v;
+};
+
+/** Plays every line in assets/vo/ at its cue. Lines whose file is missing are skipped. */
+export const Voiceover: React.FC = () => (
+  <>
+    {voLines().map((l) => (
+      <Sequence key={l.id} from={Math.max(0, l.from)} layout="none" name={`vo:${l.id}`}>
+        <Audio src={staticFile(l.file)} volume={VOICEOVER.volume} />
+      </Sequence>
+    ))}
+  </>
+);
 
 const sfxFile = (name: string) => {
   for (const ext of SFX.extensions) {
@@ -22,9 +56,11 @@ export const Sfx: React.FC<{name: SfxName; at: number}> = ({name, at}) => {
   const file = sfxFile(name);
   if (!file) return null;
   const from = Math.max(0, Math.round(at + scene.head));
+  // SFX sit lower while the voice is speaking.
+  const duck = 1 - (1 - VOICEOVER.sfxDuckTo) * voPresence(scene.cut + Math.round(at));
   return (
     <Sequence from={from} layout="none" name={`sfx:${name}`}>
-      <Audio src={staticFile(file)} volume={SFX.volume[name] ?? 0.8} />
+      <Audio src={staticFile(file)} volume={(SFX.volume[name] ?? 0.8) * duck} />
     </Sequence>
   );
 };
@@ -48,7 +84,8 @@ export const Music: React.FC = () => {
           extrapolateRight: 'clamp',
         });
         const fadeOut = interpolate(f, [end - MUSIC.fadeOutFrames, end - 1], [1, 0], {extrapolateLeft: 'clamp', extrapolateRight: 'clamp'});
-        return MUSIC.volume * fadeIn * duck * fadeOut;
+        const voDuck = 1 - (1 - VOICEOVER.musicDuckTo) * voPresence(f);
+        return MUSIC.volume * fadeIn * duck * fadeOut * voDuck;
       }}
     />
   );

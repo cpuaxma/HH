@@ -132,6 +132,27 @@ export const MUSIC = {
   fadeOutFrames: 24,
 } as const;
 
+// Voiceover. Each line plays from frame `at` of its scene (frames from the scene's cut).
+// Audio lives in assets/vo/<id>.wav; regenerate after editing text with
+// `npm run voiceover -- MODELS_DIR` (see README). Missing files are skipped.
+export const VOICEOVER = {
+  enabled: true,
+  folder: 'vo',
+  voice: 3, // Supertonic 3 speaker id (0–4 female, 5–9 male)
+  volume: 1,
+  musicDuckTo: 0.35, // music level while a line is speaking
+  sfxDuckTo: 0.6, // SFX level while a line is speaking
+  lines: [
+    {id: 'hook', scene: 'hook', at: 3, text: 'What goes into one post?'},
+    {id: 'idea', scene: 'idea', at: 8, text: 'It starts with an idea. The right one.'},
+    {id: 'strategy', scene: 'strategy', at: 4, text: 'Then a strategy that hits the target.'},
+    {id: 'create', scene: 'create', at: 6, text: 'We shoot it. Design it. Write it.'},
+    {id: 'launch', scene: 'launch', at: 8, text: 'Publish it, and launch the ad campaign.'},
+    {id: 'results', scene: 'results', at: 4, text: 'Then we measure what works.'},
+    {id: 'cta', scene: 'cta', at: 2, text: 'Want this for your brand? DM us the word kick.'},
+  ],
+} as const;
+
 // Optional one-shots. Put e.g. assets/sfx/whoosh.mp3 (or .wav) in place and it
 // plays at its cue; missing files are skipped silently.
 export const SFX = {

@@ -9,6 +9,7 @@
     "thumbnail": "remotion still Thumbnail out/thumbnail.png",
     "stills": "node scripts/stills.mjs",
     "assets": "python3 scripts/prepare-assets.py",
+    "voiceover": "python3 scripts/make-voiceover.py",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
