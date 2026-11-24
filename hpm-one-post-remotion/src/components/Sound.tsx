@@ -1,44 +1,31 @@
 import React from 'react';
 import {Audio, getStaticFiles, interpolate, Sequence, staticFile, useVideoConfig} from 'remotion';
 import {MUSIC, SFX, VIDEO, VOICEOVER} from '../config';
-import {sceneByName, SceneName, TOTAL_FRAMES} from '../lib/timeline';
-import {VO_FRAMES} from '../voLengths';
+import {sceneByName, TOTAL_FRAMES} from '../lib/timeline';
+import {VO_WINDOWS} from '../voLengths';
 import {useScene} from './SceneShell';
 
 const has = (name: string) => getStaticFiles().some((f) => f.name === name);
 
 // ── Voiceover ──────────────────────────────────────────────────────────────
-type VoLine = {id: string; file: string; from: number; to: number};
-const voLines = (): VoLine[] =>
-  VOICEOVER.enabled
-    ? VOICEOVER.lines
-        .map((l) => {
-          const from = sceneByName(l.scene as SceneName).cut + l.at;
-          return {id: l.id, file: `${VOICEOVER.folder}/${l.id}.wav`, from, to: from + (VO_FRAMES[l.id] ?? 60)};
-        })
-        .filter((l) => has(l.file))
-    : [];
+// One continuous narration track (assets/vo/narration.wav, made by scripts/make-voiceover.py).
+// VO_WINDOWS says when it is speaking, for ducking music and SFX under it.
+const NARRATION = `${VOICEOVER.folder}/narration.wav`;
+const hasNarration = () => VOICEOVER.enabled && has(NARRATION);
 
-/** 0..1: how much a voiceover line is speaking at global frame f (6-frame ramps). */
+/** 0..1: how much the voice is speaking at global frame f (6-frame ramps). */
 const voPresence = (f: number) => {
+  if (!hasNarration()) return 0;
   let v = 0;
-  for (const l of voLines()) {
-    const r = Math.min(1, Math.max(0, (f - l.from + 6) / 6), Math.max(0, (l.to + 6 - f) / 6));
-    v = Math.max(v, r);
+  for (const [from, to] of VO_WINDOWS) {
+    v = Math.max(v, Math.min(1, Math.max(0, (f - from + 6) / 6), Math.max(0, (to + 6 - f) / 6)));
   }
   return v;
 };
 
-/** Plays every line in assets/vo/ at its cue. Lines whose file is missing are skipped. */
-export const Voiceover: React.FC = () => (
-  <>
-    {voLines().map((l) => (
-      <Sequence key={l.id} from={Math.max(0, l.from)} layout="none" name={`vo:${l.id}`}>
-        <Audio src={staticFile(l.file)} volume={VOICEOVER.volume} />
-      </Sequence>
-    ))}
-  </>
-);
+/** Plays the narration from frame 0. Renders nothing if the file is missing. */
+export const Voiceover: React.FC = () =>
+  hasNarration() ? <Audio src={staticFile(NARRATION)} volume={VOICEOVER.volume} name="voiceover" /> : null;
 
 const sfxFile = (name: string) => {
   for (const ext of SFX.extensions) {

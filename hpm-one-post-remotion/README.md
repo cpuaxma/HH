@@ -16,33 +16,31 @@ Design rule: one huge hero object per scene, big type (captions 110 px), one big
 
 ## Voiceover
 
-Seven short lines, written to be heard rather than read off the captions, each landing on its scene's big moment. The voice is a confident female read with a little extra energy.
+One continuous, warm female narration that flows across the whole reel. Each sentence lands just ahead of its scene's cut.
 
-| When | Line |
+| ≈ When | Line |
 |---|---|
 | 0:00 | "What goes into one post?" |
-| 0:02 | "It starts with an idea. The one that stops the scroll." |
-| 0:06 | "Then a strategy. Right people. Right message." |
-| 0:10 | "We shoot it. We design it. We write it." |
-| 0:15 | "Then we publish, and launch the ad campaign." |
-| 0:19 | "And we measure what works." |
-| 0:22 | "Want this for your brand? DM us the word kick." |
+| 0:02 | "It starts with an idea... one that stops the scroll." |
+| 0:06 | "Then a strategy: who it's for, and what to say." |
+| 0:10 | "We shoot it, design it, and write it... until it's just right." |
+| 0:15 | "Then we hit publish, and launch the ad campaign behind it." |
+| 0:19 | "And we track what's working, in real time." |
+| 0:22 | "Want this? DM us the word kick." |
 
-- **Engine:** Chatterbox by Resemble AI (MIT licence, so commercial use is fine), run locally on CPU. Its output carries Resemble's inaudible "Perth" watermark. `VOICEOVER.engine: 'supertonic'` switches back to the older, flatter Supertonic 3 voice.
-- **Delivery:** `VOICEOVER.exaggeration` sets the energy (0.5 is natural, 0.8+ dramatic; currently 0.65). `cfgWeight` sets the pacing (lower is slower).
-- **One consistent voice:** every line clones `assets/vo/voice-ref.wav`, a 7 s clip of this voice. Takes whose pitch drifts more than 15% from it are rejected. To change the voice, replace that file with any clean 5–10 s recording (you must have the rights to it) and regenerate with `--force`.
-- **Text and timing:** `VOICEOVER.lines` in `src/config.ts`. Each line's `at` is the frame from its scene's cut. `musicDuckTo` (0.35) and `sfxDuckTo` (0.6) set how far music and SFX dip under the voice.
-- **Audio files:** `assets/vo/<id>.wav`. To use a real voice actor, record each line to these file names and re-render.
-- **Regenerating** (only changed lines are redone; `--force` redoes all):
+- **File:** `assets/vo/narration.wav`, one track played from frame 0. `src/voLengths.ts` (generated) says when it is speaking, so music dips to `musicDuckTo` (0.35) and SFX to `sfxDuckTo` (0.6) under it.
+- **Engine:** Chatterbox Turbo by Resemble AI (MIT licence, so commercial use is fine), run locally. The output carries Resemble's inaudible "Perth" watermark. `VOICEOVER.engine: 'chatterbox'` switches to the standard model, which uses `exaggeration` and `cfgWeight`.
+- **Voice:** it clones `VOICEOVER.voiceRef` (`assets/vo/voice-ref.wav`), currently Kokoro's "af_heart" voice (Apache-2.0), a warm American female. A speech gender classifier confirms it reads 100% female. To use your own or a team member's voice, record 10–20 s of clean, natural talking, save it over that file and regenerate.
+- **How it's made:** the whole script is read in **one continuous take** (`takes` of them), so intonation flows between sentences. Each take is split at its natural pauses and Whisper checks every sentence word for word. Sentences are laid on the timeline: each starts at its target (`at`, may lead the cut by `lead` s), never closer than a breath to the previous one. The liveliest clean take that ends before the loop point is kept and polished, then normalised to -15 LUFS with a true peak of -1.5 dBTP.
+- **Regenerating** after editing `VOICEOVER.lines` or the voice:
   ```
   pip install torch==2.6.0 torchaudio==2.6.0 --index-url https://download.pytorch.org/whl/cpu
   pip install chatterbox-tts sherpa-onnx soundfile librosa numpy
-  # MODELS_DIR must hold asr-models/sherpa-onnx-whisper-small.en from github.com/k2-fsa/sherpa-onnx/releases
-  npm run voiceover -- MODELS_DIR
+  # MODELS_DIR must hold asr-models/sherpa-onnx-whisper-small.en (github.com/k2-fsa/sherpa-onnx/releases)
+  npm run voiceover -- MODELS_DIR [--takes 10]
   npm run render
   ```
-  Chatterbox downloads its weights from Hugging Face on the first run, about 2 minutes. Each line is rendered five times, roughly 25 s per take on CPU.
-  Whisper checks every word of each take; a take with a wrong, missing or extra word is rejected. The script keeps the liveliest clean take that finishes before the next line, polishes it and levels it, then writes `src/voLengths.ts` for the ducking.
+  Model weights download from Hugging Face on the first run. A take of the full script takes about 40 s on CPU.
 
 ## Commands
 
@@ -85,7 +83,7 @@ To use a local Chrome or Chromium instead of Remotion's download, set `REMOTION_
 | **Idea notes** | Idea | `SCENES.idea.notes` (3), `SCENES.idea.chosenNote` |
 | **Example post copy** | Create + Launch | `SCENES.create.postHeadline`, `postButton`, `typedCaption`, step labels `SCENES.create.steps` |
 | **Hook words** | Hook + thumbnail | `SCENES.hook.line1 / hero / line3`, `THUMBNAIL.*` |
-| **Voiceover** | Whole reel | `VOICEOVER.lines[].text` / `at`, then `npm run voiceover -- MODELS_DIR` (or drop real recordings into `assets/vo/<id>.wav`) |
+| **Voiceover** | Whole reel | `VOICEOVER.lines[].text` / `at`, then `npm run voiceover -- MODELS_DIR`. Voice: replace `assets/vo/voice-ref.wav`. A real recording can replace `assets/vo/narration.wav`; update `src/voLengths.ts` windows if its timing differs. |
 | **Music** | Whole reel | Add `assets/music.mp3`, then set `MUSIC.bpm` and `MUSIC.firstBeatFrame` (and `trimStartSeconds` if needed). Volume: `volume`, `fadeInFrames`, `duckTo` (CTA duck, 0.4), `fadeOutFrames`. Without the file the reel has only the voiceover. |
 | **SFX** | Hits and transitions | Add `assets/sfx/whoosh`, `pop`, `tap`, `bass-hit` (`.mp3` or `.wav`); missing files are skipped. Levels: `SFX.volume`. bass-hit = ONE, the dart, the ad tap, the hero number and the logo; whoosh = every transition; pop / tap = notes, chips, stamps, clicks. |
 | **Footage / photos** | No assets were supplied, so everything is vector graphics (`DishArt`, `PostCard`, `Phone` in `src/components/Art.tsx`, and the build-up card in `src/scenes/Create.tsx`) | Replace `<DishArt>` with an `<Img>` or `<OffthreadVideo>` from `assets/` to use real product shots. |

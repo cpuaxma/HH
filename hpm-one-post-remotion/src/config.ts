@@ -138,24 +138,30 @@ export const MUSIC = {
 export const VOICEOVER = {
   enabled: true,
   folder: 'vo',
-  // Engine: Chatterbox (Resemble AI, MIT licence), run locally. Expressive, natural delivery.
-  engine: 'chatterbox' as 'chatterbox' | 'supertonic',
-  exaggeration: 0.65, // 0.25 flat … 0.5 natural … 0.8+ dramatic
-  cfgWeight: 0.45, // lower = slower, more deliberate pacing
-  takes: 5, // takes rendered per line; the best clean one that fits is kept
-  voice: 3, // Supertonic speaker id, only used when engine = 'supertonic'
+  // Engine: Chatterbox Turbo (Resemble AI, MIT licence), run locally. The whole script is
+  // read in ONE continuous take so it flows; the generator then splits it at its natural
+  // pauses and lays each sentence on its scene (see scripts/make-voiceover.py).
+  engine: 'chatterbox-turbo' as 'chatterbox-turbo' | 'chatterbox',
+  // Voice to clone (5–20 s, clean, one speaker). Now: Kokoro "af_heart" (Apache-2.0),
+  // a warm American female voice. Swap in any clip you have the rights to, e.g. your own.
+  voiceRef: 'vo/voice-ref.wav',
+  temperature: 0.8, // Turbo: higher = more varied delivery
+  exaggeration: 0.75, // standard Chatterbox only: energy (0.5 natural … 0.8+ dramatic)
+  cfgWeight: 0.35, // standard Chatterbox only: lower = slower, more deliberate pacing
+  takes: 6, // full-script takes rendered; the best clean, best-fitting, liveliest is kept
+  lead: 0.2, // a sentence may start up to this many seconds before its scene's cut
   volume: 1,
-  musicDuckTo: 0.35, // music level while a line is speaking
-  sfxDuckTo: 0.6, // SFX level while a line is speaking
-  // Written for the ear: short, rhythmic, each line lands on its scene's big moment.
+  musicDuckTo: 0.35, // music level while the voice is speaking
+  sfxDuckTo: 0.6, // SFX level while the voice is speaking
+  // Written for the ear. `at` = target start, in frames from the scene's cut.
   lines: [
     {id: 'hook', scene: 'hook', at: 3, text: 'What goes into one post?'},
-    {id: 'idea', scene: 'idea', at: 6, text: 'It starts with an idea. The one that stops the scroll.'},
-    {id: 'strategy', scene: 'strategy', at: 4, text: 'Then a strategy. Right people. Right message.'},
-    {id: 'create', scene: 'create', at: 4, text: 'We shoot it. We design it. We write it.'},
-    {id: 'launch', scene: 'launch', at: 6, text: 'Then we publish, and launch the ad campaign.'},
-    {id: 'results', scene: 'results', at: 4, text: 'And we measure what works.'},
-    {id: 'cta', scene: 'cta', at: 2, text: 'Want this for your brand? DM us the word kick.'},
+    {id: 'idea', scene: 'idea', at: 4, text: 'It starts with an idea... one that stops the scroll.'},
+    {id: 'strategy', scene: 'strategy', at: 4, text: "Then a strategy: who it's for, and what to say."},
+    {id: 'create', scene: 'create', at: 4, text: "We shoot it, design it, and write it... until it's just right."},
+    {id: 'launch', scene: 'launch', at: 4, text: 'Then we hit publish, and launch the ad campaign behind it.'},
+    {id: 'results', scene: 'results', at: 2, text: "And we track what's working, in real time."},
+    {id: 'cta', scene: 'cta', at: 0, text: 'Want this? DM us the word kick.'},
   ],
 } as const;
 

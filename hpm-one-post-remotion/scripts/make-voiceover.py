@@ -1,29 +1,29 @@
 #!/usr/bin/env python3
-"""Voices the reel's voiceover into assets/vo/<id>.wav (48 kHz mono) and writes src/voLengths.ts.
+"""Voices the reel as ONE continuous narration: assets/vo/narration.wav (+ src/voLengths.ts).
 
-Lines, timing, engine and delivery settings come from VOICEOVER in src/config.ts
-(single source of truth).
+Everything comes from VOICEOVER in src/config.ts (lines, target timing, engine, voice).
 
-Engines (VOICEOVER.engine):
-  chatterbox  (default) Chatterbox by Resemble AI, MIT licence: natural, expressive delivery
-              with an "exaggeration" (energy) control. Runs locally on CPU; weights download
-              from Hugging Face on first run. Output carries Resemble's inaudible Perth watermark.
-  supertonic  Supertonic 3 by Supertone (OpenRAIL-M) through sherpa-onnx; faster, flatter.
+How it works
+  1. The whole script is read in one continuous take (so intonation and rhythm flow from
+     sentence to sentence) by Chatterbox Turbo (default) or standard Chatterbox (Resemble AI,
+     MIT licence), cloning the voice in VOICEOVER.voiceRef. Several takes are rendered.
+  2. Each take is split into its sentences at its natural pauses (the split that best matches
+     the sentences' relative lengths, preferring longer pauses), and Whisper checks every
+     sentence word for word. Takes with a wrong, missing or extra word are rejected.
+  3. Sentences are laid on the timeline: each starts at its target (scene cut + `at`, allowed
+     to lead the cut by VOICEOVER.lead seconds) but never closer than a short breath to the
+     previous one, so the read keeps its flow. Takes that would run past the end are rejected.
+  4. The liveliest surviving take (widest natural pitch movement) is polished with ffmpeg,
+     levelled, and written as one track. src/voLengths.ts gets the speech windows for ducking.
 
-For each line it renders several takes, has Whisper transcribe every take (a take with a wrong,
-missing or extra word is rejected), keeps the liveliest clean take that ends before the next
-line (time-stretching up to 12% if none fits), polishes it with ffmpeg and levels it.
+Output carries Resemble's inaudible "Perth" watermark (built into Chatterbox).
 
 Usage:
+  pip install torch==2.6.0 torchaudio==2.6.0 --index-url https://download.pytorch.org/whl/cpu
   pip install chatterbox-tts sherpa-onnx soundfile librosa numpy
-      (for CPU-only PyTorch first: pip install torch==2.6.0 torchaudio==2.6.0 \
-       --index-url https://download.pytorch.org/whl/cpu)
-  python3 scripts/make-voiceover.py MODELS_DIR [--force]   (only changed lines are regenerated)
-MODELS_DIR holds these sherpa-onnx release folders (github.com/k2-fsa/sherpa-onnx/releases):
-  asr-models/sherpa-onnx-whisper-small.en                       (always: the word check)
-  tts-models/sherpa-onnx-supertonic-3-tts-int8-2026-05-11       (only for engine 'supertonic')
+  python3 scripts/make-voiceover.py MODELS_DIR [--takes N]
+MODELS_DIR holds asr-models/sherpa-onnx-whisper-small.en from github.com/k2-fsa/sherpa-onnx/releases.
 """
-import json
 import os
 import re
 import subprocess
@@ -46,23 +46,25 @@ cut, acc = {}, 0
 for name in order:
     cut[name] = acc
     acc += dur[name]
-TOTAL = acc
+TOTAL_S = acc / FPS
 
 vo = CONFIG[CONFIG.index('export const VOICEOVER'):]
 vo = vo[:vo.index('} as const;')]
-setting = lambda key, cast=float: cast(re.search(rf'\b{key}:\s*\'?([\w.]+)', vo).group(1))
+setting = lambda key, cast=float: cast(re.search(rf'\b{key}:\s*\'?([\w./-]+)', vo).group(1))
 ENGINE = setting('engine', str)
+VOICE_REF = os.path.join(ROOT, 'assets', setting('voiceRef', str))
+TEMPERATURE = setting('temperature')
 EXAGGERATION = setting('exaggeration')
 CFG_WEIGHT = setting('cfgWeight')
-TAKES = setting('takes', int)
-VOICE = setting('voice', int)
+TAKES = int(sys.argv[sys.argv.index('--takes') + 1]) if '--takes' in sys.argv else setting('takes', int)
+LEAD = setting('lead')
 LINES = [
-    {'id': m.group(1), 'start': cut[m.group(2)] + int(m.group(3)), 'text': m.group(4)}
-    for m in re.finditer(r"\{id: '(\w+)', scene: '(\w+)', at: (-?\d+), text: '([^']*)'\}", vo)
+    {'id': m.group(1), 'target': (cut[m.group(2)] + int(m.group(3))) / FPS, 'text': m.group(5)}
+    for m in re.finditer(r"\{id: '(\w+)', scene: '(\w+)', at: (-?\d+), text: (['\"])(.*?)\4\}", vo)
 ]
-for i, line in enumerate(LINES):
-    nxt = LINES[i + 1]['start'] if i + 1 < len(LINES) else TOTAL
-    line['room'] = (nxt - line['start']) / FPS - 0.15  # seconds available, with a breath
+SCRIPT = ' '.join(line['text'] for line in LINES)
+END_LIMIT = TOTAL_S - 0.25  # last word must end this long before the loop point
+BREATH = 0.16  # minimum gap between sentences
 
 models = sys.argv[1]
 OUT = os.path.join(ROOT, 'assets', 'vo')
@@ -80,12 +82,12 @@ asr = sherpa_onnx.OfflineRecognizer.from_whisper(
     encoder=f'{W}/small.en-encoder.int8.onnx', decoder=f'{W}/small.en-decoder.int8.onnx',
     tokens=f'{W}/small.en-tokens.txt', num_threads=4)
 NUM = {'1': 'one', '2': 'two', '3': 'three', '4': 'four'}
-SAME = {'than': 'then', 'dms': 'dm', 'write': 'right'}  # homophones / words Whisper confuses
+SAME = {'than': 'then', 'dms': 'dm', 'write': 'right', 'its': 'its'}  # homophones / ASR quirks
 
 
 def words(t):
-    t = re.sub(r'\b(\d)\b', lambda m: NUM[m.group(1)], t.lower())
-    return [SAME.get(w, w) for w in re.sub(r'[^a-z ]', '', t.replace('-', ' ')).split()]
+    t = re.sub(r'\b(\d)\b', lambda m: NUM[m.group(1)], t.lower()).replace("'", '')
+    return [SAME.get(w, w) for w in re.sub(r'[^a-z ]', ' ', t.replace('-', ' ')).split()]
 
 
 def heard(x, sr):
@@ -95,10 +97,10 @@ def heard(x, sr):
     return s.result.text.strip()
 
 
-def liveliness(x, sr):
-    """Pitch range (10th–90th percentile, semitones) over voiced frames."""
+def pitch_range(x, sr):
+    """Natural pitch movement (10th–90th percentile, semitones) over voiced frames."""
     y = librosa.resample(x, orig_sr=sr, target_sr=16000)
-    f0, voiced, _ = librosa.pyin(y, fmin=65, fmax=450, sr=16000, frame_length=1024)
+    f0, voiced, _ = librosa.pyin(y, fmin=80, fmax=500, sr=16000, frame_length=1024)
     f = f0[voiced & ~np.isnan(f0)]
     if len(f) < 5:
         return 0.0
@@ -106,139 +108,171 @@ def liveliness(x, sr):
     return float(np.percentile(st, 90) - np.percentile(st, 10))
 
 
-def median_f0(x, sr):
-    y = librosa.resample(x, orig_sr=sr, target_sr=16000)
-    f0, voiced, _ = librosa.pyin(y, fmin=65, fmax=450, sr=16000, frame_length=1024)
-    f = f0[voiced & ~np.isnan(f0)]
-    return float(np.median(f)) if len(f) else 0.0
+# ── Speech / pause analysis ──────────────────────────────────────────────────
+HOP = 0.01
 
 
-def trim(x, sr, floor_db=-38):
-    """Cut leading/trailing silence (and any trailing breath/noise tail)."""
-    frame = int(0.02 * sr)
-    n = len(x) // frame
-    if n == 0:
-        return x
-    rms = np.sqrt(np.mean(x[: n * frame].reshape(n, frame) ** 2, axis=1) + 1e-12)
-    db = 20 * np.log10(rms / (rms.max() + 1e-12))
-    loud = np.flatnonzero(db > floor_db)
-    if not len(loud):
-        return x
-    pad = int(0.05 * sr)
-    return x[max(0, loud[0] * frame - pad):min(len(x), (loud[-1] + 1) * frame + pad)]
+def speech_mask(x, sr, floor_db=-36):
+    hop = int(HOP * sr)
+    n = len(x) // hop
+    rms = np.sqrt(np.mean(x[: n * hop].reshape(n, hop) ** 2, axis=1) + 1e-12)
+    db = 20 * np.log10(rms / (np.percentile(rms, 98) + 1e-12))
+    return db > floor_db
 
 
-# ── Engines ──────────────────────────────────────────────────────────────────
-REF = None
-if ENGINE == 'chatterbox':
-    import torch
-    from chatterbox.tts import ChatterboxTTS
+def pauses(mask, min_len=0.09):
+    """(start_s, end_s) of silent runs between speech."""
+    out, i, n = [], 0, len(mask)
+    first = np.argmax(mask)
+    last = n - np.argmax(mask[::-1])
+    i = first
+    while i < last:
+        if not mask[i]:
+            j = i
+            while j < last and not mask[j]:
+                j += 1
+            if (j - i) * HOP >= min_len:
+                out.append((i * HOP, j * HOP))
+            i = j
+        else:
+            i += 1
+    return first * HOP, last * HOP, out
 
-    cb = ChatterboxTTS.from_pretrained(device='cpu')
-    # Voice lock: if assets/vo/voice-ref.wav exists, every line clones that one voice, so the
-    # speaker can't drift between lines. (Replace it with any clean 5–10 s clip to change voice.)
-    REF = os.path.join(ROOT, 'assets', 'vo', 'voice-ref.wav')
-    REF = REF if os.path.exists(REF) else None
 
-    def take(text, k):
-        torch.manual_seed(1000 + k)
-        w = cb.generate(text, audio_prompt_path=REF, exaggeration=EXAGGERATION, cfg_weight=CFG_WEIGHT, temperature=0.8)
-        return w.squeeze().numpy().astype(np.float32), cb.sr
+def best_split(start, end, cands, shares):
+    """Choose len(shares)-1 pauses (in order) so segment lengths best match the text shares."""
+    k = len(shares) - 1
+    if len(cands) < k:
+        return None
+    speech = end - start
+    cum = np.cumsum(shares)[:-1]
+    # DP over (boundary index, candidate index)
+    INF = 1e9
+    n = len(cands)
+    cost = np.full((k, n), INF)
+    back = np.zeros((k, n), dtype=int)
+    mid = [(a + b) / 2 for a, b in cands]
+    plen = [b - a for a, b in cands]
+    for j in range(n):
+        cost[0, j] = 100 * ((mid[j] - start) / speech - cum[0]) ** 2 - 0.6 * np.log(plen[j])
+    for b in range(1, k):
+        for j in range(b, n):
+            prev = cost[b - 1, :j]
+            p = int(np.argmin(prev))
+            cost[b, j] = prev[p] + 100 * ((mid[j] - start) / speech - cum[b]) ** 2 - 0.6 * np.log(plen[j])
+            back[b, j] = p
+    j = int(np.argmin(cost[k - 1]))
+    if cost[k - 1, j] >= INF:
+        return None
+    chosen = [j]
+    for b in range(k - 1, 0, -1):
+        j = back[b, j]
+        chosen.append(j)
+    return [cands[c] for c in reversed(chosen)]
 
-    TAKE_LABELS = [f'seed {1000 + k}' for k in range(TAKES)]
-else:
-    ST = find('sherpa-onnx-supertonic-3-tts-int8-2026-05-11')
-    tts = sherpa_onnx.OfflineTts(sherpa_onnx.OfflineTtsConfig(model=sherpa_onnx.OfflineTtsModelConfig(
-        supertonic=sherpa_onnx.OfflineTtsSupertonicModelConfig(
-            duration_predictor=f'{ST}/duration_predictor.int8.onnx', text_encoder=f'{ST}/text_encoder.int8.onnx',
-            vector_estimator=f'{ST}/vector_estimator.int8.onnx', vocoder=f'{ST}/vocoder.int8.onnx',
-            tts_json=f'{ST}/tts.json', unicode_indexer=f'{ST}/unicode_indexer.bin', voice_style=f'{ST}/voice.bin'),
-        num_threads=4, provider='cpu')))
-    SPEEDS = [1.0, 1.05, 0.95, 1.1, 1.15, 1.0, 1.05, 0.95][:max(TAKES, 1)]
 
-    def take(text, k):
-        g = sherpa_onnx.GenerationConfig()
-        g.sid = VOICE
-        g.num_steps = 10
-        g.speed = SPEEDS[k % len(SPEEDS)]
-        g.extra['lang'] = 'en'
-        a = tts.generate(text, g)
-        return np.array(a.samples, dtype=np.float32), a.sample_rate
+# ── Engine ───────────────────────────────────────────────────────────────────
+import torch  # noqa: E402
 
-    TAKE_LABELS = [f'speed {s}' for s in SPEEDS]
+with tempfile.TemporaryDirectory() as tmp:
+    ref = os.path.join(tmp, 'ref.wav')
+    # Level-match the reference (and keep it float32: Turbo's own loudness step breaks on float64).
+    subprocess.run(['ffmpeg', '-v', 'error', '-y', '-i', VOICE_REF, '-af', 'loudnorm=I=-23:TP=-2',
+                    '-ar', '24000', '-ac', '1', '-c:a', 'pcm_f32le', ref], check=True)
+    if ENGINE == 'chatterbox-turbo':
+        from chatterbox.tts_turbo import ChatterboxTurboTTS
+        model = ChatterboxTurboTTS.from_pretrained(device='cpu')
+        model.prepare_conditionals(ref, norm_loudness=False)
+        gen = lambda text: model.generate(text, temperature=TEMPERATURE)
+    else:
+        from chatterbox.tts import ChatterboxTTS
+        model = ChatterboxTTS.from_pretrained(device='cpu')
+        model.prepare_conditionals(ref, exaggeration=EXAGGERATION)
+        gen = lambda text: model.generate(text, exaggeration=EXAGGERATION, cfg_weight=CFG_WEIGHT, temperature=TEMPERATURE)
+SR = model.sr
+
+print(f'engine {ENGINE}, voice {os.path.relpath(VOICE_REF, ROOT)}, {TAKES} takes')
+print(f'script: {SCRIPT}')
+shares = np.array([len(re.sub(r'[^A-Za-z]', '', l['text'])) for l in LINES], dtype=float)
+shares /= shares.sum()
+
+results = []
+for k in range(TAKES):
+    torch.manual_seed(2000 + k)
+    x = gen(SCRIPT).squeeze().numpy().astype(np.float32)
+    mask = speech_mask(x, SR)
+    start, end, cands = pauses(mask)
+    split = best_split(start, end, cands, shares)
+    if split is None:
+        print(f'take {k}: could not find {len(LINES) - 1} pauses  REJECTED')
+        continue
+    edges = [start] + [p for pair in split for p in pair] + [end]
+    segs = [(edges[2 * i], edges[2 * i + 1]) for i in range(len(LINES))]
+    ok = True
+    for line, (a, b) in zip(LINES, segs):
+        piece = x[max(0, int((a - 0.03) * SR)):int((b + 0.03) * SR)]
+        said = heard(piece, SR)
+        if words(said) != words(line['text']):
+            print(f'take {k}: {line["id"]} heard {said!r}  REJECTED')
+            ok = False
+            break
+    if not ok:
+        continue
+    # Lay the sentences on the timeline.
+    placed, prev_end = [], -1.0
+    for i, (line, (a, b)) in enumerate(zip(LINES, segs)):
+        s = line['target'] if i == 0 else max(line['target'] - LEAD, prev_end + BREATH)
+        placed.append((s, s + (b - a)))
+        prev_end = s + (b - a)
+    drift = max(abs(p[0] - l['target']) for p, l in zip(placed, LINES))
+    if prev_end > END_LIMIT:
+        print(f'take {k}: ends at {prev_end:.2f}s (limit {END_LIMIT:.2f}s)  REJECTED')
+        continue
+    life = pitch_range(x[int(start * SR):int(end * SR)], SR)
+    print(f'take {k}: clean, {end - start:.1f}s of speech, ends {prev_end:.2f}s, max drift {drift:.2f}s, pitch movement {life:.1f} st', flush=True)
+    results.append({'k': k, 'x': x, 'segs': segs, 'placed': placed, 'life': life, 'drift': drift})
+
+if not results:
+    sys.exit('No clean take that fits. Try more takes (--takes 10), shorten a line, or move `at`.')
+
+# Liveliest, with a small penalty for sentences that land far from their scene.
+best = max(results, key=lambda r: r['life'] - 4 * max(0, r['drift'] - 0.4))
+print(f'keeping take {best["k"]}')
+
+track = np.zeros(int((TOTAL_S + 0.5) * SR), dtype=np.float32)
+fade = int(0.012 * SR)
+for (a, b), (s, _) in zip(best['segs'], best['placed']):
+    piece = best['x'][max(0, int((a - 0.03) * SR)):int((b + 0.05) * SR)].copy()
+    piece[:fade] *= np.linspace(0, 1, fade)
+    piece[-fade:] *= np.linspace(1, 0, fade)
+    at = int(max(0, s - 0.03) * SR)
+    track[at:at + len(piece)] += piece[:len(track) - at]
+track = track[:int(TOTAL_S * SR)]
 
 POLISH = ','.join([
-    'highpass=f=80',
-    'equalizer=f=200:t=q:w=1.0:g=1.0',    # a little warmth
-    'equalizer=f=3000:t=q:w=1.2:g=2.0',   # presence, reads on phone speakers
+    'highpass=f=75',
+    'equalizer=f=180:t=q:w=1.0:g=1.0',    # a little body
+    'equalizer=f=3200:t=q:w=1.2:g=1.8',   # presence, reads on phone speakers
     'equalizer=f=7500:t=q:w=2.0:g=-2.0',  # tame sibilance
-    'acompressor=threshold=0.12:ratio=2.5:attack=8:release=140:makeup=1.5',
-    'aecho=0.9:0.6:12|26:0.07|0.04',      # very short room, so it isn't sterile
-    'afade=t=in:d=0.01',
+    'acompressor=threshold=0.1:ratio=2.2:attack=10:release=160:makeup=1.4',
+    'aecho=0.9:0.6:11|23:0.06|0.035',     # very short room, so it isn't sterile
     'aresample=48000',
 ])
-
 os.makedirs(OUT, exist_ok=True)
-# Cache: a line is only regenerated when its text or the engine settings change (or with --force).
-MANIFEST = os.path.join(OUT, 'manifest.json')
-manifest = json.load(open(MANIFEST)) if os.path.exists(MANIFEST) else {}
-FORCE = '--force' in sys.argv
-SIG = f'{ENGINE}|{EXAGGERATION}|{CFG_WEIGHT}|{VOICE}|ref' if ENGINE == 'chatterbox' and REF else f'{ENGINE}|{EXAGGERATION}|{CFG_WEIGHT}|{VOICE}'
-# Pitch anchor: takes whose median pitch strays > 15% from the reference voice are rejected.
-ANCHOR = median_f0(*sf.read(REF, dtype='float32')) if ENGINE == 'chatterbox' and REF else 0.0
-if ANCHOR:
-    print(f'voice reference: {os.path.relpath(REF, ROOT)} (median pitch {ANCHOR:.0f} Hz)')
-lengths = {}
-print(f'engine: {ENGINE}' + (f' (exaggeration {EXAGGERATION}, cfg {CFG_WEIGHT})' if ENGINE == 'chatterbox' else f' (voice {VOICE})'))
-for line in LINES:
-    key, text, room = line['id'], line['text'], line['room']
-    cached = manifest.get(key)
-    if not FORCE and cached and cached['text'] == text and cached['sig'] == SIG and os.path.exists(os.path.join(OUT, f'{key}.wav')):
-        lengths[key] = cached['frames']
-        print(f'{key}.wav  cached ({cached["seconds"]:.2f}s of {room:.2f}s)', flush=True)
-        continue
-    takes = []
-    for k in range(TAKES):
-        x, sr = take(text, k)
-        x = trim(x, sr)
-        said = heard(x, sr)
-        length = len(x) / sr
-        ok = words(said) == words(text)
-        f0 = median_f0(x, sr)
-        drift = abs(f0 / ANCHOR - 1) if ANCHOR and f0 else 0.0
-        same_voice = drift <= 0.15
-        score = liveliness(x, sr) if ok and same_voice else 0.0
-        why = '' if ok and same_voice else ('  REJECTED (words)' if not ok else f'  REJECTED (pitch {f0:.0f} Hz, drifted {drift:.0%})')
-        print(f'  {key} [{TAKE_LABELS[k]}]: {length:.2f}s (room {room:.2f}s) {f0:3.0f} Hz, range {score:4.1f} st  heard {said!r}{why}', flush=True)
-        ok = ok and same_voice
-        if ok:
-            takes.append((length <= room, score, length, x, sr))
-    if not takes:
-        sys.exit(f'No clean take for {key!r}: reword the line in src/config.ts or raise `takes`, then rerun.')
-    fits = [tk for tk in takes if tk[0]]
-    best = max(fits, key=lambda tk: tk[1]) if fits else min(takes, key=lambda tk: tk[2])
-    _, _, length, x, sr = best
-    tempo = 1.0 if length <= room else min(1.12, length / room)
-    af = (f'atempo={tempo:.4f},' if tempo > 1.0 else '') + POLISH
-    with tempfile.NamedTemporaryFile(suffix='.wav') as raw:
-        sf.write(raw.name, x, sr)
-        out = os.path.join(OUT, f'{key}.wav')
-        subprocess.run(['ffmpeg', '-v', 'error', '-y', '-i', raw.name, '-af', af, '-ac', '1', out], check=True)
-    # Level: speech at about -13.5 dBFS RMS so it leads the mix on phones, peaks capped at -1 dB.
-    y, ysr = sf.read(out, dtype='float32')
-    speech = y[np.abs(y) > 0.01]
-    rms = np.sqrt(np.mean(speech ** 2)) if len(speech) else 1e-3
-    gain = min(10 ** (-13.5 / 20) / rms, 0.89 / (np.max(np.abs(y)) + 1e-9))
-    sf.write(out, y * gain, ysr, subtype='PCM_16')
-    final = len(y) / ysr
-    lengths[key] = int(np.ceil(final * FPS))
-    manifest[key] = {'text': text, 'sig': SIG, 'seconds': round(final, 3), 'frames': lengths[key]}
-    json.dump(manifest, open(MANIFEST, 'w'), indent=1)
-    flag = '' if final <= room + 0.05 else '  <-- runs into the next line: shorten the text or move `at`'
-    print(f'{key}.wav  {final:.2f}s of {room:.2f}s' + (f'  (tempo {tempo:.2f})' if tempo > 1 else '')
-          + f'  gain {20 * np.log10(gain):+.1f} dB{flag}', flush=True)
+out = os.path.join(OUT, 'narration.wav')
+with tempfile.NamedTemporaryFile(suffix='.wav') as raw:
+    sf.write(raw.name, track, SR)
+    subprocess.run(['ffmpeg', '-v', 'error', '-y', '-i', raw.name, '-af', POLISH, '-ac', '1', out], check=True)
+# Loudness: -15 LUFS integrated (speech-gated), true peak capped at -1.5 dBTP.
+norm = out + '.norm.wav'
+subprocess.run(['ffmpeg', '-v', 'error', '-y', '-i', out, '-af', 'loudnorm=I=-15:TP=-1.5:LRA=9,aresample=48000',
+                '-ac', '1', '-c:a', 'pcm_s16le', norm], check=True)
+os.replace(norm, out)
 
+windows = [[int(np.floor(s * FPS)), int(np.ceil(e * FPS))] for s, e in best['placed']]
+for line, (s, e) in zip(LINES, best['placed']):
+    print(f'  {line["id"]:9s} {s:5.2f}s → {e:5.2f}s  (target {line["target"]:5.2f}s)  {line["text"]}')
 with open(os.path.join(ROOT, 'src', 'voLengths.ts'), 'w') as f:
-    f.write(f'// Generated by scripts/make-voiceover.py: length of each voiceover line in frames ({FPS} fps).\n')
-    f.write('export const VO_FRAMES: Record<string, number> = ' + str(lengths).replace("'", '') + ';\n')
-print('wrote', OUT, 'and src/voLengths.ts')
+    f.write(f'// Generated by scripts/make-voiceover.py: when the narration is speaking, [from, to] in frames ({FPS} fps).\n')
+    f.write(f'export const VO_WINDOWS: [number, number][] = {windows};\n')
+print(f'wrote {os.path.relpath(out, ROOT)} and src/voLengths.ts')
