@@ -1,6 +1,6 @@
 # Hot Pepper Media: "A day in the life of ONE post"
 
-A 25-second Instagram Reel (1080×1920, 30 fps, 750 frames) built in Remotion. Its goal is to get new clients to DM "KICK".
+A 30-second Instagram Reel (1080×1920, 30 fps, 900 frames) built in Remotion. Its goal is to get new clients to DM "KICK".
 
 | Time | Scene | Clock |
 |---|---|---|
@@ -10,7 +10,8 @@ A 25-second Instagram Reel (1080×1920, 30 fps, 750 frames) built in Remotion. I
 | 10–15 s | **Create**: one big post builds itself (1/3 SHOOT → camera flash, 2/3 DESIGN → headline + button, 3/3 WRITE → caption types), then a heart pops | 13:00 |
 | 15–19 s | **Launch**: post gets a POSTED stamp, a finger taps a giant red "Launch ad campaign" button, reactions burst out, notifications pop | 17:00 |
 | 19–22 s | **Results**: one giant number (people reached) counts up over a graph that shoots up, plus followers and leads chips | 20:00 |
-| 22–25 s | **CTA**: full chili-red card: white logo, "Want this for your brand?", "DM us 'KICK'", tagline, handle, then a 1.5 s hold | none |
+| 22–27 s | **Nothing → something**: an empty grey "yourbrand" profile; on the voice's "to something" its tiles flip one by one into branded posts, the avatar becomes the chili logo and followers count up to 12.4K | none |
+| 27–30 s | **CTA**: full chili-red card: white logo, "Want this for your brand?", "DM us 'KICK'", tagline, handle, then a 1.5 s hold | none |
 
 Design rule: one huge hero object per scene, big type (captions 110 px), one big "hit" moment per scene, all on a red graph-paper grid (`COLORS.grid`, `COLORS.gridOnRed`, `GRID.cell`, `GRID.lineWidth`).
 
@@ -26,8 +27,10 @@ One continuous, warm female narration that flows across the whole reel. Each sen
 | 0:10 | "We shoot it, design it, and write it... until it's just right." |
 | 0:15 | "Then we hit publish, and launch the ad campaign behind it." |
 | 0:19 | "And we track what's working, in real time." |
-| 0:22 | "Want this? DM us the word kick." |
+| 0:22 | "We take your brand from nothing... to something." |
+| 0:27 | "Want this? DM us the word kick." |
 
+- **Note:** the glow-up line was voiced on its own in the same cloned voice and spliced into the approved narration, so the other lines stay exactly as approved. Running the generator again re-reads the whole script in one take.
 - **File:** `assets/vo/narration.wav`, one track played from frame 0. `src/voLengths.ts` (generated) says when it is speaking, so music dips to `musicDuckTo` (0.35) and SFX to `sfxDuckTo` (0.6) under it.
 - **Engine:** Chatterbox Turbo by Resemble AI (MIT licence, so commercial use is fine), run locally. The output carries Resemble's inaudible "Perth" watermark. `VOICEOVER.engine: 'chatterbox'` switches to the standard model, which uses `exaggeration` and `cfgWeight`.
 - **Voice:** it clones `VOICEOVER.voiceRef` (`assets/vo/voice-ref.wav`), currently Kokoro's "af_heart" voice (Apache-2.0), a warm American female. A speech gender classifier confirms it reads 100% female. To use your own or a team member's voice, record 10–20 s of clean, natural talking, save it over that file and regenerate.
@@ -82,6 +85,7 @@ To use a local Chrome or Chromium instead of Remotion's download, set `REMOTION_
 | **Strategy chips** | Strategy | `SCENES.strategy.chips[].title` |
 | **Idea notes** | Idea | `SCENES.idea.notes` (3), `SCENES.idea.chosenNote` |
 | **Example post copy** | Create + Launch | `SCENES.create.postHeadline`, `postButton`, `typedCaption`, step labels `SCENES.create.steps` |
+| **Nothing → something** | Glow-up scene | `SCENES.glowup` (`handle`, `before` / `after` stats, `flipAt`, captions) |
 | **Hook words** | Hook + thumbnail | `SCENES.hook.line1 / hero / line3`, `THUMBNAIL.*` |
 | **Voiceover** | Whole reel | `VOICEOVER.lines[].text` / `at`, then `npm run voiceover -- MODELS_DIR`. Voice: replace `assets/vo/voice-ref.wav`. A real recording can replace `assets/vo/narration.wav`; update `src/voLengths.ts` windows if its timing differs. |
 | **Music** | Whole reel | Add `assets/music.mp3`, then set `MUSIC.bpm` and `MUSIC.firstBeatFrame` (and `trimStartSeconds` if needed). Volume: `volume`, `fadeInFrames`, `duckTo` (CTA duck, 0.4), `fadeOutFrames`. Without the file the reel has only the voiceover. |

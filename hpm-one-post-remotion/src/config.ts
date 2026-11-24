@@ -15,7 +15,7 @@ export const VIDEO = {
   width: 1080,
   height: 1920,
   fps: 30,
-  // Total length is the sum of SCENES[*].duration (60+120+120+150+120+90+90 = 750).
+  // Total length is the sum of SCENES[*].duration (60+120+120+150+120+90+150+90 = 900 = 30 s).
 } as const;
 
 export const BRAND = {
@@ -161,6 +161,7 @@ export const VOICEOVER = {
     {id: 'create', scene: 'create', at: 4, text: "We shoot it, design it, and write it... until it's just right."},
     {id: 'launch', scene: 'launch', at: 4, text: 'Then we hit publish, and launch the ad campaign behind it.'},
     {id: 'results', scene: 'results', at: 2, text: "And we track what's working, in real time."},
+    {id: 'glowup', scene: 'glowup', at: 4, text: 'We take your brand from nothing... to something.'},
     {id: 'cta', scene: 'cta', at: 0, text: 'Want this? DM us the word kick.'},
   ],
 } as const;
@@ -275,6 +276,21 @@ export const SCENES = {
     exampleLabel: 'Example results',
   },
 
+  glowup: {
+    duration: 150, // 5 s
+    clock: null, // no clock here: this beat is about the brand's journey, not one day
+    beforeCaption: ['From nothing'],
+    afterCaption: ['to *something*'],
+    beforeCaptionAt: 4,
+    cardAt: -4, // profile card arrives (during the whip)
+    flipAt: 60, // tiles flip to branded posts, on the voice's "to something"
+    flipStagger: 4,
+    handle: 'yourbrand',
+    before: {posts: 0, followers: 12, following: 3},
+    after: {posts: 48, followers: 12400, following: 180},
+    countFrames: 36,
+  },
+
   cta: {
     duration: 90,
     redBackground: true, // full chili-red end card (like the feed's red posts); false = light
@@ -289,7 +305,7 @@ export const SCENES = {
   },
 } as const;
 
-export const SCENE_ORDER = ['hook', 'idea', 'strategy', 'create', 'launch', 'results', 'cta'] as const;
+export const SCENE_ORDER = ['hook', 'idea', 'strategy', 'create', 'launch', 'results', 'glowup', 'cta'] as const;
 
 // Transition INTO each scene.
 export const TRANSITIONS_IN: Record<(typeof SCENE_ORDER)[number], 'none' | 'flame' | 'whip'> = {
@@ -299,6 +315,7 @@ export const TRANSITIONS_IN: Record<(typeof SCENE_ORDER)[number], 'none' | 'flam
   create: 'whip',
   launch: 'whip',
   results: 'whip',
+  glowup: 'whip',
   cta: 'whip',
 };
 

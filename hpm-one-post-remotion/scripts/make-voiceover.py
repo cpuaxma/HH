@@ -21,7 +21,7 @@ Output carries Resemble's inaudible "Perth" watermark (built into Chatterbox).
 Usage:
   pip install torch==2.6.0 torchaudio==2.6.0 --index-url https://download.pytorch.org/whl/cpu
   pip install chatterbox-tts sherpa-onnx soundfile librosa numpy
-  python3 scripts/make-voiceover.py MODELS_DIR [--takes N]
+  python3 scripts/make-voiceover.py MODELS_DIR [--takes N] [--seed N]
 MODELS_DIR holds asr-models/sherpa-onnx-whisper-small.en from github.com/k2-fsa/sherpa-onnx/releases.
 """
 import os
@@ -57,6 +57,7 @@ TEMPERATURE = setting('temperature')
 EXAGGERATION = setting('exaggeration')
 CFG_WEIGHT = setting('cfgWeight')
 TAKES = int(sys.argv[sys.argv.index('--takes') + 1]) if '--takes' in sys.argv else setting('takes', int)
+SEED = int(sys.argv[sys.argv.index('--seed') + 1]) if '--seed' in sys.argv else 2000  # try another batch with --seed 3000
 LEAD = setting('lead')
 LINES = [
     {'id': m.group(1), 'target': (cut[m.group(2)] + int(m.group(3))) / FPS, 'text': m.group(5)}
@@ -198,7 +199,7 @@ shares /= shares.sum()
 
 results = []
 for k in range(TAKES):
-    torch.manual_seed(2000 + k)
+    torch.manual_seed(SEED + k)
     x = gen(SCRIPT).squeeze().numpy().astype(np.float32)
     mask = speech_mask(x, SR)
     start, end, cands = pauses(mask)

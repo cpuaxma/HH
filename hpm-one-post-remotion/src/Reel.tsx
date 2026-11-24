@@ -14,6 +14,7 @@ import {Hook} from './scenes/Hook';
 import {Idea} from './scenes/Idea';
 import {Launch} from './scenes/Launch';
 import {Results} from './scenes/Results';
+import {Glowup} from './scenes/Glowup';
 import {Strategy} from './scenes/Strategy';
 
 const SCENE_COMPONENTS: Record<SceneName, React.FC> = {
@@ -23,6 +24,7 @@ const SCENE_COMPONENTS: Record<SceneName, React.FC> = {
   create: Create,
   launch: Launch,
   results: Results,
+  glowup: Glowup,
   cta: Cta,
 };
 
