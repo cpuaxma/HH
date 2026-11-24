@@ -138,17 +138,23 @@ export const MUSIC = {
 export const VOICEOVER = {
   enabled: true,
   folder: 'vo',
-  voice: 3, // Supertonic 3 speaker id (0–4 female, 5–9 male)
+  // Engine: Chatterbox (Resemble AI, MIT licence), run locally. Expressive, natural delivery.
+  engine: 'chatterbox' as 'chatterbox' | 'supertonic',
+  exaggeration: 0.65, // 0.25 flat … 0.5 natural … 0.8+ dramatic
+  cfgWeight: 0.45, // lower = slower, more deliberate pacing
+  takes: 5, // takes rendered per line; the best clean one that fits is kept
+  voice: 3, // Supertonic speaker id, only used when engine = 'supertonic'
   volume: 1,
   musicDuckTo: 0.35, // music level while a line is speaking
   sfxDuckTo: 0.6, // SFX level while a line is speaking
+  // Written for the ear: short, rhythmic, each line lands on its scene's big moment.
   lines: [
     {id: 'hook', scene: 'hook', at: 3, text: 'What goes into one post?'},
-    {id: 'idea', scene: 'idea', at: 8, text: 'It starts with an idea. The right one.'},
-    {id: 'strategy', scene: 'strategy', at: 4, text: 'Then a strategy that hits the target.'},
-    {id: 'create', scene: 'create', at: 6, text: 'We shoot it. Design it. Write it.'},
-    {id: 'launch', scene: 'launch', at: 8, text: 'Publish it, and launch the ad campaign.'},
-    {id: 'results', scene: 'results', at: 4, text: 'Then we measure what works.'},
+    {id: 'idea', scene: 'idea', at: 6, text: 'It starts with an idea. The one that stops the scroll.'},
+    {id: 'strategy', scene: 'strategy', at: 4, text: 'Then a strategy. Right people. Right message.'},
+    {id: 'create', scene: 'create', at: 4, text: 'We shoot it. We design it. We write it.'},
+    {id: 'launch', scene: 'launch', at: 6, text: 'Then we publish, and launch the ad campaign.'},
+    {id: 'results', scene: 'results', at: 4, text: 'And we measure what works.'},
     {id: 'cta', scene: 'cta', at: 2, text: 'Want this for your brand? DM us the word kick.'},
   ],
 } as const;

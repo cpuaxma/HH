@@ -16,31 +16,33 @@ Design rule: one huge hero object per scene, big type (captions 110 px), one big
 
 ## Voiceover
 
-Seven short lines, one per scene, each landing on that scene's big moment. A confident female voice reads them.
+Seven short lines, written to be heard rather than read off the captions, each landing on its scene's big moment. The voice is a confident female read with a little extra energy.
 
 | When | Line |
 |---|---|
 | 0:00 | "What goes into one post?" |
-| 0:02 | "It starts with an idea. The right one." |
-| 0:06 | "Then a strategy that hits the target." |
-| 0:10 | "We shoot it. Design it. Write it." |
-| 0:15 | "Publish it, and launch the ad campaign." |
-| 0:19 | "Then we measure what works." |
+| 0:02 | "It starts with an idea. The one that stops the scroll." |
+| 0:06 | "Then a strategy. Right people. Right message." |
+| 0:10 | "We shoot it. We design it. We write it." |
+| 0:15 | "Then we publish, and launch the ad campaign." |
+| 0:19 | "And we measure what works." |
 | 0:22 | "Want this for your brand? DM us the word kick." |
 
-- **Text, timing, voice and levels:** `VOICEOVER` in `src/config.ts`. Each line's `at` is the frame from its scene's cut. `musicDuckTo` (0.35) and `sfxDuckTo` (0.6) set how far music and SFX dip while the voice speaks.
-- **Audio files:** `assets/vo/<id>.wav`. A missing file is skipped. To use a real voice actor, record each line to the same file names.
-- **Engine:** Supertonic 3 by Supertone (licence OpenRAIL-M, which allows commercial use), run locally through sherpa-onnx, the same engine as `hpm-maps-remotion`. Speakers 0–4 are female and 5–9 male; this reel uses 3.
-- **Regenerating** after you change the text or voice:
+- **Engine:** Chatterbox by Resemble AI (MIT licence, so commercial use is fine), run locally on CPU. Its output carries Resemble's inaudible "Perth" watermark. `VOICEOVER.engine: 'supertonic'` switches back to the older, flatter Supertonic 3 voice.
+- **Delivery:** `VOICEOVER.exaggeration` sets the energy (0.5 is natural, 0.8+ dramatic; currently 0.65). `cfgWeight` sets the pacing (lower is slower).
+- **One consistent voice:** every line clones `assets/vo/voice-ref.wav`, a 7 s clip of this voice. Takes whose pitch drifts more than 15% from it are rejected. To change the voice, replace that file with any clean 5–10 s recording (you must have the rights to it) and regenerate with `--force`.
+- **Text and timing:** `VOICEOVER.lines` in `src/config.ts`. Each line's `at` is the frame from its scene's cut. `musicDuckTo` (0.35) and `sfxDuckTo` (0.6) set how far music and SFX dip under the voice.
+- **Audio files:** `assets/vo/<id>.wav`. To use a real voice actor, record each line to these file names and re-render.
+- **Regenerating** (only changed lines are redone; `--force` redoes all):
   ```
-  pip install sherpa-onnx soundfile librosa numpy
-  # download and unpack into MODELS_DIR from github.com/k2-fsa/sherpa-onnx/releases:
-  #   tts-models/sherpa-onnx-supertonic-3-tts-int8-2026-05-11.tar.bz2
-  #   asr-models/sherpa-onnx-whisper-small.en.tar.bz2
-  npm run voiceover -- MODELS_DIR        # optional 2nd arg: speaker id, e.g. 7 for a male voice
+  pip install torch==2.6.0 torchaudio==2.6.0 --index-url https://download.pytorch.org/whl/cpu
+  pip install chatterbox-tts sherpa-onnx soundfile librosa numpy
+  # MODELS_DIR must hold asr-models/sherpa-onnx-whisper-small.en from github.com/k2-fsa/sherpa-onnx/releases
+  npm run voiceover -- MODELS_DIR
   npm run render
   ```
-  The script reads the lines from the config and renders several takes of each. Whisper checks every word of each take, and a take with a wrong word is rejected. It then keeps the liveliest take that finishes before the next line, polishes it (warmth, presence, gentle compression, a very short room) and levels it. It also writes `src/voLengths.ts`, which the music and SFX ducking use.
+  Chatterbox downloads its weights from Hugging Face on the first run, about 2 minutes. Each line is rendered five times, roughly 25 s per take on CPU.
+  Whisper checks every word of each take; a take with a wrong, missing or extra word is rejected. The script keeps the liveliest clean take that finishes before the next line, polishes it and levels it, then writes `src/voLengths.ts` for the ducking.
 
 ## Commands
 
