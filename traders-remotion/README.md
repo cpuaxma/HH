@@ -11,14 +11,17 @@ Output: `out/traders.mp4` (H.264, CRF 16, yuv420p, bt709, AAC audio).
 ```bash
 npm install
 npm run studio                 # preview in Remotion Studio
-npm run render                 # → out/traders.mp4  (H.264, CRF 16, --gl=swangle)
+npm run render                 # → out/traders.mp4  (H.264, CRF 16, --gl=swangle, mastered audio)
 ```
 
-`npm run render` runs:
+`npm run render` runs two steps:
 
 ```bash
-npx remotion render TradersArena out/traders.mp4 --codec=h264 --crf=16 --gl=swangle
+npx remotion render TradersArena out/traders-raw.mp4 --codec=h264 --crf=16 --gl=swangle
+node scripts/master-audio.mjs out/traders-raw.mp4 out/traders.mp4   # audio limiter, video copied untouched
 ```
+
+The second step is needed because Remotion mixes audio without a master limiter. Without it, effects stacked on the music can peak above 0 dBFS.
 
 ### The GL flag (servers / no GPU)
 
@@ -41,7 +44,8 @@ Remotion downloads its own headless Chrome on first render. To use an existing o
 
 | Step | Time |
 |---|---|
-| Full render (1200 frames, 4-core cloud VM, no GPU, SwiftShader) | see [Render report](#render-report) |
+| Full render (1200 frames, 4-core cloud VM, no GPU, SwiftShader) | **1604 s (26.7 min)**, ~1.3 s/frame |
+| Audio mastering (`node scripts/master-audio.mjs`) | ~5 s |
 | One still (`npm run still -- --frame=430 out/f.png`) | ~6–8 s |
 | Safe-zone audit (`npm run safezone`, text only) | ~40 s |
 
@@ -130,7 +134,16 @@ npx remotion still TradersArena out/sz.png --frame=300 --props='{"showSafeZone":
 
 ## Render report
 
-<!-- filled in after the final render -->
+Final render of `out/traders.mp4`:
+
+| Check | Result |
+|---|---|
+| Format | 1080×1920, 30 fps, **1200 frames**, 40.000 s, H.264 CRF 16, yuv420p, bt709; AAC 48 kHz stereo; 58 MB |
+| Render time | 1604 s (26.7 min) on a 4-core cloud VM with no GPU (`--gl=swangle`, concurrency 1); a second run took 1642 s |
+| Loudness | −15.3 LUFS integrated, 4.7 LU range, true peak −1.6 dBTP (after `master-audio.mjs`) |
+| Safe zone | `npm run safezone`: all 1200 frames pass |
+| Counter | `counter-check.md`: 0 of 1200 frames where the number shown differs from the pillars still standing |
+| Visual QA | Contact sheets of every scene, plus sampled frame sequences around every transition and trap (`scripts/stills.mjs`) |
 
 ## Logo
 

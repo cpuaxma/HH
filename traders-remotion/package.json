@@ -4,14 +4,15 @@
   "version": "1.0.0",
   "scripts": {
     "studio": "remotion studio",
-    "render": "remotion render TradersArena out/traders.mp4 --codec=h264 --crf=16 --gl=swangle",
+    "render": "remotion render TradersArena out/traders-raw.mp4 --codec=h264 --crf=16 --gl=swangle && node scripts/master-audio.mjs out/traders-raw.mp4 out/traders.mp4",
     "still": "remotion still TradersArena --gl=swangle",
     "stills": "node scripts/stills.mjs",
     "safezone": "node scripts/safezone.mjs",
     "typecheck": "tsc --noEmit",
     "docs": "node scripts/gen-docs.mjs",
     "audio": "python3 scripts/make-audio.py",
-    "fonts": "node scripts/fetch-fonts.mjs"
+    "fonts": "node scripts/fetch-fonts.mjs",
+    "master": "node scripts/master-audio.mjs"
   },
   "dependencies": {
     "@react-three/fiber": "8.17.10",
