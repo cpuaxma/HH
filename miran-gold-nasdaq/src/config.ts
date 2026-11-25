@@ -94,10 +94,12 @@ export const TEXT = {
     lines: ['قبل أن تتداول المؤشر...', 'اعرف من يحركه'],
     highlightLine: 1, // index of the line that gets the gold highlight band
   },
+  // The outro (Miran Gold brand end card) is in English; everything before it is Arabic.
   cta: {
-    line: 'تعلّم أكثر مع ميران غولد',
-    button: 'الرابط في البايو',
-    footer: 'محتوى تعليمي وليس نصيحة استثمارية',
+    line: 'Learn more with Miran Gold',
+    brandWords: ['Miran', 'Gold'], // shown in gold
+    button: 'Link in bio',
+    footer: 'Educational content, not investment advice',
   },
 };
 

@@ -7,7 +7,7 @@ import {WordReveal} from '../components/WordReveal';
 import {FONT_FAMILY} from '../fonts';
 import {clamp, EASE, pulse, rgba, springAt} from '../lib/motion';
 
-/** 30-33s: big logo reveal with a gold shimmer sweep, brand line, "link in bio" pill, disclaimer. */
+/** 30-33s (English outro): big logo reveal with a gold shimmer sweep, brand line, "Link in bio" pill, disclaimer. */
 export const Scene6CTA: React.FC = () => {
   const frame = useSceneFrame();
   const b = BEATS.cta;
@@ -78,7 +78,8 @@ export const Scene6CTA: React.FC = () => {
           stagger={b.stagger}
           fontSize={L.lineSize}
           fill="white"
-          wordFill={(i) => (i >= 3 ? 'gold' : undefined)} // "ميران غولد"
+          dir="ltr"
+          wordFill={(_, word) => (TEXT.cta.brandWords.includes(word) ? 'gold' : undefined)}
           glow={0.5}
         />
       </div>
@@ -94,7 +95,7 @@ export const Scene6CTA: React.FC = () => {
         }}
       >
         <div
-          dir="rtl"
+          dir="ltr"
           style={{
             position: 'relative',
             overflow: 'hidden',
@@ -124,7 +125,7 @@ export const Scene6CTA: React.FC = () => {
       </div>
 
       <div
-        dir="rtl"
+        dir="ltr"
         style={{
           position: 'absolute',
           top: L.footerTop,

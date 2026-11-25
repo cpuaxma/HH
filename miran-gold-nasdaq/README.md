@@ -1,6 +1,6 @@
 # Miran Gold: لماذا يهبط السوق كله بسبب سهم واحد؟
 
-A 33-second vertical Instagram Reel (1080×1920, 30fps, H.264) explaining the Nasdaq-100 and how a few AI/tech giants move it. Arabic, RTL, Cairo font. It is silent by design and has an audio slot.
+A 33-second vertical Instagram Reel (1080×1920, 30fps, H.264) explaining the Nasdaq-100 and how a few AI/tech giants move it. It is in Arabic (RTL, Cairo font), except the Miran Gold outro, which is in English. It is silent by design and has an audio slot.
 
 ## Render
 
@@ -21,7 +21,7 @@ Encoding settings are in `remotion.config.ts`: CRF 18 with a 16 Mbps cap and x26
 - `src/scenes/Scene1Hook.tsx` … `Scene6CTA.tsx`: one component per scene.
 - `src/components/`
   - `SceneShell`: mounts each scene and cross-fades it (opacity, blur and drift) across boundaries. There are no hard cuts.
-  - `WordReveal`: word-by-word RTL reveal. It splits on spaces only, so letters stay joined.
+  - `WordReveal`: word-by-word reveal, RTL by default (`dir="ltr"` for the English outro). It splits on spaces only, so Arabic letters stay joined.
   - `CompanyField`: the 100 constituents as one continuous layer across scenes 2–4: grid dots, then packed bubbles with swelling giants, then red, shrinking giants.
   - `Charts`: the hook's red candlestick dip and the scene-4 index line.
   - `Background`: charcoal base, breathing radial glow (it turns red during the drop), vignette and film grain (`public/grain.png`).
@@ -37,7 +37,7 @@ Encoding settings are in `remotion.config.ts`: CRF 18 with a 16 Mbps cap and x26
 | Not equal | 9–17s | Dots morph into bubbles; 7 giants swell, the rest dim |
 | Domino | 17–25s | Giants turn red and shrink; index line falls; 0.0% → −3.0% |
 | Takeaway | 25–30s | Gold line with a highlight band sweeping right → left |
-| CTA | 30–33s | Big logo + shimmer, brand line, "الرابط في البايو" pill, disclaimer |
+| CTA (English) | 30–33s | Big logo + shimmer, "Learn more with Miran Gold", "Link in bio" pill, disclaimer |
 
 ## Safe zones
 

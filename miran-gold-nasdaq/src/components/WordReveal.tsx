@@ -22,11 +22,13 @@ type Props = {
   renderBehindLine?: (lineIndex: number) => React.ReactNode;
   /** Optional per-word fill override (word index counts across all lines, in reading order). */
   wordFill?: (wordIndex: number, word: string) => TextFill | undefined;
+  /** Reading direction: 'rtl' for Arabic (default), 'ltr' for the English outro. */
+  dir?: 'rtl' | 'ltr';
 };
 
 /**
  * Right-to-left word-by-word reveal. Words are split on spaces only, so every Arabic word
- * keeps its letters joined; the flex row runs right → left (direction: rtl), so words appear
+ * keeps its letters joined; the flex row follows `dir` (right → left for Arabic), so words appear
  * in reading order.
  */
 export const WordReveal: React.FC<Props> = ({
@@ -43,14 +45,15 @@ export const WordReveal: React.FC<Props> = ({
   style,
   renderBehindLine,
   wordFill,
+  dir = 'rtl',
 }) => {
   let index = 0;
   return (
     <div
-      dir="rtl"
-      lang="ar"
+      dir={dir}
+      lang={dir === 'rtl' ? 'ar' : 'en'}
       style={{
-        direction: 'rtl',
+        direction: dir,
         fontFamily: FONT_FAMILY,
         fontWeight: weight,
         fontSize,
