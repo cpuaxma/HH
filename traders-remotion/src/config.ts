@@ -128,11 +128,11 @@ export const BEATS = {
 export const AUDIO = {
   music: 'music.mp3',
   voiceover: 'voiceover.mp3',
-  musicVolume: 0.55,
+  musicVolume: 0.5,
   musicDuck: 0.28, // music level while the voiceover speaks
   musicSwell: 0.8, // warm swell under the survivors
   voiceoverVolume: 1,
-  sfxVolume: 0.9,
+  sfxVolume: 0.75,
   fadeOutFrames: 60, // last 2 s
 } as const;
 

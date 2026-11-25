@@ -12,7 +12,7 @@ export const getCues = (): Cue[] => {
 
   add(2, 'ripple', 0.9, 'Hook: the arena lights up in a gold ripple');
   add(SCENES.setup[0] - 2, 'whoosh', 0.5, 'Transition hook → setup');
-  add(BEATS.counterSlam, 'hit', 1, 'Counter «١٠٠» slams in');
+  add(BEATS.counterSlam, 'hit', 0.9, 'Counter «١٠٠» slams in');
 
   PLAN.traps.forEach((t) => {
     const d = t.prepared.data as Record<string, number[] | number>;
@@ -37,7 +37,7 @@ export const getCues = (): Cue[] => {
       default:
         break;
     }
-    add(t.hit, 'hit', 1, `Counter drops to the trap ${t.k + 1} total`);
+    add(t.hit, 'hit', 0.9, `Counter drops to the trap ${t.k + 1} total`);
   });
 
   add(SCENES.reveal[0] + 4, 'whoosh', 0.55, 'Camera pulls high for the reveal');
