@@ -99,7 +99,7 @@ export const LaneBoard: React.FC = () => {
               left: LAYOUT.railX,
               top: HOME_Y[lane] - LAYOUT.railH / 2,
               opacity: snapO,
-              transform: `translate(${(1 - snap) * 90 + shake.x}px, ${nudge}px) rotate(${shake.r}deg) scale(${0.86 + 0.14 * snap})`,
+              transform: `translate(${(1 - snap) * 90 + shake.x + Math.sin(frame / 34 + i * 2.1) * 5}px, ${nudge + Math.sin(frame / 27 + i * 1.3) * 7}px) rotate(${shake.r + Math.sin(frame / 45 + i) * 0.35}deg) scale(${0.86 + 0.14 * snap})`,
             }}
           >
             <LaneRail

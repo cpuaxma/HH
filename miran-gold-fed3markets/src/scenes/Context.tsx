@@ -72,10 +72,11 @@ export const Context: React.FC = () => {
                   <span style={{fontFamily: FONT.ar, fontWeight: FONT.arBold, fontSize: 64, color: C.text}}>أكثر من</span>
                   <span style={{position: 'relative'}}>
                     <CountUp frame={frame} to={data.decHikeOdds.threshold} start={HIT.oddsFillStart} dur={HIT.oddsLand - HIT.oddsFillStart} suffix="%" size={150} gold />
+                    {frame >= HIT.oddsLand && <Sheen frame={frame} period={70} offset={-HIT.oddsLand} />}
                   </span>
                 </div>
                 <div style={{marginTop: 70}}>
-                  <ProbabilityBar fill={fill} w={640} threshold={data.decHikeOdds.threshold} tickFlash={tickFlash} />
+                  <ProbabilityBar fill={fill} w={640} threshold={data.decHikeOdds.threshold} tickFlash={frame > HIT.oddsLand ? 0.35 + 0.35 * Math.sin((frame - HIT.oddsLand) / 7) : tickFlash} />
                 </div>
                 <div style={{width: 640, display: 'flex', justifyContent: 'space-between', marginTop: 18, fontFamily: FONT.en, fontWeight: 600, fontSize: 20, color: C.slate}}>
                   <bdi dir="ltr">0%</bdi>
