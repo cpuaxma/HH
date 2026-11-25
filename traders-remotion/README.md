@@ -139,7 +139,7 @@ Final render of `out/traders.mp4`:
 | Check | Result |
 |---|---|
 | Format | 1080×1920, 30 fps, **1200 frames**, 40.000 s, H.264 CRF 16, yuv420p, bt709; AAC 48 kHz stereo; 58 MB |
-| Render time | 1604 s (26.7 min) on a 4-core cloud VM with no GPU (`--gl=swangle`, concurrency 1); a second run took 1642 s |
+| Render time | 1604 s (26.7 min) on a 4-core cloud VM with no GPU (`--gl=swangle`, concurrency 1); an earlier full render took 1642 s |
 | Loudness | −15.3 LUFS integrated, 4.7 LU range, true peak −1.6 dBTP (after `master-audio.mjs`) |
 | Safe zone | `npm run safezone`: all 1200 frames pass |
 | Counter | `counter-check.md`: 0 of 1200 frames where the number shown differs from the pillars still standing |
