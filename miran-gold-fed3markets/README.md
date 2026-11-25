@@ -2,7 +2,7 @@
 
 Vertical Arabic educational reel in Remotion: 1080×1920, 60fps, 44.0s (2,640 frames), 120 BPM grid (1 beat = 30 frames).
 
-**Status: step 3 (component kit + style frames).** Scenes S2, S6, S8, S9 and the transitions are built in step 4.
+**Status: full build.** All shots S0–S9 and their transitions are in.
 
 ## Render
 
@@ -11,6 +11,8 @@ npm install
 npm run render          # out/MiranGold_Fed3Markets_2026-11.mp4 (H.264, CRF 18)
 npm run render:overlay  # ProRes 4444 overlay pass (no background)
 scripts/stills.sh Fed3Markets out/frames 150 300 1060   # stills at given frames
+npm run qa -- 90 255 405       # half-res QA stills in one browser session (out/qa)
+npm run cues                   # out/sfx_cues.csv (time_s, frame, cue, file, volume, note)
 ```
 
 Set `REMOTION_BROWSER` to use an existing Chrome/headless shell.

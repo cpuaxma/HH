@@ -6,6 +6,7 @@ import {LANE_ORDER, LAYOUT, LaneKey, SPRING, VIDEO} from '../brand';
 import {HIT, SCENES} from '../timeline';
 import {clamp, fmt, impulse, kf, springAt} from '../motion';
 import {LaneRail, reactionShake} from './LaneRail';
+import {mblurX} from './MotionBlur';
 import data from '../data.json';
 
 export const HOME_Y: Record<LaneKey, number> = {nasdaq: 820, spx: 980, gold: 1140};
@@ -27,7 +28,7 @@ const arrowFor = (frame: number, lane: LaneKey) => {
   // Twist: flip up one by one, then back to the usual reaction for the recap
   const up = springAt(frame, HIT.flip[lane], {damping: 13, stiffness: 160});
   const back = springAt(frame, HIT.flipBack + i * 6, {damping: 16, stiffness: 160});
-  return {flip: Math.max(0, Math.min(1.08, up - back)), double: double && frame >= HIT.flipBack, opacity: 1};
+  return {flip: Math.max(0, Math.min(1.08, up - back)), double, opacity: 1};
 };
 
 export const LaneBoard: React.FC = () => {
@@ -145,11 +146,11 @@ export const LaneHeader: React.FC = () => {
           blur = (1 - inP) * 12;
         } else {
           x = (1 - inP) * VIDEO.width;
-          blur = (1 - inP) * 16;
+          blur = (1 - inP) * 28;
         }
         if (w.exit === 'whip') {
           x -= outP * VIDEO.width;
-          blur += outP * 16;
+          blur += outP * 28;
         } else {
           opacity *= 1 - outP;
           scale *= 1 - 0.1 * outP;
@@ -167,7 +168,7 @@ export const LaneHeader: React.FC = () => {
               left: LAYOUT.railX,
               top: DOCK_Y - LAYOUT.railH / 2,
               opacity,
-              filter: blur > 0.1 ? `blur(${blur}px)` : undefined,
+              filter: blur > 0.5 ? (w.enter === 'dive' && inP < 1 ? `blur(${blur}px)` : mblurX(blur)) : undefined,
               transform: `translate(${x + shake.x}px, ${nudge}px) rotate(${shake.r}deg) scale(${scale})`,
             }}
           >

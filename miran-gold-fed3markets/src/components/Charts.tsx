@@ -152,3 +152,118 @@ export const ProbabilityBar: React.FC<{fill: number; w: number; threshold: numbe
     <div style={{position: 'absolute', right: `${threshold}%`, top: -14, bottom: -14, width: 3, borderRadius: 2, background: C.text, opacity: 0.85}} />
   </div>
 );
+
+export type ChartPoint = {label: string; value: number; t: number}; // t = 0..1 along the x axis
+
+/**
+ * Line chart that draws itself: glowing head dot, area fill fades in after, point labels appear as
+ * the head passes them. LTR time axis (standard for price charts, also in Arabic media).
+ */
+export const LineChartDraw: React.FC<{
+  points: ChartPoint[];
+  w: number;
+  h: number;
+  min: number;
+  max: number;
+  draw: number;
+  area: number;
+  color: string;
+  refLine?: {value: number; label: string; opacity: number};
+}> = ({points, w, h, min, max, draw, area, color, refLine}) => {
+  const X = (t: number) => t * w;
+  const Y = (v: number) => h - ((v - min) / (max - min)) * h;
+  const pts = points.map((p) => [X(p.t), Y(p.value)] as const);
+  const d = pts.map(([x, y], i) => `${i ? 'L' : 'M'}${x.toFixed(1)} ${y.toFixed(1)}`).join(' ');
+  // head position along the polyline by x (draw is fraction of width)
+  const hx = draw * w;
+  let hy = pts[0][1];
+  for (let i = 0; i < pts.length - 1; i++) {
+    const [x0, y0] = pts[i];
+    const [x1, y1] = pts[i + 1];
+    if (hx >= x0 && hx <= x1) hy = y0 + ((y1 - y0) * (hx - x0)) / Math.max(1e-6, x1 - x0);
+  }
+  if (hx >= pts[pts.length - 1][0]) hy = pts[pts.length - 1][1];
+  const clip = `inset(-40px ${(1 - draw) * 100}% -40px -10px)`;
+  return (
+    <svg width={w} height={h + 50} style={{overflow: 'visible'}}>
+      <defs>
+        <linearGradient id="chartArea" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor={color} stopOpacity={0.35} />
+          <stop offset="100%" stopColor={color} stopOpacity={0} />
+        </linearGradient>
+      </defs>
+      {[0.25, 0.5, 0.75].map((g) => (
+        <line key={g} x1={0} x2={w} y1={h * g} y2={h * g} stroke={hexA(C.slate, 0.15)} strokeWidth={1} />
+      ))}
+      {refLine && (
+        <g opacity={refLine.opacity}>
+          <line x1={0} x2={w} y1={Y(refLine.value)} y2={Y(refLine.value)} stroke={hexA(C.red, 0.8)} strokeWidth={2} strokeDasharray="8 8" />
+          <text x={4} y={Y(refLine.value) - 10} fontFamily={FONT.en} fontWeight={600} fontSize={20} fill={C.red}>
+            {refLine.label}
+          </text>
+        </g>
+      )}
+      <path d={`${d} L${w} ${h} L0 ${h} Z`} fill="url(#chartArea)" opacity={area} style={{clipPath: clip}} />
+      <path d={d} fill="none" stroke={color} strokeWidth={5} strokeLinejoin="round" strokeLinecap="round" style={{clipPath: clip, filter: `drop-shadow(0 0 8px ${hexA(color, 0.6)})`}} />
+      {pts.map(([x, y], i) => {
+        const shown = interpolate(hx - x, [0, 30], [0, 1], clamp);
+        return (
+          <g key={i} opacity={shown}>
+            <circle cx={x} cy={y} r={6} fill={C.bg0} stroke={color} strokeWidth={3} />
+            <text x={x} y={h + 34} textAnchor="middle" fontFamily={FONT.en} fontWeight={600} fontSize={19} fill={C.slate}>
+              {points[i].label}
+            </text>
+            <text x={x} y={y - 18} textAnchor={i === 0 ? 'start' : i === pts.length - 1 ? 'end' : 'middle'} fontFamily={FONT.en} fontWeight={600} fontSize={19} fill={C.text} opacity={0.85}>
+              ${fmt(points[i].value)}
+            </text>
+          </g>
+        );
+      })}
+      {draw > 0.01 && draw < 0.999 && (
+        <g>
+          <circle cx={hx} cy={hy} r={16} fill={hexA(color, 0.25)} />
+          <circle cx={hx} cy={hy} r={8} fill={C.text} style={{filter: `drop-shadow(0 0 10px ${color})`}} />
+        </g>
+      )}
+    </svg>
+  );
+};
+
+/** Split-flap cell: cycles through `sequence`, landing on the last item at `land`. Whole words flip (Arabic stays joined). */
+export const SplitFlap: React.FC<{frame: number; sequence: string[]; start: number; land: number; w: number; h: number; font: string; size: number; color?: string}> = ({
+  frame,
+  sequence,
+  start,
+  land,
+  w,
+  h,
+  font,
+  size,
+  color = C.text,
+}) => {
+  const n = sequence.length;
+  const stepLen = (land - start) / (n - 1);
+  const idx = frame >= land ? n - 1 : Math.max(0, Math.min(n - 1, Math.floor((frame - start) / stepLen + 1e-6)));
+  const changeAt = start + idx * stepLen;
+  const k = idx === 0 ? 1 : interpolate(frame - changeAt, [0, 5], [0, 1], clamp); // flap progress
+  const prev = sequence[Math.max(0, idx - 1)];
+  const cur = sequence[idx];
+  const half = (text: string, top: boolean, extra: React.CSSProperties = {}) => (
+    <div style={{position: 'absolute', left: 0, right: 0, height: h / 2, top: top ? 0 : h / 2, overflow: 'hidden', background: top ? '#101C3F' : '#0C1734', borderRadius: top ? '14px 14px 0 0' : '0 0 14px 14px', ...extra}}>
+      <div style={{position: 'absolute', left: 0, right: 0, height: h, top: top ? 0 : -h / 2, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: font, fontWeight: 700, fontSize: size, color, whiteSpace: 'nowrap'}}>
+        {text}
+      </div>
+    </div>
+  );
+  const landed = frame >= land;
+  const pop = landed && frame < land + 4 ? 1.06 : 1;
+  return (
+    <div style={{position: 'relative', width: w, height: h, perspective: 600, transform: `scale(${pop})`, boxShadow: `0 20px 40px rgba(0,0,0,0.5)${landed ? `, 0 0 30px ${hexA(C.gold2, 0.35)}` : ''}`, borderRadius: 14, border: `1px solid ${hexA(C.gold2, landed ? 0.5 : 0.2)}`}}>
+      {half(cur, true)}
+      {half(k < 0.5 ? prev : cur, false)}
+      {k < 0.5 && half(prev, true, {transformOrigin: '50% 100%', transform: `rotateX(${-180 * k}deg)`, backfaceVisibility: 'hidden'})}
+      {k >= 0.5 && k < 1 && half(cur, false, {transformOrigin: '50% 0%', transform: `rotateX(${180 * (1 - k)}deg)`})}
+      <div style={{position: 'absolute', left: 0, right: 0, top: h / 2 - 1, height: 2, background: 'rgba(0,0,0,0.6)'}} />
+    </div>
+  );
+};

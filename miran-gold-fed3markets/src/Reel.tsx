@@ -11,7 +11,11 @@ import {FedPulseLayer} from './components/FedPulse';
 import {LaneBoard, LaneHeader} from './components/LaneBoard';
 import {SfxTrack} from './components/SfxTrack';
 import {Context} from './scenes/Context';
-import {GoldChapter, NasdaqChapter, Recap, SpxChapter} from './scenes/Chapters';
+import {GoldChapter, NasdaqChapter, Recap, SpxChapter, TileToGold} from './scenes/Chapters';
+import {Core} from './scenes/Core';
+import {ExpectCard, Outro, OutroParticles, Tease} from './scenes/Ending';
+import {FilterDefs, GlitchSlices, glitchAmount} from './components/MotionBlur';
+import {noise} from './motion';
 
 /** S0 lead-in: light streaks converge on the centre, flash on the slam. */
 const HookStreaks: React.FC = () => {
@@ -45,32 +49,68 @@ const Window: React.FC<{range: readonly [number, number]; children: React.ReactN
 
 export type ReelProps = {showBackground: boolean};
 
+/** Everything that lives "in the world": a slow global camera drift keeps it alive between hits; the glitch splits RGB. */
+const World: React.FC<{children: React.ReactNode}> = ({children}) => {
+  const frame = useCurrentFrame();
+  const g = glitchAmount(frame);
+  const dx = noise(3, frame / 120) * 6 + (g > 0 ? noise(9, frame * 3) * 26 * g : 0);
+  const dy = noise(4, frame / 140) * 5;
+  const rot = noise(5, frame / 160) * 0.25;
+  return (
+    <AbsoluteFill style={{transform: `translate(${dx}px, ${dy}px) rotate(${rot}deg)`, filter: g > 0.02 ? 'url(#rgbsplit)' : undefined}}>
+      {children}
+    </AbsoluteFill>
+  );
+};
+
 export const Reel: React.FC<ReelProps> = ({showBackground}) => (
   <AbsoluteFill style={{backgroundColor: showBackground ? C.bg0 : 'transparent'}}>
+    <FilterDefs />
     {showBackground && <Background />}
-    <Window range={[0, HIT.nodeSlam + 20]}>
-      <HookStreaks />
-    </Window>
-    <Window range={SCENES.context}>
-      <Context />
-    </Window>
-    <Window range={SCENES.nasdaq}>
-      <NasdaqChapter />
-    </Window>
-    <Window range={SCENES.spx}>
-      <SpxChapter />
-    </Window>
-    <Window range={SCENES.gold}>
-      <GoldChapter />
-    </Window>
-    <Window range={SCENES.recap}>
-      <Recap />
-    </Window>
-    <LaneBoard />
-    <LaneHeader />
-    <FedPulseLayer />
-    <FedNode />
-    <CaptionTrack />
+    <World>
+      <Window range={[0, HIT.nodeSlam + 20]}>
+        <HookStreaks />
+      </Window>
+      <Window range={SCENES.context}>
+        <Context />
+      </Window>
+      <Window range={SCENES.core}>
+        <Core />
+      </Window>
+      <Window range={SCENES.nasdaq}>
+        <NasdaqChapter />
+      </Window>
+      <Window range={SCENES.spx}>
+        <SpxChapter />
+      </Window>
+      <Window range={[1440, 1500]}>
+        <TileToGold />
+      </Window>
+      <Window range={SCENES.gold}>
+        <GoldChapter />
+      </Window>
+      <Window range={[HIT.expectCard - 4, HIT.flipBack + 4]}>
+        <ExpectCard />
+      </Window>
+      <Window range={SCENES.recap}>
+        <Recap />
+      </Window>
+      <Window range={SCENES.tease}>
+        <Tease />
+      </Window>
+      <LaneBoard />
+      <LaneHeader />
+      <FedPulseLayer />
+      <FedNode />
+      <Window range={[HIT.teasePulse, SCENES.outro[1]]}>
+        <OutroParticles />
+      </Window>
+      <Window range={SCENES.outro}>
+        <Outro />
+      </Window>
+      <CaptionTrack />
+    </World>
+    <GlitchSlices />
     <MiranMark />
     <TopicPill />
     <Disclaimer />

@@ -155,10 +155,13 @@ export const TILES: Tile[] = (() => {
   return out;
 })();
 
-export const SectorMosaic: React.FC<{frame: number; tilesIn: number; redAt: number; greenAt: number}> = ({frame, tilesIn, redAt, greenAt}) => (
+export const SectorMosaic: React.FC<{frame: number; tilesIn: number; redAt: number; greenAt: number; seedKey?: string; seedUntil?: number; fallAt?: number}> = ({frame, tilesIn, redAt, greenAt, seedKey, seedUntil = 0, fallAt = 1e9}) => (
   <div style={{position: 'relative', width: 800, height: 520}}>
     {TILES.map((t, i) => {
-      const appear = springAt(frame, tilesIn + i * 4, {damping: 15, stiffness: 160});
+      const isSeed = t.key === seedKey;
+      if (isSeed && frame < seedUntil) return null;
+      const appear = isSeed ? 1 : springAt(frame, tilesIn + i * 4, {damping: 15, stiffness: 160});
+      const fall = interpolate(frame, [fallAt + i * 1.5, fallAt + i * 1.5 + 14], [0, 1], {...clamp, easing: (q) => q * q});
       const ripple = t.y / 4; // pulse arrives row by row
       const red = t.state === 'red' ? interpolate(frame, [redAt + ripple, redAt + ripple + 10], [0, 1], clamp) : 0;
       const greenRaw = t.state === 'green' ? interpolate(frame, [greenAt, greenAt + 24], [0, 1], clamp) : 0;
@@ -183,8 +186,8 @@ export const SectorMosaic: React.FC<{frame: number; tilesIn: number; redAt: numb
             background: bg,
             border: `1.5px solid ${border}`,
             boxShadow: `inset 0 1px 0 rgba(255,255,255,0.08), 0 0 ${24 * Math.max(red, green)}px ${hexA(t.state === 'green' ? C.green : C.red, 0.35 * Math.max(red, green))}`,
-            opacity: Math.min(1, appear * 1.4),
-            transform: `translateY(${(1 - appear) * 40 + drop}px) scale(${0.9 + 0.1 * appear + neutralHit * 0.02})`,
+            opacity: Math.min(1, appear * 1.4) * (1 - fall),
+            transform: `translateY(${(1 - appear) * 40 + drop + fall * 260}px) rotate(${fall * (i % 2 ? 9 : -9)}deg) scale(${(0.9 + 0.1 * appear + neutralHit * 0.02) * (1 - fall * 0.4)})`,
             display: 'flex',
             flexDirection: 'column',
             justifyContent: 'space-between',
@@ -263,7 +266,7 @@ export const BondCard: React.FC<{w: number}> = ({w}) => (
 );
 
 /** Balance scale. `angle` in degrees (+ = right side down). Gold bar on the right pan (RTL primary). */
-export const BalanceScale: React.FC<{frame: number; angle: number; bondY: number; bondOpacity: number; appear: number}> = ({frame, angle, bondY, bondOpacity, appear}) => {
+export const BalanceScale: React.FC<{frame: number; angle: number; bondY: number; bondOpacity: number; appear: number; barOpacity?: number}> = ({frame, angle, bondY, bondOpacity, appear, barOpacity = 1}) => {
   const W = 800;
   const px = W / 2;
   const py = 120;
@@ -282,8 +285,8 @@ export const BalanceScale: React.FC<{frame: number; angle: number; bondY: number
     </g>
   );
   return (
-    <div style={{position: 'relative', width: W, height: 500, opacity: appear, transform: `translateY(${(1 - appear) * 40}px)`}}>
-      <svg width={W} height={560} style={{position: 'absolute', inset: 0, overflow: 'visible'}}>
+    <div style={{position: 'relative', width: W, height: 500}}>
+      <svg width={W} height={560} style={{position: 'absolute', inset: 0, overflow: 'visible', opacity: appear, transform: `translateY(${(1 - appear) * 40}px)`}}>
         <defs>
           <linearGradient id="panGold" x1="0" y1="0" x2="0" y2="1">
             <stop offset="0%" stopColor={C.gold1} />
@@ -304,7 +307,7 @@ export const BalanceScale: React.FC<{frame: number; angle: number; bondY: number
         <Pan x={right.x} y={right.y} />
       </svg>
       {/* gold bar sits on the right pan */}
-      <div style={{position: 'absolute', left: right.x - 90, top: right.y + string - 76}}>
+      <div style={{position: 'absolute', left: right.x - 90, top: right.y + string - 76 + (1 - appear) * 40, opacity: barOpacity}}>
         <GoldBar w={180} frame={frame} />
       </div>
       {/* bond card drops onto the left pan */}

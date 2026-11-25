@@ -7,7 +7,9 @@
     "render": "remotion render Fed3Markets out/MiranGold_Fed3Markets_2026-11.mp4 --codec=h264 --crf=18",
     "render:overlay": "remotion render Fed3MarketsOverlay out/MiranGold_Fed3Markets_2026-11_overlay.mov --codec=prores --prores-profile=4444 --pixel-format=yuva444p10le --image-format=png",
     "still": "remotion still Fed3Markets",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "cues": "esbuild scripts/export-cues.ts --bundle --platform=node --format=cjs --external:remotion --outfile=out/export-cues.cjs --log-level=error && node out/export-cues.cjs",
+    "qa": "SCALE=0.5 node scripts/qa-stills.mjs out/qa"
   },
   "dependencies": {
     "@fontsource/ibm-plex-sans-arabic": "^5.3.0",
