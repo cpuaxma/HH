@@ -1,0 +1,38 @@
+{
+  "name": "traders-remotion",
+  "private": true,
+  "version": "1.0.0",
+  "scripts": {
+    "studio": "remotion studio",
+    "render": "remotion render TradersArena out/traders.mp4 --codec=h264 --crf=16 --gl=swangle",
+    "still": "remotion still TradersArena --gl=swangle",
+    "stills": "node scripts/stills.mjs",
+    "safezone": "node scripts/safezone.mjs",
+    "typecheck": "tsc --noEmit",
+    "docs": "node scripts/gen-docs.mjs",
+    "audio": "python3 scripts/make-audio.py",
+    "fonts": "node scripts/fetch-fonts.mjs"
+  },
+  "dependencies": {
+    "@react-three/fiber": "8.17.10",
+    "@react-three/postprocessing": "2.16.3",
+    "@remotion/cli": "4.0.539",
+    "@remotion/fonts": "^4.0.539",
+    "@remotion/google-fonts": "4.0.539",
+    "@remotion/media": "4.0.539",
+    "@remotion/motion-blur": "4.0.539",
+    "@remotion/three": "4.0.539",
+    "postprocessing": "6.36.4",
+    "react": "18.3.1",
+    "react-dom": "18.3.1",
+    "remotion": "4.0.539",
+    "three": "0.169.0"
+  },
+  "devDependencies": {
+    "@remotion/bundler": "^4.0.539",
+    "@remotion/renderer": "4.0.539",
+    "@types/react": "^18.3.12",
+    "@types/three": "0.169.0",
+    "typescript": "^5.6.3"
+  }
+}
