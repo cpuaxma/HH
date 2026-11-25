@@ -4,7 +4,7 @@ import {interpolate, useCurrentFrame} from 'remotion';
 import {C, FONT, SPRING} from '../brand';
 import {HIT, SCENES} from '../timeline';
 import {clamp, push, springAt} from '../motion';
-import {GlassCard, Sheen, SourceLine} from '../components/Chrome';
+import {GlassCard, SourceLine} from '../components/Chrome';
 import {CountUp, ProbabilityBar, RateGauge} from '../components/Charts';
 import data from '../data.json';
 
@@ -56,10 +56,9 @@ export const Context: React.FC = () => {
                   <RateGauge needle={needle} band={band} low={data.fedRange.low} high={data.fedRange.high} />
                 </div>
                 <div style={{position: 'relative', marginTop: 6}}>
-                  <CountUp frame={frame} to={data.fedRange.low} start={HIT.needleStart} dur={HIT.needleLand - HIT.needleStart} decimals={2} suffix="%" size={72} gold />
+                  <CountUp frame={frame} to={data.fedRange.low} start={HIT.needleStart} dur={HIT.needleLand - HIT.needleStart} decimals={2} suffix="%" size={72} gold sheenFrom={HIT.needleLand + 4} />
                   <span style={{fontFamily: FONT.ar, fontWeight: 700, fontSize: 72, color: '#D4AF37', margin: '0 10px'}}>–</span>
-                  <CountUp frame={frame} to={data.fedRange.high} start={HIT.needleStart} dur={HIT.needleLand - HIT.needleStart} decimals={2} suffix="%" size={72} gold />
-                  <Sheen frame={frame} period={120} offset={-HIT.needleLand} />
+                  <CountUp frame={frame} to={data.fedRange.high} start={HIT.needleStart} dur={HIT.needleLand - HIT.needleStart} decimals={2} suffix="%" size={72} gold sheenFrom={HIT.needleLand + 4} />
                 </div>
                 <SourceLine text={data.fedRange.source} style={{position: 'absolute', bottom: 30}} opacity={interpolate(frame, [HIT.needleLand + 10, HIT.needleLand + 24], [0, 1], clamp)} />
               </div>
@@ -71,8 +70,7 @@ export const Context: React.FC = () => {
                 <div style={{marginTop: 70, display: 'flex', alignItems: 'baseline', gap: 18}}>
                   <span style={{fontFamily: FONT.ar, fontWeight: FONT.arBold, fontSize: 64, color: C.text}}>أكثر من</span>
                   <span style={{position: 'relative'}}>
-                    <CountUp frame={frame} to={data.decHikeOdds.threshold} start={HIT.oddsFillStart} dur={HIT.oddsLand - HIT.oddsFillStart} suffix="%" size={150} gold />
-                    {frame >= HIT.oddsLand && <Sheen frame={frame} period={70} offset={-HIT.oddsLand} />}
+                    <CountUp frame={frame} to={data.decHikeOdds.threshold} start={HIT.oddsFillStart} dur={HIT.oddsLand - HIT.oddsFillStart} suffix="%" size={150} gold sheenFrom={HIT.oddsLand + 4} />
                   </span>
                 </div>
                 <div style={{marginTop: 70}}>

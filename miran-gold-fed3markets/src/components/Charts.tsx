@@ -64,7 +64,9 @@ export const CountUp: React.FC<{
   gold?: boolean;
   color?: string;
   style?: React.CSSProperties;
-}> = ({frame, from = 0, to, start, dur, decimals = 0, prefix = '', suffix = '', size, gold, color = C.text, style}) => {
+  /** Frame at which a specular sheen starts sweeping the gold glyphs (repeats every 90 frames). */
+  sheenFrom?: number;
+}> = ({frame, from = 0, to, start, dur, decimals = 0, prefix = '', suffix = '', size, gold, color = C.text, style, sheenFrom}) => {
   const p = interpolate(frame, [start, start + dur], [0, 1], {...clamp, easing: (t) => 1 - Math.pow(1 - t, 3)});
   const v = from + (to - from) * p;
   const land = frame - (start + dur);
@@ -72,8 +74,11 @@ export const CountUp: React.FC<{
   const s = fmt(v, decimals);
   const head = s.slice(0, -1);
   const last = s.slice(-1);
+  const sp = sheenFrom !== undefined && frame >= sheenFrom ? ((frame - sheenFrom) % 90) / 90 : -1;
+  const sx = sp < 0 ? -100 : -40 + sp * 300; // % across the number, sweeping in the first third of each cycle
+  const sheen = `linear-gradient(105deg, rgba(255,250,230,0) ${sx - 18}%, rgba(255,250,230,0.95) ${sx}%, rgba(255,250,230,0) ${sx + 18}%)`;
   const fillStyle: React.CSSProperties = gold
-    ? {backgroundImage: GOLD_GRADIENT, WebkitBackgroundClip: 'text', backgroundClip: 'text', color: 'transparent'}
+    ? {backgroundImage: sp < 0 ? GOLD_GRADIENT : `${sheen}, ${GOLD_GRADIENT}`, backgroundSize: '100% 100%', backgroundAttachment: 'local', WebkitBackgroundClip: 'text', backgroundClip: 'text', color: 'transparent'}
     : {color};
   return (
     <bdi dir="ltr" style={{fontFamily: FONT.ar, fontWeight: FONT.arBold, fontSize: size, fontVariantNumeric: 'tabular-nums', whiteSpace: 'nowrap', ...style}}>
