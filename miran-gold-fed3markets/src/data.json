@@ -1,0 +1,64 @@
+{
+  "asOf": "2026-11-25",
+  "fedRange": {
+    "low": 3.75,
+    "high": 4.0,
+    "label": "3.75%–4.00%",
+    "date": "2026-10-28",
+    "source": "Federal Reserve · FOMC statement, 28 Oct 2026",
+    "sourceUrl": "https://stockanalysis.com/news/fed-holds-rates-steady-oct-2026/"
+  },
+  "septHike": {
+    "date": "2026-09-16",
+    "bp": 25,
+    "lastHikeYear": 2023,
+    "source": "Federal Reserve · 16 Sep 2026",
+    "sourceUrl": "https://www.cnbc.com/amp/2026/09/16/fed-rate-decision-september-2026.html"
+  },
+  "decHikeOdds": {
+    "value": 97.4,
+    "display": "أكثر من 90%",
+    "threshold": 90,
+    "date": "2026-11-24",
+    "source": "CME FedWatch · 24 Nov 2026",
+    "sourceUrl": "https://longbridge.com/en/news/306688134"
+  },
+  "nextFomc": {
+    "meeting": "2026-12-08/09",
+    "decision": "2026-12-09",
+    "pillAr": "٩ ديسمبر",
+    "sourceUrl": "https://www.federalreserve.gov/newsevents/2026-December.htm"
+  },
+  "dxy": {
+    "value": 104.3,
+    "label": "DXY ≈ 104.3",
+    "noteAr": "أعلى مستوى منذ أكثر من عام",
+    "date": "2026-11-23",
+    "source": "DXY · 23 Nov 2026 · 24/7 Wall St",
+    "sourceUrl": "https://247wallst.com/investing/2026/11/24/the-dollar-just-hit-its-strongest-level-since-march-2025/"
+  },
+  "goldPath": {
+    "points": [
+      {"date": "2026-10-29", "label": "29 Oct", "value": 4030},
+      {"date": "2026-11-18", "label": "18 Nov", "value": 3726},
+      {"date": "2026-11-19", "label": "19 Nov", "value": 3693},
+      {"date": "2026-11-24", "label": "24 Nov", "value": 3556},
+      {"date": "2026-11-25", "label": "25 Nov", "value": 3470}
+    ],
+    "headline": "< $3,500",
+    "source": "Spot gold · 25 Nov 2026 · CNBC / USAGold / Kitco",
+    "sourceUrls": [
+      "https://www.kitco.com/news/article/2026-10-29/gold-falls-toward-4000-core-pce-rises-us-growth-accelerates-kitco-am-report",
+      "https://www.usagold.com/daily-precious-metals-market-report-november-18-2026/",
+      "https://www.usagold.com/daily-precious-metals-market-report-november-25-2026/",
+      "https://www.cnbc.com/select/the-price-of-gold-today-nov-25-2026/"
+    ]
+  },
+  "board": {
+    "nasdaq": {"value": 23733.54, "decimals": 2, "prefix": "", "date": "24 Nov close"},
+    "spx": {"value": 7201.09, "decimals": 2, "prefix": "", "date": "24 Nov close"},
+    "gold": {"value": 3470, "decimals": 0, "prefix": "$", "date": "25 Nov intraday"},
+    "source": "Closes 24 Nov 2026 · Gold spot 25 Nov 2026",
+    "sourceUrl": "https://investrade.com/market-review-november-24-2026/"
+  }
+}
